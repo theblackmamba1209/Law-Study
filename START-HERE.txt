@@ -1,4 +1,8 @@
-SINAG LEARNING STUDIO · EDITION 12
+SINAG LEARNING STUDIO · EDITION 13
+
+Edition 13 quick start
+Study tutor works on-device after you unlock the course. Ask about a passage or choose Recall, Apply or Challenge a reading. Ask connected AI requires a configured provider and internet access.
+In Editor mode, use Edit lesson passage for rich text, images and tables. Use Workspace options → Paragraph layout for paragraph alignment, line height and spacing on a page.
 
 Start on a computer
 1. Extract the entire ZIP into a folder. For offline study, open index.html in a current desktop browser and unlock with your portable-copy password.
