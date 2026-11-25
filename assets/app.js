@@ -280,7 +280,44 @@ function preview(key) {
 /* ------------------------------------------------------------------ text helpers */
 const FN = /⟨(\d+)⟩/g;
 const plain = s => typeof s === 'string' ? s.replace(FN, '') : '';
-const provText = p => p.p.filter(x => typeof x === 'string').map(plain).join('\n');
+/* The text in force. When a later law restated the whole provision, its text is what the learner reads and recalls;
+   the text as enacted stays available as history. A partial restatement ("x x x") without a consolidated text falls
+   back to the enacted text, flagged as partly amended. */
+const letters = s => (s || '').toLowerCase().replace(/[^a-z]/g, '');
+function stripHead(ps, cap) {
+  const out = ps.filter(x => typeof x === 'string').slice(); if (!out.length) return { ps: out, cap: '' };
+  let s = out[0]; let newCap = '';
+  const art = /^\s*(?:Art(?:icle)?\.?|ART(?:ICLE)?\.?|Sec(?:tion)?\.?|SEC(?:TION)?\.?)\s*\d+(?:-[A-Za-z])?\.?\s*/.exec(s);
+  if (art) s = s.slice(art[0].length);
+  // where the provision's own caption ends, if the amended text starts with it
+  const want = letters(cap); let capEnd = -1;
+  if (want && letters(s).startsWith(want)) { let k = 0, i = 0; while (i < s.length && k < want.length) { if (/[a-z]/i.test(s[i])) k++; i++; } capEnd = i; }
+  if (art || capEnd >= 0) {
+    // the heading ends at the first ". -", " - ", "—" or "–" after the caption (a caption may be longer in the new law)
+    const sep = [...s.slice(0, 320).matchAll(/\.\s*[–—-]+\s*|\s[–—-]{1,2}\s*|[—–]\s*/g)].find(m => m.index >= Math.max(0, capEnd - 1));
+    if (sep) { newCap = s.slice(0, sep.index); s = s.slice(sep.index + sep[0].length); }
+    else if (capEnd >= 0) { newCap = s.slice(0, capEnd); s = s.slice(capEnd).replace(/^[\s.;:,–—-]+/, ''); }
+  } else {
+    // a caption without an article number: "Qualified theft. – The crime…", "Graduated scales.—In…"
+    const m = /^([A-Z][^.—–]{3,150}?)(?:\.\s*[—–-]+|\s+[—–]|[—–])\s*(?=["“(]?[A-Z])/.exec(s);
+    if (m) {
+      newCap = m[1]; s = s.slice(m[0].length);
+      const m2 = /^([A-Z][^.—–]{3,60}?)\.\s*[—–-]+\s*(?=["“(]?[A-Z])/.exec(s);   // a two-part caption: "… — Who shall be deemed as such. –"
+      if (m2) { newCap += ' — ' + m2[1]; s = s.slice(m2[0].length); }
+    }
+  }
+  if (s.trim()) out[0] = s; else out.shift();
+  return { ps: out, cap: newCap.replace(/[\s.;:—–-]+$/, '').trim() };
+}
+function inForce(p) {
+  const a = (p.a || []).at(-1);
+  if (!a) return { ps: p.p, a: null, partial: false, cap: p.c || '' };
+  const src = a.cons || a.p;
+  if (!a.cons && /\bx\s*x\s*x\b/i.test(src.join(' '))) return { ps: p.p, a, partial: true, cap: p.c || '' };
+  const h = stripHead(src, p.c);
+  return { ps: h.ps, a, partial: false, cap: h.cap || p.c || '' };
+}
+const provText = p => inForce(p).ps.filter(x => typeof x === 'string').map(plain).join('\n');
 const words = s => s.split(/\s+/).filter(Boolean);
 const NUMW = 'one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety|hundred|thousand|million|half|one-half|one-third|one-fourth|two-thirds|three-fourths|first|second|third|fourth|fifth|sixth|seventh|eighth|ninth|tenth';
 const DEFSRC = String.raw`\b(?:shall mean|refers? to|shall refer to|is understood|are understood|shall be understood|is defined as|are those|shall include)\b|(?<!\b(?:by|of|any|other|similar|employing|employ|the|a|an|such|all|these|those|no|its|his|her|their|legal|lawful|available|reasonable|adequate|financial|appropriate|effective|some|every|same|necessary|proper|whatever|peaceful|electronic|fraudulent|illegal)\s)\bmeans\b(?=[\s,](?!\s*(?:of|to|whereby|employed|used|be|by|for|through)\b))`;
@@ -426,7 +463,7 @@ function kindOf(s, item) {
 /* one row per enumerated item (marker kept), one row per sentence elsewhere; provisos get their own row */
 function anatomy(p) {
   const out = []; const last = {}; const stems = [];
-  for (const x of p.p) {
+  for (const x of inForce(p).ps) {
     if (typeof x !== 'string') continue;
     const m = markerOf(x, last); if (m) last[m.key] = m.tok;
     const t = splitSrc(plain(m && m.key !== 'ord' ? m.body : x))[0];
@@ -441,7 +478,7 @@ function anatomy(p) {
   }
   const t = provText(p);
   const periods = (t.match(RX.num) || []).filter(x => /day|month|year|hour|week|per\s?cent|percent|pesos|₱|\d{2,}/i.test(x));
-  const lay = lawLayout(p.p); const nested = lay.info.some(f => f.kind === 'item' && f.lv > 1);
+  const lay = lawLayout(inForce(p).ps); const nested = lay.info.some(f => f.kind === 'item' && f.lv > 1);
   const st = stems.join(' ');
   const mode = nested || stems.length !== 1 ? '' : /\bany (?:one )?of the following\b|\beither\b/i.test(st) ? 'any' : /\bconcur|\brequisites?\b|\ball of the following\b|\belements?\b/i.test(st) ? 'all' : '';
   return { items: out, periods: [...new Set(periods)].slice(0, 12), mode };
@@ -605,7 +642,7 @@ function library() {
 function tocHTML(d, cid, openDiv) {
   const open = new Set();
   let v = openDiv; while (v != null) { open.add(v); v = d.divisions[v].p; }
-  const provList = arr => arr.length ? `<ul class="plist">${arr.map(p => `<li><a href="#/p/${cid}/${p.i}"><span class="dot ${status(ck(cid, p.i))}"></span><span class="pl">${esc(p.l)}</span><span class="pc">${esc(p.c || firstWords(p))}</span></a></li>`).join('')}</ul>` : '';
+  const provList = arr => arr.length ? `<ul class="plist">${arr.map(p => `<li><a href="#/p/${cid}/${p.i}"><span class="dot ${status(ck(cid, p.i))}"></span><span class="pl">${esc(p.l)}</span><span class="pc">${esc(p.c || firstWords(p))}${p.st ? ` <span class="chip ${p.st === 'repealed' ? 'bad' : 'warn'}" style="font-size:.68rem">${p.st}</span>` : ''}</span></a></li>`).join('')}</ul>` : '';
   const node = i => {
     const dv = d.divisions[i];
     const n = countUnder(d, i);
@@ -617,7 +654,7 @@ function tocHTML(d, cid, openDiv) {
 }
 function divInner(d, i, cid, open, provList, node) { return provList(d.divProv[i]) + d.kids[i].map(node).join(''); }
 function countUnder(d, i) { let n = d.divProv[i].length; for (const k of d.kids[i]) n += countUnder(d, k); return n; }
-function firstWords(p) { const t = plain(p.p.find(x => typeof x === 'string') || ''); return t.length > 110 ? t.slice(0, 107) + '…' : t; }
+function firstWords(p) { const t = plain(inForce(p).ps.find(x => typeof x === 'string') || ''); return t.length > 110 ? t.slice(0, 107) + '…' : t; }
 
 async function codeView(cid, q) {
   setNav('library');
@@ -679,13 +716,24 @@ function divCap(d, p) {
 function lawHTML(d, p, cid, on) {
   const fn = p.f || [];
   const lp = labelParts(p.l); const fld = fieldOf(cid);
-  return `<article class="law${fld ? ' f-' + fld.id : ''}" id="law">
-    <h1 class="lh"><span class="lnum${lp.n.length > 6 ? ' long' : ''}">${lp.k ? `<small>${esc(lp.k)}</small>` : ''}<b>${esc(lp.n)}</b></span>${p.c ? `<span class="lcap">${esc(p.c)}</span>` : divCap(d, p) ? `<span class="lcap dim"><small>${esc(divCap(d, p)[0])}</small>${esc(divCap(d, p)[1])}</span>` : ''}${p.o ? `<span class="lold">formerly ${esc(p.o)}</span>` : ''}</h1>
-    <div class="text">${lawBody(p.p, on, d, cid)}</div>
+  const F = inForce(p), cur = !!(F.a && !F.partial);
+  const cap = cur ? F.cap : p.c;
+  const stat = (p.e || []).filter(e => e.k === 'status'), notes = (p.e || []).filter(e => e.k !== 'status');
+  const amendSec = (a, label) => `<section class="amend"><div class="row"><span class="ak">${label}</span><span class="chip ok">${esc(a.by)}${a.sec ? ` · Sec. ${esc(a.sec)}` : ''}${a.y ? ` · ${esc(a.y)}` : ''}</span><span class="spacer"></span>${a.ref ? `<a class="small" href="#/code/${a.ref}">open ${esc(a.by)}</a>` : ''}</div><p class="tiny muted" style="margin:4px 0 10px">Verbatim from the amending law.</p><div class="text">${lawBody(a.p, on, null, cid)}</div></section>`;
+  const nA = (p.a || []).length;
+  return `<article class="law${fld ? ' f-' + fld.id : ''}${p.st ? ' gone' : ''}" id="law">
+    <h1 class="lh"><span class="lnum${lp.n.length > 6 ? ' long' : ''}">${lp.k ? `<small>${esc(lp.k)}</small>` : ''}<b>${esc(lp.n)}</b></span>${cap ? `<span class="lcap">${esc(cap)}</span>` : divCap(d, p) ? `<span class="lcap dim"><small>${esc(divCap(d, p)[0])}</small>${esc(divCap(d, p)[1])}</span>` : ''}${p.o ? `<span class="lold">formerly ${esc(p.o)}</span>` : ''}</h1>
+    ${stat.map(e => `<div class="status st-${esc(p.st || 'note')}">${/^(Repealed|Superseded)\b/.test(e.t) ? '' : `<b>${p.st === 'repealed' ? 'Repealed' : p.st === 'superseded' ? 'Superseded' : 'Status'}.</b> `}${esc(e.t)}${e.b ? ` <span class="muted">Basis: ${esc(e.b)}</span>` : ''}<span class="tiny">You do not need to memorize this text; learn the law that replaced it.</span></div>`).join('')}
+    ${cur ? `<div class="inforce${p.st ? ' part' : ''}"><span class="ak">${p.st ? 'Last text before repeal' : 'Text in force'}</span><span class="chip ok">as amended by ${esc(F.a.by)}${F.a.y ? ` (${esc(F.a.y)})` : ''}</span>${F.a.cons ? '<span class="chip">consolidated</span>' : ''}</div>` : F.partial ? `<div class="inforce part"><span class="ak">Partly amended</span><span class="chip warn">${esc(F.a.by)}${F.a.y ? ` (${esc(F.a.y)})` : ''}</span><span class="tiny muted">The text below is the earlier text; the amended part follows it.</span></div>` : ''}
+    <div class="text">${lawBody(cur ? F.ps : p.p, on, d, cid)}</div>
     ${fn.length ? `<div class="fnlist">${fn.map(f => `<p id="fn${f.n}"><sup>${f.n}</sup> ${esc(f.t)}</p>`).join('')}<p class="tiny muted">Footnotes are the publisher’s (DOLE), not part of the law.</p></div>` : ''}
     <div class="verify">${verifyChips(cid, p)}</div>
-    ${(p.e || []).map(e => `<div class="note ${/missing|omitted|restored|absent/i.test(e.t) ? 'blue' : ''}" style="margin-top:10px"><b>Proofreading note.</b> ${esc(e.t)}${e.b ? ` <span class="muted">Basis: ${esc(e.b)}</span>` : ''}</div>`).join('')}
-    ${(p.a || []).map(a => `<section class="amend"><div class="row"><span class="ak">Amended text</span><span class="chip ok">${esc(a.by)}${a.sec ? ` · Sec. ${esc(a.sec)}` : ''}</span><span class="spacer"></span>${a.ref ? `<a class="small" href="#/code/${a.ref}">open ${esc(a.by)}</a>` : ''}</div><p class="tiny muted" style="margin:4px 0 10px">Verbatim from the amending law. Where two amendments are shown, the later law controls.</p><div class="text">${lawBody(a.p, on, null, cid)}</div></section>`).join('')}
+    ${notes.map(e => `<div class="note ${/missing|omitted|restored|absent/i.test(e.t) ? 'blue' : ''}" style="margin-top:10px"><b>${(p.a || []).length && (/amend|rewrote|restated|raised|repealed|added|changed|limited|replaced/i.test(e.t) || /\b(RA|CA|BP|PD|EO|Act No\.)\s*\d/.test(e.t)) ? 'History note.' : 'Proofreading note.'}</b> ${esc(e.t)}${e.b ? ` <span class="muted">Basis: ${esc(e.b)}</span>` : ''}</div>`).join('')}
+    ${cur ? `<details class="hist"><summary><b>How the text read before</b> <span class="muted small">the earlier text${nA > 1 ? ` and ${nA - 1} earlier amendment${nA > 2 ? 's' : ''}` : ''}, and the amending law verbatim</span></summary>
+      <section class="amend orig"><div class="row"><span class="ak">Earlier text</span><span class="chip">as in the source</span></div><div class="text">${lawBody(p.p, on, d, cid)}</div></section>
+      ${(p.a || []).map((a, k) => amendSec(a, k === nA - 1 ? 'Latest amendment' : 'Amended')).join('')}
+      <p class="tiny muted">Read in order: each later law controls the earlier one.</p></details>`
+      : (p.a || []).map(a => amendSec(a, 'Amended text')).join('')}
   </article>`;
 }
 function verifyChips(cid, p) {
@@ -1007,7 +1055,11 @@ function alacPanel(rbox, p, cid, n) {
 }
 function recallPanel(box, d, p, cid, onDone) {
   const nw = words(provText(p)).length;
-  box.innerHTML = `<div class="panel"><div class="row" style="margin-bottom:10px">
+  const F = inForce(p);
+  const head = p.st ? `<div class="status st-${esc(p.st)}" style="margin-bottom:10px"><b>${p.st === 'repealed' ? 'Repealed' : 'Superseded'}.</b> Recall is optional here: spend the effort on the law that replaced it.</div>`
+    : F.a && !F.partial ? `<p class="tiny muted" style="margin:0 0 8px">Recall uses the text in force (as amended by ${esc(F.a.by)}${F.a.y ? `, ${esc(F.a.y)}` : ''}).</p>`
+    : F.partial ? `<p class="tiny muted" style="margin:0 0 8px">Partly amended by ${esc(F.a.by)}: recall uses the earlier text — check the amended part shown with the article.</p>` : '';
+  box.innerHTML = `<div class="panel">${head}<div class="row" style="margin-bottom:10px">
     <button class="btn sm" data-m="c1">Cloze · light</button><button class="btn sm" data-m="c2">Cloze · medium</button><button class="btn sm" data-m="c3">Cloze · heavy</button>
     <button class="btn sm" data-m="fl">First letters</button><button class="btn sm" data-m="fr">Write it out</button><button class="btn sm" data-m="al">Bar answer (ALAC)</button></div>
     <div id="rbox"></div></div>`;
@@ -1019,7 +1071,7 @@ function recallPanel(box, d, p, cid, onDone) {
     al: () => { hideLaw(true); alacPanel(rbox, p, cid, (NOTES[cid] || {})[p.i]); },
     fl: () => {
       hideLaw(true);
-      rbox.innerHTML = `<p class="small muted">Recite each word aloud from its first letter. Tap a word to check it.</p><div class="card flat fl rtext">${(() => { const ps = p.p.filter(x => typeof x === 'string'); const { ms, info } = lawLayout(ps); return ps.map((x, i) => layoutWrap(ms[i], info[i], words(plain(ms[i] && ms[i].key !== 'ord' ? ms[i].body : x)).map(w => `<span class="h">${esc(w)}</span>`).join(' '))).join(''); })()}</div><div class="row" style="margin-top:8px"><button class="btn sm" id="flall">Reveal all</button></div>`;
+      rbox.innerHTML = `<p class="small muted">Recite each word aloud from its first letter. Tap a word to check it.</p><div class="card flat fl rtext">${(() => { const ps = inForce(p).ps.filter(x => typeof x === 'string'); const { ms, info } = lawLayout(ps); return ps.map((x, i) => layoutWrap(ms[i], info[i], words(plain(ms[i] && ms[i].key !== 'ord' ? ms[i].body : x)).map(w => `<span class="h">${esc(w)}</span>`).join(' '))).join(''); })()}</div><div class="row" style="margin-top:8px"><button class="btn sm" id="flall">Reveal all</button></div>`;
       rbox.onclick = e => { const s = e.target.closest('.fl span'); if (s) s.classList.remove('h'); };
       $('#flall').onclick = () => { $$('.fl span', rbox).forEach(s => s.classList.remove('h')); hideLaw(false); };
     },
@@ -1044,7 +1096,7 @@ function recallPanel(box, d, p, cid, onDone) {
   function cloze(level) {
     hideLaw(true);
     const seed = p.i + ':' + level + ':' + Math.floor(Date.now() / DAY);
-    const paras = p.p.filter(x => typeof x === 'string');
+    const paras = inForce(p).ps.filter(x => typeof x === 'string');
     const { ms, info } = lawLayout(paras);
     let total = 0;
     const html = paras.map((x, bi) => {
@@ -1428,6 +1480,7 @@ async function aboutView() {
   <li><b>Eight fields in one building.</b> The House of Law is a memory palace drawn after the Supreme Court’s building on Padre Faura, Manila: its four columns, three doors and seven marble steps, with the Court’s motto, <i>Batas at Bayan</i>, carved above. Each field has a fixed place in it, from the pediment down to the steps, and each topic inside a field is one object at that place. Fixed places give you somewhere to look when you forget.</li>
   <li><b>A short path in each field.</b> Start here, then the core, then deeper only when you need it. A code page offers five provisions at a time.</li>
   <li><b>Four steps on each provision.</b> Read the verbatim text. Understand it by taking it apart and making your own picture. Recall it with the text hidden. Connect it to cases. Then rate yourself, and Review brings it back just before you would forget it.</li>
+  <li><b>The law in force comes first.</b> Where a later law restated a provision, the amended text is what you read, take apart and recall; the text as enacted and the amending law, verbatim, sit under “How the text read before”. Repealed or superseded provisions are marked, so you do not memorize dead law.</li>
   <li><b>See how it evolved.</b> Each provision shows its history in order: where the text came from (for the Civil Code, the article of the Spanish Civil Code of 1889 that its source note names), every amending law with its year, the rules and issuances that implement it, and the decisions that interpreted it — ending with the text in force today. Older cases and many examination questions were decided under the older layers.</li>
   <li><b>Read it like a judge.</b> “Take it apart” sorts each sentence into the order a court reads a provision: the words it defines, the rule, what it lists, when it applies, what is qualified or carved out, and what follows. Each step carries the canon of construction that governs it: plain meaning (<i>verba legis</i>), a list excludes what it omits (<i>expressio unius</i>), exceptions and provisos read strictly, and penal laws read strictly against the State.</li></ol>
   <h2>The memory research behind it</h2>

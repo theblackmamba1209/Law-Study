@@ -729,3 +729,19 @@ a.pref{padding:0 6px;border-radius:6px;font-size:.84em;line-height:1.5;box-decor
 .tl .t-now::before{background:var(--c)}
 @media (max-width:760px){.tl li{grid-template-columns:42px minmax(0,1fr);gap:8px}.tl li::before{left:47px}.tl li::after{left:51px}.tl li>div{padding-left:18px}}
 .lcap,.law .text,.explain,.case .cn{overflow-wrap:anywhere}
+
+/* text in force, history, status */
+.inforce{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:2px 0 10px;padding:6px 10px;border-radius:10px;background:var(--ok-soft)}
+.inforce.part{background:var(--warn-soft)}
+.inforce .ak{font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;font-weight:700}
+details.hist{margin-top:14px;border-top:1px dashed var(--line,#ddd);padding-top:8px}
+details.hist>summary{cursor:pointer;list-style:none;padding:6px 0}
+details.hist>summary::-webkit-details-marker{display:none}
+details.hist>summary::before{content:'▸ ';color:var(--muted,#777)}
+details.hist[open]>summary::before{content:'▾ '}
+details.hist .amend.orig .text{opacity:.85}
+.status{margin:4px 0 12px;padding:10px 12px;border-radius:10px;border-left:4px solid var(--bad);background:var(--bad-soft);line-height:1.5}
+.status.st-superseded{border-left-color:var(--warn);background:var(--warn-soft)}
+.status .tiny{display:block;margin-top:6px;opacity:.75}
+.law.gone>.text{opacity:.6}
+.inforce .chip.ok,.inforce .chip.warn{background:transparent;border:1px solid currentColor}
