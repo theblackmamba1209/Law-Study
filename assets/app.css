@@ -239,17 +239,27 @@ textarea{width:100%;min-height:150px;padding:12px;border-radius:10px;border:1px 
 .sect{display:flex;align-items:baseline;gap:10px;margin:26px 0 10px}
 .sect h2{margin:0}
 .sect .spacer{flex:1}
-/* the figure */
-.bodymap{display:grid;grid-template-columns:minmax(150px,210px) minmax(0,1fr);gap:18px;align-items:center}
+/* the figure: an atlas plate */
+.plate{background:var(--paper);border:1px solid var(--line);border-radius:18px;padding:10px 6px 6px;box-shadow:var(--shadow)}
+.plate figcaption{font-size:.7rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);text-align:center;padding:4px 0 2px}
+.bodymap{display:grid;grid-template-columns:minmax(0,430px) minmax(0,1fr);gap:26px;align-items:start}
 .fig{width:100%;height:auto;display:block}
-.fig .skin{fill:var(--body)}.fig .skin2{stroke:var(--body);fill:none;stroke-linecap:round}
+.fig .ground{fill:var(--ink);opacity:.08}
+.fig .edge path{fill:none;stroke:var(--ink2);stroke-width:1.15;stroke-linejoin:round;opacity:.55}
+.fig .anat{fill:none;stroke:var(--ink2);stroke-width:.9;stroke-linecap:round;opacity:.28}
+.fig .anat circle{fill:var(--ink2);stroke:none}
+.fig .regonly{fill:var(--f);opacity:.92}
+.fig .zone .reg{fill:transparent}
 .fig .zone{cursor:pointer}
-.fig .zone .fillf{fill:var(--f)}.fig .zone .strokef{stroke:var(--f);fill:none;stroke-linecap:round}
-.fig .zone .num{fill:var(--card);stroke:var(--f);stroke-width:2}
-.fig .zone text{font:700 11px var(--sans);fill:var(--f);text-anchor:middle;dominant-baseline:central}
-.fig.dim .zone:not(.on) .fillf{fill:var(--body2)}.fig.dim .zone:not(.on) .strokef{stroke:var(--body2)}
-.fig.dim .zone:not(.on) .num,.fig.dim .zone:not(.on) text{opacity:.35}
-.zone:focus-visible{outline:none}.zone:focus-visible .num{stroke-width:4}
+.fig .zone .ld{stroke:var(--f);stroke-width:1.2;fill:none}
+.fig .zone .ldot{fill:var(--card);stroke:var(--f);stroke-width:1.6}
+.fig .zone .num{fill:var(--f)}
+.fig .zone .nt{font:700 11.5px var(--sans);fill:var(--card);text-anchor:middle;dominant-baseline:central}
+.fig .zone .lb{font:600 16px var(--sans);fill:var(--ink);dominant-baseline:central}
+.fig .zone:hover .lb{fill:var(--f)}
+.fig.dim .regonly:not(.on){fill:var(--body2);opacity:.55}
+.fig.dim .zone:not(.on) .ld,.fig.dim .zone:not(.on) .ldot,.fig.dim .zone:not(.on) .num,.fig.dim .zone:not(.on) .nt,.fig.dim .zone:not(.on) .lb{opacity:.3}
+.zone:focus-visible{outline:none}.zone:focus-visible .lb{text-decoration:underline}
 .parts{display:grid;gap:6px;list-style:none;margin:0;padding:0}
 .parts a{display:grid;grid-template-columns:26px minmax(0,1fr) auto;gap:10px;align-items:center;padding:8px 10px;border-radius:12px;color:var(--ink);text-decoration:none!important;border:1px solid transparent}
 .parts a:hover{background:var(--card);border-color:var(--line)}
@@ -321,7 +331,6 @@ a.pref{white-space:nowrap;font:600 .86em var(--sans);padding:1px 7px;border-radi
 .more{display:flex;gap:14px;flex-wrap:wrap;font-size:.9rem;margin-top:26px;padding-top:14px;border-top:1px solid var(--line)}
 :focus-visible{outline:2px solid var(--brand);outline-offset:2px}
 @media (max-width:760px){
-  .bodymap{grid-template-columns:118px minmax(0,1fr);gap:8px;align-items:start}
   .parts a{grid-template-columns:24px minmax(0,1fr);padding:6px 6px}.parts .pct{display:none}.parts .t{font-size:.94rem}
   .fhead{grid-template-columns:minmax(0,1fr) 84px;padding:14px}
   .steps button{padding:7px 8px}.steps button span{font-size:.86rem}
@@ -334,11 +343,12 @@ a.pref{white-space:nowrap;font:600 .86em var(--sans);padding:1px 7px;border-radi
 .sitting{overflow:hidden}.sitting li{min-width:0}.sitting li a{min-width:0}
 .sect{flex-wrap:wrap}
 @media (max-width:760px){
-  .bodymap{grid-template-columns:132px minmax(0,1fr)}
-  .bodymap>.fig{position:sticky;top:112px}
   .sect .spacer{flex-basis:100%;height:0}
 }
 main:focus,main:focus-visible{outline:none}
 .parts .hk{display:block;font:italic 400 .86rem/1.4 var(--serif);color:var(--ink2);margin-top:1px}
-@media (min-width:761px){.bodymap{grid-template-columns:minmax(200px,250px) minmax(0,560px);gap:28px}}
 @media (max-width:760px){.parts .hk{font-size:.8rem}}
+
+@media (max-width:900px){.bodymap{grid-template-columns:minmax(0,1fr)!important;gap:14px}.bodymap>.plate{position:static;max-width:460px;justify-self:center;width:100%}}
+.fhead .fig.plain{max-height:230px}
+@media (min-width:901px){.bodymap{grid-template-columns:minmax(0,430px) minmax(0,560px)}.bodymap>.plate{position:sticky;top:84px}}

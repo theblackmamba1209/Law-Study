@@ -57,22 +57,40 @@ const fieldCodes = f => f.tracks.flatMap(t => t.items.filter(i => i.t === 'code'
 function fieldCount(f) { let total = 0, touched = 0, m = 0; for (const id of fieldCodes(f)) { const k = counts(id); total += k.total; touched += k.touched; m += k.m; } return { total, touched, m, pct: total ? touched / total * 100 : 0 }; }
 const rich = t => esc(t).replace(/⟦([^|⟧]+)\|([^|⟧]+)\|([^⟧]+)⟧/g, (m, c, i, l) => `<a class="pref" href="#/p/${c}/${i}">${l}</a>`);
 /* The memory figure: one standing figure, read head to toe. Each field of law has a fixed place on it. */
-function figure(active) {
-  const z = (id, n, shape, bx, by) => `<a class="zone f-${id}${active === id ? ' on' : ''}" href="#/field/${id}" aria-label="${esc(CUR.byId[id].name)}: ${esc(CUR.byId[id].pname)}">${shape}<circle class="num" cx="${bx}" cy="${by}" r="10"/><text x="${bx}" y="${by}">${n}</text></a>`;
-  return `<svg class="fig${active ? ' dim' : ''}" viewBox="0 0 200 404" role="img" aria-label="The memory figure: eight fields of law on eight parts of the body">
-    <rect class="skin" x="91" y="70" width="18" height="18" rx="4"/>
-    <path class="skin" d="M58 98 Q100 84 142 98 L134 226 Q100 234 66 226 Z"/>
-    <path class="skin2" stroke-width="17" d="M58 104 L37 222 M142 104 L163 222"/>
-    <path class="skin2" stroke-width="23" d="M84 232 L80 372 M116 232 L120 372"/>
-    ${z('pol', 1, '<circle class="fillf" cx="100" cy="46" r="28"/>', 140, 22)}
-    ${z('craft', 2, '<rect class="fillf" x="74" y="36" width="52" height="12" rx="6"/><rect class="fillf" x="90" y="58" width="20" height="5" rx="2.5"/>', 58, 42)}
-    ${z('lab', 3, '<path class="strokef" stroke-width="15" d="M54 102 Q100 82 146 102"/>', 160, 84)}
-    ${z('eth', 4, '<path class="fillf" d="M112 140 l-13 -13 a8 8 0 0 1 13 -9 a8 8 0 0 1 13 9 z"/>', 137, 136)}
-    ${z('civ', 7, '<rect class="fillf" x="62" y="212" width="76" height="15" rx="4"/>', 100, 219.5)}
-    ${z('crim', 5, '<circle class="fillf" cx="35" cy="236" r="13"/>', 14, 250)}
-    ${z('com', 6, '<circle class="fillf" cx="165" cy="236" r="13"/>', 186, 250)}
-    ${z('intl', 8, '<ellipse class="fillf" cx="73" cy="386" rx="21" ry="10"/><ellipse class="fillf" cx="127" cy="386" rx="21" ry="10"/>', 100, 388)}
-  </svg>`;
+const FIG_BODY = 'M0,30 C16,30 27,44 27,62 C27,74 24,84 19,92 C16,97 13,99 13,104 C13,109 13,112 14,115 C22,121 40,122 54,128 C64,132 70,142 71,154 C73,176 76,196 79,216 C82,236 88,262 92,290 C94,300 98,312 99,326 C100,340 96,356 91,366 C88,369 85,365 85,358 C86,346 86,334 83,322 C80,306 76,292 74,280 C70,256 64,236 61,220 C58,200 54,178 51,160 C49,182 46,206 44,228 C43,248 48,268 52,292 C55,316 56,340 55,366 C54,400 49,430 46,456 C45,470 48,484 49,500 C50,530 42,560 39,584 C39,592 46,598 53,602 C57,606 51,610 42,610 L20,610 C16,610 14,604 16,596 C18,590 18,584 17,578 C15,550 17,520 18,500 C19,486 16,470 15,458 C13,420 10,370 2,326 L0,324 Z';
+const FIG_EDGE = FIG_BODY.replace(/ L0,324 Z$/, ' L0,324');
+const FIG_HEAD = 'M0,30 C17,30 27,44 27,62 C27,82 14,102 0,102 C-14,102 -27,82 -27,62 C-27,44 -17,30 0,30 Z';
+const FIG_LABEL = { pol: 'Political', craft: 'Lawyer’s Craft', lab: 'Labor & Social', eth: 'Ethics', crim: 'Criminal', com: 'Commercial', civ: 'Civil', intl: 'International' };
+let figSeq = 0;
+function figure(active, plain) {
+  const u = 'fg' + (++figSeq);
+  // region shapes, in figure coordinates (x = 0 is the midline); clipped to the silhouette where they reach its edge
+  const shape = {
+    pol: `<path d="${FIG_HEAD}"/>`,
+    craft: `<rect x="-22" y="56.5" width="44" height="9" rx="4.5"/><rect x="-8" y="85" width="16" height="3.6" rx="1.8"/>`,
+    lab: `<rect x="-82" y="113" width="164" height="38" clip-path="url(#${u}c)"/>`,
+    eth: `<path d="M17,187 l-12.5,-12.5 a7.8,7.8 0 0 1 12.5,-9.3 a7.8,7.8 0 0 1 12.5,9.3 z"/>`,
+    civ: `<rect x="-58" y="288" width="116" height="22" clip-path="url(#${u}c)"/>`,
+    crim: `<rect x="-103" y="319" width="25" height="54" clip-path="url(#${u}c)"/>`,
+    com: `<rect x="78" y="319" width="25" height="54" clip-path="url(#${u}c)"/>`,
+    intl: `<rect x="-62" y="581" width="124" height="32" clip-path="url(#${u}c)"/>`,
+  };
+  // leader lines: [side, anchor x, y]  (figure's right hand is on the viewer's left)
+  const lead = { pol: [1, 20, 40], craft: [-1, -25, 61], lab: [1, 64, 131], eth: [1, 31, 176], civ: [-1, -58, 299], crim: [-1, -100, 346], com: [1, 100, 346], intl: [-1, -47, 600] };
+  const order = ['pol', 'lab', 'civ', 'crim', 'com', 'intl', 'eth', 'craft'];
+  const zone = id => { const f = CUR.byId[id]; const [sd, ax, y] = lead[id]; const ex = sd * 112, bx = sd * 124, tx = sd * 140;
+    return `<a class="zone f-${id}${active === id ? ' on' : ''}" href="#/field/${id}" aria-label="${esc(f.name)}: ${esc(f.pname)}"><g class="reg">${shape[id]}</g>${plain ? '' : `<path class="ld" d="M${ax},${y} H${ex}"/><circle class="ldot" cx="${ax}" cy="${y}" r="2.6"/><circle class="num" cx="${bx}" cy="${y}" r="10.5"/><text class="nt" x="${bx}" y="${y}">${f.n}</text><text class="lb" x="${tx}" y="${y}" text-anchor="${sd > 0 ? 'start' : 'end'}">${esc(FIG_LABEL[id])}</text>`}</a>`; };
+  return `<svg class="fig${active ? ' dim' : ''}${plain ? ' plain' : ''}" viewBox="${plain ? '150 18 220 606' : '0 14 520 614'}" role="img" aria-label="The body of law: eight fields of law placed on eight parts of one figure">
+    <defs><linearGradient id="${u}g" x1="0" x2="1" y1="0" y2="0"><stop offset="0" style="stop-color:var(--body2)"/><stop offset=".5" style="stop-color:var(--body)"/><stop offset="1" style="stop-color:var(--body2)"/></linearGradient>
+      <clipPath id="${u}c"><path d="${FIG_BODY}"/><path d="${FIG_BODY}" transform="scale(-1,1)"/></clipPath></defs>
+    <g transform="translate(260,0)">
+      <ellipse class="ground" cx="0" cy="611" rx="92" ry="6"/>
+      <g fill="url(#${u}g)"><path d="${FIG_BODY}"/><path d="${FIG_BODY}" transform="scale(-1,1)"/></g>
+      ${order.map(id => `<g class="regonly f-${id}${active === id ? ' on' : ''}">${shape[id]}</g>`).join('')}
+      <g class="anat"><path d="M-48,127 Q-28,133 -9,128 M48,127 Q28,133 9,128"/><path d="M0,140 V204"/><path d="M-41,176 Q-22,192 -3,180 M41,176 Q22,192 3,180"/><path d="M-30,226 Q0,236 30,226" opacity=".6"/><circle cx="0" cy="246" r="1.8"/><path d="M-41,452 Q-31,462 -21,452 M41,452 Q31,462 21,452"/></g>
+      <g class="edge"><path d="${FIG_EDGE}"/><path d="${FIG_EDGE}" transform="scale(-1,1)"/><path d="M19,92 C13,99 6,102 0,102 C-6,102 -13,99 -19,92"/></g>
+      ${order.map(zone).join('')}
+    </g></svg>`;
 }
 function partsList() {
   const foc = focusIds();
@@ -320,7 +338,7 @@ async function home() {
     <div class="meters"><span><b>${due}</b> due</span><span><b>${nt}</b> of ${S.settings.newPerDay} new today</span><span><b>${st}</b> day streak</span><a href="#/progress">Progress</a></div></section>
   <div class="sect"><h2>The body of law</h2><span class="spacer"></span><button class="btn sm ghost" id="foc">This semester</button><button class="btn sm ghost" id="nm">Name the figure</button></div>
   <p class="small muted" style="margin:-4px 0 12px;max-width:65ch">Eight fields, eight places on ${esc(figName())}, read from head to toe. A fixed place is a fixed cue: when you forget, walk down the body.</p>
-  <div class="bodymap">${figure()}${partsList()}</div>
+  <div class="bodymap"><figure class="plate" style="margin:0">${figure()}<figcaption>Read from head to toe</figcaption></figure>${partsList()}</div>
   <div class="more"><a href="#/syllabus">Syllabus cases</a><a href="#/syllabus/recent">Recent rulings</a><a href="#/drill">Drill</a><a href="#/search">Find a case</a><a href="#/about">How this works</a></div>`;
   $('#foc').onclick = async () => { if (await chooseFocus()) home(); };
   $('#nm').onclick = async () => { if (await nameFigure()) home(); };
@@ -363,7 +381,7 @@ function fieldView(id) {
   main.innerHTML = `<div class="f-${f.id}"><div class="crumbs"><a href="#/learn">Learn</a><span class="sep">›</span><span>${esc(f.name)}</span></div>
   <div class="fhead"><div><span class="eyebrow" style="color:var(--f)">${f.n} · ${esc(f.pname)}</span><h1>${esc(f.name)}</h1><p class="hook" style="margin:0 0 6px">${esc(f.hook)}</p><p class="small" style="margin:0 0 10px">${esc(f.q)}</p>
     <div class="thin" style="max-width:320px"><i style="width:${Math.min(100, k.pct).toFixed(1)}%"></i></div><p class="tiny muted" style="margin:6px 0 10px">${k.touched.toLocaleString()} of ${k.total.toLocaleString()} provisions studied</p>
-    ${lb ? `<a class="btn primary" href="#/p/${lb.c}/${lb.p}">Continue ${esc(lb.l)}</a>` : ''}</div>${figure(f.id)}</div>
+    ${lb ? `<a class="btn primary" href="#/p/${lb.c}/${lb.p}">Continue ${esc(lb.l)}</a>` : ''}</div>${figure(f.id, true)}</div>
   <div class="path">${tracks}</div></div>`;
 }
 function findItem(type, id) { for (const f of CUR.fields) for (const t of f.tracks) { const ix = t.items.findIndex(i => i.t === type && i.id === id); if (ix >= 0) return { f, t, ix }; } return null; }
