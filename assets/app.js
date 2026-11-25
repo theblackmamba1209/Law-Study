@@ -11,7 +11,7 @@ const today = () => new Date(Date.now() - new Date().getTimezoneOffset() * 60000
 
 /* ------------------------------------------------------------------ storage */
 const KEY = 'sinag.codal.v1';
-const DEFAULTS = { cards: {}, notes: {}, marks: {}, flags: {}, days: {}, last: null, tutor: {}, hooks: {}, lessons: {}, lastBy: {},
+const DEFAULTS = { cards: {}, notes: {}, marks: {}, flags: {}, days: {}, last: null, tutor: {}, hooks: {}, lessons: {}, lastBy: {}, b2: {},
   settings: { newPerDay: 10, focus: null, figure: '', hl: { op: true, cond: true, exc: true, num: true, pen: true, def: true }, passcode: '' } };
 let S;
 try { S = Object.assign(structuredClone(DEFAULTS), JSON.parse(localStorage.getItem(KEY) || '{}')); }
@@ -45,6 +45,8 @@ let SYL = null, SYX = null, REC = null;
 async function loadSyllabus() { if (!SYL) SYL = await getJSON('data/syllabus.json?v=' + (CAT.shash || CAT.built)).catch(() => ({ courses: [] })); return SYL; }
 async function loadSylIndex() { if (!SYX) SYX = await getJSON('data/syllabus_index.json?v=' + (CAT.shash || CAT.built)).catch(() => ({})); return SYX; }
 async function loadRecent() { if (!REC) REC = await getJSON('data/recent.json?v=' + (CAT.rhash || CAT.built)).catch(() => ({ by: {}, general: [] })); return REC; }
+let B2 = null;
+async function loadB2() { if (!B2) B2 = await getJSON('data/book2.json?v=' + (CAT.bhash || CAT.built)); return B2; }
 let CUR = null;
 async function loadCur() {
   if (!CUR) { CUR = await getJSON('data/curriculum.json?v=' + (CAT.chash || CAT.built)); CUR.byId = Object.fromEntries(CUR.fields.map(f => [f.id, f])); }
@@ -455,6 +457,7 @@ function itemRow(it, f) {
   if (it.t === 'code') { const m = meta(it.id), k = counts(it.id); return `<li><a href="#/code/${it.id}"><span class="kind">Code</span><span><span class="it">${esc(m.short)}</span><br><span class="im">${esc(m.citation)}${it.x ? ' · also in ' + esc(fieldOf(it.id).name) : ''}</span></span><span class="st">${k.touched}/${k.total.toLocaleString()}</span></a></li>`; }
   if (it.t === 'lesson') { const l = CUR.lessons[it.id]; return `<li><a href="#/lesson/${it.id}"><span class="kind k-lesson">Lesson</span><span><span class="it">${esc(l.title)}</span><br><span class="im">${l.mins} minute read</span></span><span class="st">${S.lessons[it.id] ? '<span class="done">Read</span>' : ''}</span></a></li>`; }
   if (it.t === 'set') { const st = CUR.sets[it.id]; const n = st.items.filter(x => S.cards[ck(x.c, x.i)]).length; return `<li><a href="#/set/${it.id}"><span class="kind k-set">Walk</span><span><span class="it">${esc(st.title)}</span><br><span class="im">${st.items.length} provisions, placed head to toe</span></span><span class="st">${n}/${st.items.length}</span></a></li>`; }
+  if (it.t === 'b2') return `<li><a href="#/b2"><span class="kind k-set">Studio</span><span><span class="it">${esc(it.title)}</span><br><span class="im">Crimes in families: elements, comparison tables, drills</span></span><span class="st"></span></a></li>`;
   if (it.t === 'syl') return `<li><a href="#/syllabus/${it.id}"><span class="kind k-syl">Cases</span><span><span class="it">${esc(it.title)}</span><br><span class="im">Every assigned case, filed under its provision</span></span><span class="st"></span></a></li>`;
   return `<li><div class="miss"><span class="kind k-miss">Not yet</span><span><span class="it">${esc(it.title)}</span><br><span class="im">${esc(it.citation)}. ${esc(it.why)}${it.url ? ` <a href="${esc(it.url)}" target="_blank" rel="noopener">Official text</a>` : ''}</span></span></div></li>`;
 }
@@ -481,7 +484,7 @@ function lessonView(id) {
   setNav('library');
   const l = CUR.lessons[id]; if (!l) return learn();
   const at = findItem('lesson', id); const f = at.f; const nx = at.t.items[at.ix + 1];
-  const nxLink = nx && nx.t !== 'missing' ? (nx.t === 'code' ? [`#/code/${nx.id}`, meta(nx.id).short] : nx.t === 'lesson' ? [`#/lesson/${nx.id}`, CUR.lessons[nx.id].title] : nx.t === 'set' ? [`#/set/${nx.id}`, CUR.sets[nx.id].title] : [`#/syllabus/${nx.id}`, nx.title]) : null;
+  const nxLink = nx && nx.t !== 'missing' ? (nx.t === 'code' ? [`#/code/${nx.id}`, meta(nx.id).short] : nx.t === 'lesson' ? [`#/lesson/${nx.id}`, CUR.lessons[nx.id].title] : nx.t === 'set' ? [`#/set/${nx.id}`, CUR.sets[nx.id].title] : nx.t === 'b2' ? ['#/b2', nx.title] : [`#/syllabus/${nx.id}`, nx.title]) : null;
   main.innerHTML = `<article class="lesson f-${f.id}"><div class="crumbs"><a href="#/learn">Learn</a><span class="sep">›</span><a href="#/field/${f.id}">${esc(f.name)}</a><span class="sep">›</span><span>${esc(at.t.name)}</span></div>
   <span class="eyebrow" style="color:var(--f)">Lesson · ${l.mins} minutes</span><h1>${esc(l.title)}</h1><p class="lead">${rich(l.lead)}</p>
   ${l.sections.map(x => `<h2>${esc(x.h)}</h2><div class="explain">${x.p.map(p => `<p>${rich(p)}</p>`).join('')}${x.l.length ? `<ul>${x.l.map(p => `<li>${rich(p)}</li>`).join('')}</ul>` : ''}</div>`).join('')}
@@ -592,7 +595,7 @@ function verifyChips(cid, p) {
 
 async function provView(cid, pid, q) {
   setNav('library');
-  const d = await loadCode(cid); await loadExtras(cid); await Promise.all([loadSylIndex(), loadRecent()]);
+  const d = await loadCode(cid); await loadExtras(cid); await Promise.all([loadSylIndex(), loadRecent(), cid === 'rpc' ? loadB2().catch(() => null) : null]);
   const p = d.byId[pid];
   if (!p) { main.innerHTML = `<div class="empty">That provision is not in this code. <a href="#/code/${cid}">Back to ${esc(d.short)}</a></div>`; return; }
   const key = ck(cid, pid);
@@ -658,10 +661,21 @@ function sibling(d, p, cid) {
   const i = arr.indexOf(p); const win = arr.slice(Math.max(0, i - 6), i + 7);
   return `<div class="card"><h3 class="small">${esc(shortDiv(dv))}</h3><ul class="plist" style="padding:0">${win.map(x => `<li><a href="#/p/${cid}/${x.i}" ${x === p ? 'style="background:var(--brand-soft)"' : ''}><span class="dot ${status(ck(cid, x.i))}"></span><span class="pl">${esc(x.l)}</span><span class="pc">${esc(x.c || '')}</span></a></li>`).join('')}</ul></div>`;
 }
+function b2Card(cid, pid) {
+  if (cid !== 'rpc' || !B2 || !B2.byArt[pid]) return '';
+  const seen = new Set();
+  return B2.byArt[pid].filter(x => { const k = x.f + x.c; if (seen.has(k)) return false; seen.add(k); return true; }).map(({ f, c }) => {
+    const fam = B2.families.find(x => x.id === f); const cr = fam.crimes.find(x => x.id === c);
+    return `<div class="card flat b2el" style="margin-bottom:12px"><div class="row"><h3 style="margin:0">Elements: ${esc(cr.name)}</h3><span class="spacer"></span><span class="chip f-crim" style="background:color-mix(in srgb,var(--f) 14%,transparent);color:var(--f)">Book Two Studio</span></div>
+      <p class="setsapart"><b>Sets it apart:</b> ${esc(cr.key)}</p><ol class="explain" style="margin:6px 0 8px;padding-left:1.3em">${cr.els.map(e => `<li>${esc(e)}</li>`).join('')}</ol>
+      <p class="small" style="margin:0"><b>Penalty:</b> ${esc(cr.pen)}</p>
+      <div class="row" style="margin-top:10px"><a class="btn sm" href="#/b2/${f}?tab=compare">Compare with its neighbours</a><a class="btn sm ghost" href="#/b2/${f}?tab=practice">Practise sorting facts</a></div></div>`;
+  }).join('');
+}
 function guideHTML(d, p, cid, n, loc) {
   const an = anatomy(p);
   const fld = fieldOf(cid); const key = ck(cid, p.i);
-  let h = '<div class="panel">';
+  let h = '<div class="panel">' + b2Card(cid, p.i);
   h += `<div class="card flat hook" style="margin-bottom:12px"><div class="row"><h3 style="margin:0">Make it a picture</h3><span class="spacer"></span>${loc ? `<span class="chip ok">${esc(loc)}</span>` : fld ? `<span class="chip f-${fld.id}" style="background:color-mix(in srgb,var(--f) 14%,transparent);color:var(--f)">${esc(fld.pname)}</span>` : ''}</div>
     <p class="small muted" style="margin:0">${loc ? `In this walk, the provision’s place is the <b>${esc(loc.toLowerCase())}</b>.` : fld ? `${esc(fld.name)} lives at the ${esc(fld.pname.toLowerCase())} of the House of Law.` : ''} In a few words, what do you see happening there that stands for this rule? Odd pictures last longest.</p>
     <input id="hookin" maxlength="200" value="${esc(S.hooks[key] || '')}" placeholder="e.g. a stopwatch hanging on the column: three months to decide" aria-label="Your picture for this provision"></div>`;
@@ -1022,7 +1036,7 @@ function progressView() {
 }
 function merge(o) {
   for (const [k, c] of Object.entries(o.cards || {})) if (!S.cards[k] || (c.last || 0) > (S.cards[k].last || 0)) S.cards[k] = c;
-  for (const f of ['notes', 'marks', 'flags', 'tutor', 'hooks', 'lessons', 'lastBy']) Object.assign(S[f], o[f] || {});
+  for (const f of ['notes', 'marks', 'flags', 'tutor', 'hooks', 'lessons', 'lastBy', 'b2']) Object.assign(S[f], o[f] || {});
   for (const [d, v] of Object.entries(o.days || {})) { const a = S.days[d] || { r: 0, n: 0 }; S.days[d] = { r: Math.max(a.r, v.r), n: Math.max(a.n, v.n) }; }
 }
 function dl(name, text) {
@@ -1030,6 +1044,76 @@ function dl(name, text) {
   $('#mno', m.el).onclick = m.close;
   $('#mcp', m.el).onclick = async () => { const t = $('#mtxt', m.el); try { await navigator.clipboard.writeText(text); toast('Copied.'); } catch (e) { t.focus(); t.select(); try { document.execCommand('copy'); toast('Copied.'); } catch (e2) { toast('Select the text and copy it.'); } } };
   $('#mdl', m.el).onclick = () => { try { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([text], { type: 'application/json' })); a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000); } catch (e) { toast('Downloads are blocked here — use Copy.'); } };
+}
+
+/* ---- Book Two Studio */
+const B2TABS = [['elements', 'Elements'], ['compare', 'Compare'], ['sort', 'Sort it'], ['practice', 'Practice'], ['cases', 'Cases']];
+const b2crumbs = extra => `<div class="crumbs"><a href="#/learn">Learn</a><span class="sep">›</span><a href="#/field/crim">Criminal Law</a><span class="sep">›</span>${extra ? `<a href="#/b2">Book Two Studio</a><span class="sep">›</span><span>${esc(extra)}</span>` : '<span>Book Two Studio</span>'}</div>`;
+const b2score = id => { const r = S.b2[id]; return r && r.n ? `${r.r}/${r.n} right last time` : 'Not practised yet'; };
+async function b2View(id, q) {
+  setNav('library');
+  await loadB2();
+  if (!id) {
+    const M = B2.method;
+    main.innerHTML = `<div class="f-crim">${b2crumbs()}
+    <span class="eyebrow" style="color:var(--f)">Criminal Law · Revised Penal Code, Book Two</span><h1>Book Two Studio</h1><p class="lead">${esc(M.lead)}</p>
+    <div class="sect"><h2>The method</h2></div>
+    <ol class="method">${M.steps.map(st => `<li><b>${esc(st.h)}</b><span>${esc(st.p)}</span>${st.refs ? `<span class="row" style="gap:6px;margin-top:4px">${st.refs.map(r => `<a class="pref" href="#/p/${r.c}/${r.i}">${esc(r.l)}</a>`).join('')}</span>` : ''}</li>`).join('')}</ol>
+    <div class="sect"><h2>A week per family</h2></div>
+    <div class="weekgrid">${M.week.map(([d, t]) => `<div><b>${esc(d)}</b><span>${esc(t)}</span></div>`).join('')}</div>
+    <div class="sect"><h2>The families</h2><span class="spacer"></span><a class="btn sm" href="#/b2/mix">Mixed drill across all families</a></div>
+    <div class="tiles">${B2.families.map((f, i) => `<a class="tile f-crim" href="#/b2/${f.id}"><span class="p">${i + 1} · ${esc(f.module)}</span><span class="t">${esc(f.title)}</span><span class="q">${esc(f.q)}</span><span class="go"><b>${f.crimes.length}</b> crimes · <b>${f.drills.length}</b> drills · ${esc(b2score(f.id))}</span></a>`).join('')}</div></div>`;
+    return;
+  }
+  if (id === 'mix') return b2Drill(null);
+  const f = B2.families.find(x => x.id === id); if (!f) return b2View(null, q);
+  const tab = q.get('tab') || 'elements';
+  const ordered = [f.crimes.find(c => c.id === f.base), ...f.crimes.filter(c => c.id !== f.base)];
+  const chips = c => c.refs.map(r => `<a class="pref" href="#/p/${r.c}/${r.i}">${esc(r.l)}</a>`).join(' ');
+  let body = '';
+  if (tab === 'elements') body = `<p class="small muted">Learn the base crime first. Every other crime here is the base plus the element under “Sets it apart”.</p>` + ordered.map(c => `<article class="crime${c.id === f.base ? ' base' : ''}" id="c-${c.id}"><div class="row"><h3>${esc(c.name)}</h3>${c.id === f.base ? '<span class="chip">Base crime</span>' : ''}<span class="spacer"></span>${chips(c)}</div>
+      <p class="setsapart"><b>Sets it apart:</b> ${esc(c.key)}</p><ol class="explain">${c.els.map(e => `<li>${esc(e)}</li>`).join('')}</ol><p class="small" style="margin:0"><b>Penalty:</b> ${esc(c.pen)}</p></article>`).join('');
+  if (tab === 'compare') body = `<div class="row" style="margin-bottom:8px"><p class="small muted" style="margin:0;flex:1">Cover the table and recite one row across every crime, then check. Tap a hidden cell to reveal it.</p><button class="btn sm" id="hide">Hide the answers</button></div>
+    <div class="mxwrap"><table class="mx"><thead><tr><th></th>${ordered.map(c => `<th><a href="#/b2/${f.id}?tab=elements#c-${c.id}">${esc(c.name)}</a></th>`).join('')}</tr></thead><tbody>${f.rows.map((r, i) => `<tr><th>${esc(r)}</th>${ordered.map(c => `<td>${esc(f.table[c.id][i])}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
+  if (tab === 'sort') body = `<p class="small muted">Ask these in order. The first “yes” names the crime.</p><ol class="sortq">${f.path.map(([qq, a]) => `<li><span class="sq">${esc(qq)}</span><span class="sa">${esc(a)}</span></li>`).join('')}</ol>
+    <h3 style="margin-top:20px">Traps examiners set</h3><ul class="explain">${f.traps.map(t => `<li>${esc(t)}</li>`).join('')}</ul>`;
+  if (tab === 'cases') body = `<p class="small muted">Tie each distinction to a decided case. Cases marked as assigned are from your syllabus; read them for the holding.</p>` + f.cases.map(([n, c, w]) => `<div class="case"><div class="cn">${esc(n)}</div><div class="cc">${esc(c)}</div><div class="dg"><div>${esc(w)}</div></div></div>`).join('');
+  main.innerHTML = `<div class="f-crim">${b2crumbs(f.title)}<span class="eyebrow" style="color:var(--f)">${esc(f.module)}</span><h1>${esc(f.title)}</h1><p class="lead">${esc(f.q)}</p>
+    <div class="steps b2tabs" role="tablist">${B2TABS.map(([k, n], i) => `<button role="tab" data-t="${k}" class="${k === tab ? 'on' : ''}"><small>${i + 1}</small><span>${n}</span></button>`).join('')}</div>
+    <div id="b2body">${tab === 'practice' ? '' : body}</div>
+    <div class="pn"><a class="btn" href="#/b2">All families</a>${(() => { const i = B2.families.indexOf(f); const nx = B2.families[i + 1]; return nx ? `<a class="btn primary" href="#/b2/${nx.id}">Next family: ${esc(nx.title)} →</a>` : `<a class="btn primary" href="#/b2/mix">Mixed drill →</a>`; })()}</div></div>`;
+  $$('.b2tabs button').forEach(b => b.onclick = () => { location.hash = `#/b2/${f.id}?tab=${b.dataset.t}`; });
+  if (tab === 'practice') b2Drill(f, $('#b2body'));
+  if (tab === 'compare') { const hb = $('#hide'); hb.onclick = () => { const on = !$('.mx').classList.contains('cover'); $('.mx').classList.toggle('cover', on); $$('.mx td').forEach(td => td.classList.toggle('shut', on)); hb.textContent = on ? 'Show all' : 'Hide the answers'; }; $('.mx').addEventListener('click', e => { const td = e.target.closest('td.shut'); if (td) td.classList.remove('shut'); }); }
+  const anchor = location.hash.split('#')[2]; if (anchor) { const el = document.getElementById(anchor); el && el.scrollIntoView({ block: 'start' }); }
+}
+function b2Drill(f, box) {
+  const pool = (f ? f.drills.map(d => ({ d, f })) : B2.families.flatMap(ff => ff.drills.map(d => ({ d, f: ff })))).slice();
+  for (let k = pool.length - 1; k > 0; k--) { const j = Math.floor(Math.random() * (k + 1)); [pool[k], pool[j]] = [pool[j], pool[k]]; }
+  const items = f ? pool : pool.slice(0, 12);
+  let i = 0, right = 0;
+  if (!box) { setNav('library'); main.innerHTML = `<div class="f-crim">${b2crumbs('Mixed drill')}<span class="eyebrow" style="color:var(--f)">Interleaved practice</span><h1>Mixed drill</h1><p class="lead">Twelve sets of facts drawn from every family. Name the crime and its decisive element before you choose.</p><div id="b2body"></div></div>`; box = $('#b2body'); }
+  const crimeOf = id => { for (const ff of B2.families) { const c = ff.crimes.find(x => x.id === id); if (c) return { c, ff }; } return null; };
+  const step = () => {
+    if (i >= items.length) {
+      if (f) { S.b2[f.id] = { r: right, n: items.length, at: Date.now() }; save(); }
+      box.innerHTML = `<div class="drill done"><h2>${right} of ${items.length} right</h2><p class="muted">${right === items.length ? 'Every distinction held. Come back in a few days and do it mixed.' : 'Write the decisive element of each miss under My notes on its article, then try again tomorrow.'}</p><div class="row"><button class="btn primary" id="again">Shuffle and try again</button>${f ? `<a class="btn" href="#/b2/${f.id}?tab=compare">Review the table</a>` : '<a class="btn" href="#/b2">All families</a>'}</div></div>`;
+      $('#again').onclick = () => b2Drill(f, f ? box : null); return;
+    }
+    const { d, f: ff } = items[i]; const opts = d.o.slice().sort(() => Math.random() - .5);
+    box.innerHTML = `<div class="drill"><div class="row small muted"><span>${i + 1} of ${items.length}</span><span class="spacer"></span>${f ? '' : `<span>${esc(ff.title)}</span>`}</div>
+      <p class="facts">${esc(d.f)}</p><p class="small muted" style="margin:0 0 8px">What crime is it?</p>
+      <div class="opts">${opts.map(o => `<button class="opt" data-o="${o}">${esc(B2.names[o] || o)}</button>`).join('')}</div><div id="why"></div></div>`;
+    $$('.opt', box).forEach(b => b.onclick = () => {
+      if ($('.opt.picked', box)) return;
+      const ok = b.dataset.o === d.a; if (ok) right++;
+      b.classList.add('picked'); $$('.opt', box).forEach(x => { x.disabled = true; if (x.dataset.o === d.a) x.classList.add('right'); else if (x === b) x.classList.add('wrong'); });
+      const cc = crimeOf(d.a);
+      $('#why', box).innerHTML = `<div class="note ${ok ? '' : 'bad'}" style="margin-top:12px"><b>${ok ? 'Right.' : `It is ${esc(B2.names[d.a])}.`}</b> ${esc(d.w)}${cc ? `<br><span class="small"><b>Decisive element:</b> ${esc(cc.c.key)}</span><br><span class="row" style="gap:6px;margin-top:6px">${cc.c.refs.map(r => `<a class="pref" href="#/p/${r.c}/${r.i}">${esc(r.l)}</a>`).join('')}</span>` : ''}</div><button class="btn primary" id="nx" style="margin-top:10px">${i + 1 < items.length ? 'Next facts' : 'See my score'}</button>`;
+      $('#nx', box).onclick = () => { i++; step(); };
+    });
+  };
+  step();
 }
 
 /* ---- syllabus */
@@ -1130,6 +1214,7 @@ async function route() {
     else if (parts[0] === 'field') fieldView(parts[1]);
     else if (parts[0] === 'lesson') lessonView(parts[1]);
     else if (parts[0] === 'set') setView(parts[1]);
+    else if (parts[0] === 'b2') await b2View(parts[1], q);
     else if (parts[0] === 'library') library();
     else if (parts[0] === 'code') await codeView(parts[1], q);
     else if (parts[0] === 'p') await provView(parts[1], parts.slice(2).join('/'), q);

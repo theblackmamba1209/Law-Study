@@ -1,0 +1,608 @@
+"""Book Two Studio: the Revised Penal Code's crimes, studied in families of near neighbours.
+
+Each family: the question it answers, a base crime, every variant as base + the element that sets it apart,
+a comparison table with the same rows for every crime, the sorting questions in order, traps, cases, and
+fact-pattern drills whose wrong answers are the near neighbours.
+
+Elements and distinctions are written in our own words from the verbatim articles (shown in the app beside them).
+Penalties are stated as the Code now reads them (RA 7659, RA 10951, RA 11648) and with RA 9346, which bars death.
+Output: data/book2.json
+"""
+import json, sys, re, hashlib
+
+SITE = sys.argv[1] if len(sys.argv) > 1 else '/home/claude/site/data'
+RPC = {p['i']: p for p in json.load(open(f'{SITE}/codes/rpc.json'))['provisions']}
+OTHER = {}
+
+
+def ref(code, pid):
+    if code == 'rpc':
+        assert pid in RPC, pid
+        return {'c': 'rpc', 'i': pid, 'l': RPC[pid]['l'].replace('Article ', 'Art. ')}
+    if code not in OTHER:
+        OTHER[code] = {p['i']: p for p in json.load(open(f'{SITE}/codes/{code}.json'))['provisions']}
+    assert pid in OTHER[code], (code, pid)
+    lab = OTHER[code][pid]['l'].replace('Section ', 'Sec. ')
+    short = {'ra10175': 'RA 10175', 'lgc': 'LGC', 'ra7610': 'RA 7610', 'ra9346': 'RA 9346', 'ra11648': 'RA 11648'}.get(code, code)
+    return {'c': code, 'i': pid, 'l': f'{short}, {lab}'}
+
+
+A = lambda n: ref('rpc', f'article-{n}')
+RP = 'Reclusion perpetua. The Code says “reclusion perpetua to death”, but RA 9346 bars death; the convict is not eligible for parole.'
+
+METHOD = {
+    'title': 'How to study Book Two',
+    'lead': 'Book Two is not 300 separate crimes. It is a few dozen families of near neighbours that share most of their elements and differ in one. Learn the shared core once, then learn each neighbour by the one element that sets it apart. That is the element the examiner will test.',
+    'steps': [
+        {'h': 'Learn Book One’s grammar first', 'p': 'Every Book Two crime is read through Book One: the stages of execution, conspiracy, the circumstances that justify, exempt, mitigate or aggravate, complex crimes, and the penalty scale. Spend your first week there.',
+         'refs': [A('4'), A('6'), A('8'), A('11'), A('13'), A('14'), A('48')]},
+        {'h': 'Study by family, not by article number', 'p': 'Each family below gathers the crimes a set of facts could plausibly be. Inside a family, learn the base crime first (homicide, theft, physical injuries, libel) so that everything else is a variation on it.'},
+        {'h': 'Learn each neighbour as base plus one element', 'p': 'Parricide is homicide plus a relationship. Murder is homicide plus a qualifying circumstance. Robbery is theft plus violence, intimidation or force. Write the one element that sets each crime apart; that line is your answer to most comparison questions.'},
+        {'h': 'Fill the comparison table from memory', 'p': 'Each family has one table with the same rows for every crime: who the victim is, what the offender intended, what makes it graver, and the penalty. Cover the table, recite a row across all crimes, then check. Rows, not paragraphs, are what you will need under time pressure.'},
+        {'h': 'Sort facts, with the near neighbours mixed in', 'p': 'Do the drills. Each set of facts offers the crimes it could be confused with. Name the crime and the decisive element before you look. Mixing close neighbours is harder than practising one crime at a time, and that difficulty is what makes the distinction stick.'},
+        {'h': 'Anchor each distinction to a case, then space it', 'p': 'For each family, tie at least one distinction to a decided case (your syllabus lists them) and to the verbatim article. Then let Review bring the articles back over the following weeks.'},
+    ],
+    'week': [
+        ['Day 1', 'Read the family’s articles verbatim. Highlights on: penalties, conditions, numbers.'],
+        ['Day 2', 'Learn the elements of the base crime, then each neighbour as base plus one element.'],
+        ['Day 3', 'Fill the comparison table from memory, one row at a time.'],
+        ['Day 4', 'Drill the family’s facts. For every miss, write the decisive element under My notes.'],
+        ['Day 5', 'Read the family’s cases. Then do a mixed drill across every family studied so far.'],
+    ],
+}
+
+FAMILIES = []
+
+
+def F(**k):
+    FAMILIES.append(k)
+
+
+# ============================================================================ A. Killing
+F(id='life', title='Killing a person', short='Destruction of life',
+  q='Someone is dead. Who was killed, by whom, how old, and how?', module='Crim 2, Module 1',
+  base='homicide',
+  crimes=[
+   dict(id='homicide', name='Homicide', refs=[A('249')],
+        els=['A person was killed.', 'The accused killed that person, without any justifying circumstance.', 'The accused had the intention to kill, which the law presumes when death results.',
+             'The killing was not attended by any qualifying circumstance of murder, and is not parricide or infanticide.'],
+        key='The base crime: an unlawful killing with nothing more.', pen='Reclusion temporal.'),
+   dict(id='murder', name='Murder', refs=[A('248')],
+        els=['A person was killed.', 'The accused killed that person.', 'The killing was attended by a qualifying circumstance in Art. 248: treachery, abuse of superior strength, aid of armed men, means to weaken the defense or to insure impunity; price, reward or promise; inundation, fire, poison, explosion and other means of great waste and ruin; on the occasion of a calamity; evident premeditation; or cruelty.',
+             'The killing is not parricide or infanticide.'],
+        key='Homicide plus one qualifying circumstance, which must be alleged in the information and proved as clearly as the killing.', pen=RP),
+   dict(id='parricide', name='Parricide', refs=[A('246')],
+        els=['A person was killed.', 'The accused killed that person.', 'The person killed is the accused’s father, mother or child (legitimate or illegitimate), another legitimate ascendant or descendant, or legitimate spouse.'],
+        key='Homicide plus the relationship. The relationship must be alleged in the information.', pen=RP),
+   dict(id='infanticide', name='Infanticide', refs=[A('255')],
+        els=['A child was killed.', 'The child was less than three days (72 hours) old.', 'The accused killed the child.'],
+        key='The victim’s age, whoever the killer. The child must have been born alive.',
+        pen='The penalty for parricide or murder (now reclusion perpetua). If the mother kills to conceal her dishonor: prisión mayor in its medium and maximum periods; if the maternal grandparents do so for the same purpose: reclusion temporal (as amended by RA 7659).'),
+   dict(id='affray', name='Death in a tumultuous affray', refs=[A('251')],
+        els=['Several persons, not organized into groups to assault each other, quarrel and assault each other in a confused and tumultuous manner.', 'Someone is killed in the course of the affray.',
+             'It cannot be determined who actually killed the deceased.', 'The persons who inflicted serious physical injuries, or failing them those who used any violence on the victim, can be identified.'],
+        key='The actual killer cannot be identified in a confused free-for-all.',
+        pen='Prisión mayor for those who inflicted serious physical injuries; if they cannot be identified, prisión correccional in its medium and maximum periods for everyone who used violence on the victim.'),
+   dict(id='suicide', name='Giving assistance to suicide', refs=[A('253')],
+        els=['Another person commits, or attempts to commit, suicide.', 'The accused assisted, or lent assistance to the extent of doing the killing himself.'],
+        key='The victim chose to die; the accused helped. The person who attempts suicide is not punished.',
+        pen='Prisión mayor; reclusion temporal if the accused did the killing himself; arresto mayor in its medium and maximum periods if the suicide is not consummated.'),
+   dict(id='abortion', name='Intentional abortion', refs=[A('256'), A('257')],
+        els=['There is a pregnant woman.', 'The accused used violence on her, gave her drugs or beverages, or otherwise acted on her.', 'As a result the fetus died, in the womb or after being expelled.', 'The accused intended the abortion.'],
+        key='The victim is the unborn. If violence on a pregnant woman was intentional but the abortion was not, the crime is unintentional abortion (Art. 257).',
+        pen='Reclusion temporal if with violence; prisión mayor if without violence and without her consent; prisión correccional in its medium and maximum periods if she consented. Physicians and midwives: the maximum period (Art. 259).'),
+  ],
+  rows=['Victim', 'Relationship to the offender', 'Victim’s age', 'What makes it this crime', 'Penalty'],
+  table={
+   'homicide': ['Any person', 'Any, except those in Art. 246', 'Any (three days or older)', 'Nothing more than the unlawful killing', 'Reclusion temporal'],
+   'murder': ['Any person', 'Any, except those in Art. 246', 'Any (three days or older)', 'A qualifying circumstance in Art. 248', 'Reclusion perpetua'],
+   'parricide': ['Father, mother, child; legitimate ascendant or descendant; legal spouse', 'The relationship itself', 'Any (three days or older)', 'The relationship', 'Reclusion perpetua'],
+   'infanticide': ['A child born alive', 'Any (a parent, or a stranger)', 'Less than three days', 'The age of the child', 'Reclusion perpetua; lower for a mother or maternal grandparents concealing dishonor'],
+   'affray': ['A participant or another person', 'Any', 'Any', 'Unknown killer in a confused affray', 'Prisión mayor, or prisión correccional medium–maximum'],
+   'suicide': ['The person who wanted to die', 'Any', 'Any', 'The victim’s own suicide, with help', 'Prisión mayor; reclusion temporal if the accused did the killing'],
+   'abortion': ['The fetus', 'Any', 'Unborn', 'Death of the fetus, intended', 'Reclusion temporal to prisión correccional, by violence and consent'],
+  },
+  path=[
+   ['Did a fetus die in the womb or because it was expelled?', 'Abortion (Arts. 256–259). Intentional if intended; unintentional if only the violence was intended (Art. 257).'],
+   ['Was a child born alive and killed before it was three days old?', 'Infanticide (Art. 255), whoever the killer. Lower penalty only for the mother or maternal grandparents concealing her dishonor.'],
+   ['Did the victim kill himself, with the accused’s help?', 'Giving assistance to suicide (Art. 253).'],
+   ['Did the death happen in a confused affray among several people not organized into groups, with the actual killer unknown?', 'Death caused in a tumultuous affray (Art. 251).'],
+   ['Is the victim the accused’s parent, child, legitimate ascendant or descendant, or legal spouse?', 'Parricide (Art. 246). Treachery and the like are only generic aggravating circumstances here.'],
+   ['Was the killing attended by a circumstance listed in Art. 248, alleged in the information?', 'Murder (Art. 248).'],
+   ['None of the above.', 'Homicide (Art. 249). Then check the stage (Art. 6, Art. 250) and Art. 247.'],
+  ],
+  traps=[
+   'Parricide cannot become murder. Art. 248 applies only to a killing “not falling within” Art. 246, so treachery in parricide is a generic aggravating circumstance.',
+   'A common-law partner, an adopted child, a stepparent or an in-law is not covered by Art. 246. Killing one is murder or homicide.',
+   'The mother’s lower penalty for concealing dishonor exists only in infanticide. If the child is three days old or more, the crime is parricide.',
+   'Art. 247 is not a crime. It gives a legally married person who surprises the spouse in sexual intercourse with another, and kills or seriously injures either of them in the act or immediately after, the benefit of destierro (People v. Abarca, G.R. No. 74433, September 14, 1987).',
+   'Where the Code says “reclusion perpetua to death”, the penalty now is reclusion perpetua without eligibility for parole (RA 9346).',
+   'The stage matters. For frustrated or attempted parricide, murder or homicide, Art. 250 lets the court lower the penalty by one more degree.',
+  ],
+  cases=[
+   ['People v. Abarca', 'G.R. No. 74433, September 14, 1987', 'Art. 247 grants a privilege; it does not define a crime.'],
+   ['People v. Paycana', 'G.R. No. 179035, April 16, 2008', 'Assigned in your Crim 2 syllabus under these articles.'],
+   ['People v. Pereda (Kian delos Santos)', 'G.R. Nos. 268510 & 274142, August 11, 2025', 'Murder qualified by treachery; see Recent rulings on Art. 248.'],
+  ],
+  drills=[
+   dict(f='Ramon shot his wife Liza, to whom he had been legally married for six years, while she slept. She died.', o=['parricide', 'murder', 'homicide'], a='parricide',
+        w='The legal-spouse relationship makes it parricide. The treachery (she was asleep) cannot turn parricide into murder; it is only a generic aggravating circumstance.'),
+   dict(f='Ben stabbed his common-law partner of ten years once during a heated quarrel. She died. No other circumstance is shown.', o=['parricide', 'murder', 'homicide'], a='homicide',
+        w='A common-law partner is not a legal spouse, so Art. 246 does not apply, and no qualifying circumstance of Art. 248 is shown.'),
+   dict(f='An unmarried woman gave birth at home and, two days later, smothered the baby so that her family would not learn of the birth.', o=['infanticide', 'parricide', 'murder'], a='infanticide',
+        w='The child was less than three days old. Because the mother acted to conceal her dishonor, the lower penalty of Art. 255 applies to her.'),
+   dict(f='Same facts, but the baby was five days old.', o=['infanticide', 'parricide', 'murder'], a='parricide',
+        w='At three days or older the victim is no longer protected by Art. 255; a mother killing her child commits parricide, and concealment of dishonor no longer lowers the penalty.'),
+   dict(f='A stranger poisoned a two-day-old infant in a hospital nursery.', o=['infanticide', 'murder', 'homicide'], a='infanticide',
+        w='Infanticide depends on the child’s age, not on who kills. A stranger incurs the penalty for murder (now reclusion perpetua).'),
+   dict(f='Eleven drinking companions who had not formed sides fell into a confused brawl. Leo was stabbed to death; no one can tell who stabbed him, but Mark was seen hitting him with a bottle.', o=['affray', 'homicide', 'murder'], a='affray',
+        w='The actual killer cannot be identified in a confused affray among people not organized into groups. Those who used violence on Leo, like Mark, are liable under Art. 251.'),
+   dict(f='At his friend’s request, Carlo injected the drug his friend had chosen to end his life. The friend died.', o=['suicide', 'homicide', 'murder'], a='suicide',
+        w='The friend chose to die and Carlo helped. Because Carlo did the killing himself, Art. 253 imposes the higher penalty of reclusion temporal.'),
+  ])
+
+# ============================================================================ B. Injuring
+F(id='injury', title='Injuring a person', short='Physical injuries and intent to kill',
+  q='The victim survived, or died later. Did the accused mean to kill, and how badly was the victim hurt?', module='Crim 2, Module 1',
+  base='slightpi',
+  crimes=[
+   dict(id='frustrated', name='Frustrated homicide', refs=[A('6'), A('249'), A('250')],
+        els=['The accused intended to kill, as shown by the weapon used, the nature, location and number of wounds, and his words and conduct before, during and after the attack.', 'The victim sustained a fatal wound but did not die, because of timely medical help or another cause independent of the accused’s will.', 'No qualifying circumstance of murder or relationship of parricide is present.'],
+        key='Intent to kill plus a wound that would have been fatal.', pen='One degree lower than homicide (prisión mayor); the court may lower it one more degree (Art. 250).'),
+   dict(id='attempted', name='Attempted homicide', refs=[A('6'), A('249'), A('250')],
+        els=['The accused intended to kill.', 'He began the killing directly by overt acts.', 'He did not perform all the acts of execution, typically because the wound was not fatal, for a reason other than his own spontaneous desistance.'],
+        key='Intent to kill, but the wound was not fatal or the acts were cut short.', pen='Two degrees lower than homicide (prisión correccional); the court may lower it one more degree (Art. 250).'),
+   dict(id='mutilation', name='Mutilation', refs=[A('262')],
+        els=['The accused deliberately cut off, or deprived the victim of, a part of the body.', 'Castration (depriving the victim, totally or partially, of an essential organ for reproduction) is the graver form; any other intentional mutilation is the lesser form.'],
+        key='The deliberate purpose to deprive the victim of that part of his body.', pen='Reclusion temporal to reclusion perpetua for castration; prisión mayor in its medium and maximum periods for other mutilation.'),
+   dict(id='seriouspi', name='Serious physical injuries', refs=[A('263'), A('264')],
+        els=['The accused wounded, beat or assaulted the victim, or knowingly gave him injurious substances (Art. 264).', 'There was no intent to kill.', 'The result is one listed in Art. 263: insanity, imbecility, impotence or blindness; loss of speech, hearing, smell, an eye, a hand, a foot, an arm or a leg, or of its use, or incapacity for habitual work; deformity, loss of another part of the body or its use, or illness or incapacity for habitual work for more than 90 days; or illness or incapacity for labor for more than 30 days.'],
+        key='No intent to kill; a grave result, or more than 30 days.', pen='From prisión mayor down to arresto mayor maximum–prisión correccional minimum, by the result; higher against Art. 246 relatives or with Art. 248 circumstances.'),
+   dict(id='lesspi', name='Less serious physical injuries', refs=[A('265')],
+        els=['Injuries not covered by Art. 263.', 'They incapacitate the victim for labor for 10 days or more, or require medical attendance for the same period.', 'There was no intent to kill.'],
+        key='10 to 30 days of incapacity or medical attendance.', pen='Arresto mayor; prisión correccional minimum–medium against parents, ascendants, guardians, teachers, persons of rank or persons in authority (unless it is assault).'),
+   dict(id='slightpi', name='Slight physical injuries and maltreatment', refs=[A('266')],
+        els=['Injuries that incapacitate for labor or require medical attendance for 1 to 9 days; or', 'injuries that neither prevent the victim’s habitual work nor require medical attendance; or', 'ill-treatment of another by deed without causing any injury.'],
+        key='The base: the least harm. Counted in days.', pen='Arresto menor, or a fine (as amended by RA 10951).'),
+  ],
+  rows=['Intent to kill', 'How far the acts went', 'The result', 'How the harm is measured', 'Penalty'],
+  table={
+   'frustrated': ['Yes, proven', 'All acts of execution performed', 'Fatal wound, death prevented', 'Fatal or not', 'Prisión mayor (may go lower)'],
+   'attempted': ['Yes, proven', 'Begun but not completed', 'Non-fatal wound, or none', 'Fatal or not', 'Prisión correccional (may go lower)'],
+   'mutilation': ['No; intent to mutilate', 'Complete', 'A body part cut off', 'Which part', 'Up to reclusion perpetua for castration'],
+   'seriouspi': ['No', 'Complete', 'Art. 263 result or over 30 days', 'Result and days', 'Prisión mayor down to arresto mayor maximum'],
+   'lesspi': ['No', 'Complete', '10 to 30 days', 'Days of incapacity or medical attendance', 'Arresto mayor'],
+   'slightpi': ['No', 'Complete', '1 to 9 days, or none', 'Days, or no injury at all', 'Arresto menor or fine'],
+  },
+  path=[
+   ['Did the accused intend to kill? Look at the weapon, where and how often he struck, and what he said and did.', 'If yes, it is homicide (or murder or parricide) in the frustrated or attempted stage; go to the next question. If not proven, skip to the third question.'],
+   ['Was the wound fatal, with death prevented only by a cause independent of his will?', 'Frustrated. If the wound was not fatal or the acts were cut short: attempted (Art. 6).'],
+   ['Was a part of the body deliberately cut off?', 'Mutilation (Art. 262).'],
+   ['Is the result one listed in Art. 263, or more than 30 days of incapacity?', 'Serious physical injuries (Art. 263).'],
+   ['10 to 30 days of incapacity or medical attendance?', 'Less serious physical injuries (Art. 265).'],
+   ['1 to 9 days, no incapacity, or ill-treatment without injury?', 'Slight physical injuries or maltreatment (Art. 266).'],
+   ['Did the victim die later?', 'Ask whether the wound was the proximate cause. An efficient intervening cause limits liability to the injury actually inflicted (People v. Villacorta).'],
+  ],
+  traps=[
+   'Intent to kill must be proved beyond reasonable doubt. When it is not, the crime is physical injuries, graded by the result.',
+   'If death results without intent to kill, the crime is still homicide: the accused answers for the direct, natural and logical consequences of his felonious act (Art. 4), with the mitigating circumstance of having no intention to commit so grave a wrong (Art. 13).',
+   'Shooting at someone without intent to kill is discharge of firearms (Art. 254), unless the facts show attempted or frustrated homicide.',
+   'Read the day counts together: more than 30 days is serious (Art. 263); 10 days or more is less serious (Art. 265); 1 to 9 days is slight (Art. 266).',
+   'The higher penalties in Art. 263 for injuries to relatives do not apply to a parent who injures a child by excessive chastisement (last paragraph).',
+  ],
+  cases=[
+   ['People v. Villacorta', 'G.R. No. 186412, September 7, 2011', 'A tetanus infection that killed the victim 22 days after a stab wound was an efficient intervening cause; the accused was liable only for slight physical injuries.'],
+   ['Urbano v. Intermediate Appellate Court', 'G.R. No. L-72964, January 7, 1988', 'The earlier tetanus case on proximate cause that Villacorta applied.'],
+   ['Serrano v. People', 'G.R. No. 175023, July 5, 2010', 'Assigned in your Crim 2 syllabus on intent to kill.'],
+  ],
+  drills=[
+   dict(f='Dan hacked Eric on the neck with a bolo, shouting that he would kill him. Eric survived only because a surgeon operated within the hour; the doctors testified the wound would otherwise have been fatal.', o=['frustrated', 'attempted', 'seriouspi'], a='frustrated',
+        w='The weapon, the target (the neck) and the words show intent to kill. The wound was fatal, and death was prevented by medical help, a cause independent of Dan’s will.'),
+   dict(f='Same attack, but the bolo only grazed Eric’s arm, healing in 8 days. Dan ran when bystanders closed in.', o=['attempted', 'frustrated', 'slightpi'], a='attempted',
+        w='Intent to kill is shown, but the wound was not fatal and Dan did not perform all the acts of execution, for a reason other than his own desistance.'),
+   dict(f='In a quarrel over a parking space, Fe punched Gina once and walked away. Gina needed medical attendance for 12 days. No weapon was used and nothing else was said.', o=['lesspi', 'slightpi', 'attempted'], a='lesspi',
+        w='Nothing shows intent to kill, so the crime is graded by the result: 10 days or more of medical attendance is less serious physical injuries.'),
+   dict(f='Same punch, but Gina lost the sight of one eye.', o=['seriouspi', 'lesspi', 'mutilation'], a='seriouspi',
+        w='Losing an eye is listed in Art. 263, paragraph 2. It is not mutilation, because there was no deliberate purpose to cut off a body part.'),
+   dict(f='Ivo stabbed Jun once with a sharpened bamboo stick. The wound was treated. Jun died 22 days later of tetanus that set in late.', o=['slightpi', 'frustrated', 'homicide'], a='slightpi',
+        w='On similar facts in People v. Villacorta, the late tetanus infection was an efficient intervening cause, so the stabbing was not the proximate cause of death. The accused was liable only for the injury actually inflicted.'),
+  ])
+
+# ============================================================================ C. Authority
+F(id='authority', title='Attacking authority', short='Direct assault and its neighbours',
+  q='The victim holds public authority, or was helping someone who does. Was he on duty, did the accused know, and how much force was used?', module='Crim 2, Module 2',
+  base='physinj',
+  crimes=[
+   dict(id='direct', name='Direct assault', refs=[A('148'), A('152'), ref('lgc', 'section-388')],
+        els=['The accused attacked, employed force, seriously intimidated or seriously resisted a person in authority or an agent of a person in authority.', 'At that time the victim was engaged in the actual performance of official duties, or was assaulted by reason of past performance of duties.', 'The accused knew the victim was a person in authority or an agent.', 'There was no public uprising.'],
+        key='Force against authority because of its duty. The first form (force or intimidation to attain a purpose of rebellion or sedition, without public uprising) is rarer.',
+        pen='Prisión correccional medium–maximum and a fine up to ₱200,000 if done with a weapon, by a public officer or employee, or by laying hands on a person in authority; otherwise prisión correccional minimum and a fine up to ₱100,000 (as amended by RA 10951).'),
+   dict(id='indirect', name='Indirect assault', refs=[A('149')],
+        els=['An agent of a person in authority is the victim of direct assault.', 'A person comes to the agent’s aid.', 'The accused uses force or intimidation on that person.'],
+        key='The victim is the helper of an agent. A helper of a person in authority is himself deemed an agent (Art. 152 as amended), so attacking him is direct assault.',
+        pen='Prisión correccional minimum–medium and a fine up to ₱100,000.'),
+   dict(id='resist', name='Resistance and serious disobedience', refs=[A('151')],
+        els=['A person in authority or an agent is engaged in the performance of official duty, or gives a lawful order.', 'The accused resists or seriously disobeys.', 'The resistance is not serious or deliberate enough to be an attack (otherwise it is direct assault).'],
+        key='Defiance without an attack.', pen='Arresto mayor and a fine up to ₱100,000.'),
+   dict(id='disobey', name='Simple disobedience to an agent', refs=[A('151')],
+        els=['An agent of a person in authority gives a lawful order in the performance of duty.', 'The accused disobeys, but not seriously.'],
+        key='Minor disobedience, and only to an agent.', pen='Arresto menor or a fine of ₱2,000 to ₱20,000.'),
+   dict(id='complexda', name='Direct assault with homicide or murder', refs=[A('48'), A('148'), A('248')],
+        els=['A single act is both a direct assault and a killing (or serious or less serious physical injuries) of a person in authority or agent on duty.'],
+        key='One act, two crimes: complexed under Art. 48. Slight physical injuries are absorbed in the direct assault instead.', pen='The penalty for the more serious crime, in its maximum period (for murder, reclusion perpetua).'),
+   dict(id='physinj', name='Physical injuries (no assault)', refs=[A('263'), A('265'), A('266')],
+        els=['The same harm, but the victim was not on duty and was not attacked because of his duty, or the accused did not know who he was.'],
+        key='The base: what remains when the authority elements fail.', pen='As for physical injuries (Arts. 263–266).'),
+  ],
+  rows=['Victim', 'On duty, or attacked because of duty', 'Offender knew', 'Force used', 'Penalty'],
+  table={
+   'direct': ['Person in authority or agent', 'Yes', 'Yes', 'Attack, force, serious intimidation or resistance', 'Prisión correccional, plus fine'],
+   'indirect': ['Someone helping an agent', 'The agent was being assaulted', 'Yes', 'Force or intimidation on the helper', 'Prisión correccional min–med, plus fine'],
+   'resist': ['Person in authority or agent', 'Yes', 'Yes', 'Resistance or serious disobedience, no attack', 'Arresto mayor, plus fine'],
+   'disobey': ['Agent only', 'Yes', 'Yes', 'Disobedience, not serious', 'Arresto menor or fine'],
+   'complexda': ['Person in authority or agent', 'Yes', 'Yes', 'An attack that kills or seriously injures', 'Graver crime, maximum period'],
+   'physinj': ['Anyone, including an off-duty officer', 'No', 'Not required', 'Any', 'Arts. 263–266'],
+  },
+  path=[
+   ['Is the victim a person in authority (directly vested with jurisdiction; also, as amended, teachers and lawyers performing their duties; the punong barangay, kagawads and lupon members) or an agent (police, barangay tanods, anyone who comes to the aid of a person in authority)?', 'If neither, it is an ordinary crime against persons. Otherwise continue.'],
+   ['Was he performing official duty, or attacked because of past performance of duty?', 'If not, it is an ordinary crime (e.g. physical injuries).'],
+   ['Did the accused know who he was?', 'If not, it is an ordinary crime.'],
+   ['Was the victim a private person helping an agent who was being assaulted?', 'Indirect assault (Art. 149).'],
+   ['Was there an attack, force, serious intimidation or serious resistance?', 'Direct assault (Art. 148). Qualified if with a weapon, by a public officer, or by laying hands on a person in authority.'],
+   ['Only resistance or disobedience, without an attack?', 'Art. 151: serious, or (to an agent) simple disobedience.'],
+   ['Did the same act kill or seriously injure the victim?', 'Complex crime under Art. 48 (e.g. direct assault with murder). Slight physical injuries are absorbed.'],
+  ],
+  traps=[
+   'Duty is tested at the time of the assault. An officer off duty and attacked over a private quarrel is a victim of physical injuries; but an attack because of past performance of duty is still direct assault.',
+   'Laying hands on a person in authority raises the penalty; laying hands on an agent does not (unless there is a weapon or the offender is a public officer).',
+   'A private person who comes to the aid of a person in authority becomes an agent (Art. 152 as amended): attacking him is direct assault. Indirect assault is left for helpers of agents.',
+   'Light physical injuries are absorbed in direct assault; graver results are complexed with it under Art. 48.',
+   'With a public uprising, the same acts become rebellion or sedition.',
+   'The Art. 152 shown in this library is the original text; see the note on that article for the amendments.',
+  ],
+  cases=[
+   ['People v. Recto', 'G.R. No. 129069, October 17, 2001', 'Assigned in your Crim 2 syllabus (direct assault).'],
+   ['People v. Uayan', 'G.R. No. 229678, June 20, 2018', 'Assigned in your Crim 2 syllabus (direct assault with murder).'],
+   ['Gelig v. People', 'G.R. No. 173150, July 28, 2010', 'Assigned in your Crim 2 syllabus.'],
+   ['Mallari v. People', 'G.R. No. 224679, February 12, 2020', 'Assigned in your Crim 2 syllabus.'],
+  ],
+  drills=[
+   dict(f='The punong barangay was mediating a dispute at the barangay hall when Jose, one of the parties, punched him in the face.', o=['direct', 'resist', 'physinj'], a='direct',
+        w='The punong barangay is a person in authority (LGC, Sec. 388) and was performing his duties; Jose knew who he was. Laying hands on a person in authority also makes it the graver form.'),
+   dict(f='A police officer in plain clothes, off duty at a birthday party, was punched by a guest over a private debt. The guest did not know he was a police officer.', o=['physinj', 'direct', 'indirect'], a='physinj',
+        w='He was not performing duty, was not attacked because of it, and the guest did not know his status. The crime is physical injuries, graded by the result.'),
+   dict(f='While two police officers were arresting Ka Ruben, Ka Ruben’s cousin punched Lito, a vendor who had run over to help the officers.', o=['indirect', 'direct', 'physinj'], a='indirect',
+        w='The officers are agents of persons in authority, and Lito, a private person, came to their aid. Force on Lito is indirect assault (Art. 149).'),
+   dict(f='Same as the first facts, but a bystander ran to help the punong barangay and Jose punched the bystander too.', o=['direct', 'indirect', 'physinj'], a='direct',
+        w='Under Art. 152 as amended, a person who comes to the aid of a person in authority is deemed an agent. Punching him while he does so is direct assault, not indirect assault.'),
+   dict(f='A traffic enforcer lawfully ordered Kiko to stop and show his licence. Kiko ignored repeated orders and drove off, without touching or threatening anyone.', o=['resist', 'direct', 'disobey'], a='resist',
+        w='There was no attack or force, so it is not direct assault; ignoring repeated lawful orders to stop is serious disobedience to an agent under Art. 151.'),
+   dict(f='While a police officer was reading a warrant of arrest to him, Rey shot the officer from behind, killing him.', o=['complexda', 'direct', 'physinj'], a='complexda',
+        w='One act was both an assault on an agent performing duty and a killing qualified by treachery: the complex crime of direct assault with murder (Art. 48).'),
+  ])
+
+# ============================================================================ D. Taking property
+F(id='property', title='Taking property', short='Robbery, theft, estafa, malversation',
+  q='The owner lost property. How did it leave him: taken, handed over, or entrusted? With force? By whom?', module='Crim 2, Modules 3, 4 and 8',
+  base='theft',
+  crimes=[
+   dict(id='theft', name='Theft', refs=[A('308'), A('309')],
+        els=['Personal property was taken.', 'It belongs to another.', 'It was taken with intent to gain.', 'It was taken without the owner’s consent.', 'There was no violence against or intimidation of persons, and no force upon things.'],
+        key='The base: taking without consent, and nothing more.', pen='By value, under Art. 309 as amended by RA 10951.'),
+   dict(id='qtheft', name='Qualified theft', refs=[A('310')],
+        els=['All the elements of theft.', 'Plus one circumstance in Art. 310: by a domestic servant; with grave abuse of confidence; or (as amended) the property is a motor vehicle, mail matter or large cattle, coconuts from a plantation, fish from a fishpond, or taken on the occasion of a calamity, vehicular accident or civil disturbance.'],
+        key='Theft plus the relationship of trust or the special kind of property.', pen='Two degrees higher than theft (as amended).'),
+   dict(id='robbery', name='Robbery with violence or intimidation', refs=[A('293'), A('294')],
+        els=['Personal property belonging to another was taken.', 'With intent to gain.', 'By means of violence against or intimidation of any person.'],
+        key='Theft plus violence or intimidation of a person.', pen='From prisión correccional maximum up, by the gravest result (Art. 294 as amended).'),
+   dict(id='robhom', name='Robbery with homicide', refs=[A('294')],
+        els=['Personal property was taken with violence or intimidation.', 'It belongs to another.', 'With intent to gain.', 'By reason or on the occasion of the robbery, a homicide (in the generic sense) was committed.'],
+        key='A special complex crime: one indivisible offense, not Art. 48. The intent to rob must come first; the killing may happen before, during or after.', pen=RP),
+   dict(id='robforce', name='Robbery with force upon things', refs=[A('299'), A('302')],
+        els=['The offender entered an inhabited house, public building or place of worship (Art. 299), or another building (Art. 302).', 'Entry was by a means listed: an opening not meant for entry, breaking a wall, roof, floor, door or window, false keys or picklocks, or a false name or pretended authority; or locked receptacles were broken or carried away.', 'Personal property of another was taken with intent to gain.'],
+        key='Theft plus force used to get in (or to open locked receptacles).', pen='By whether the offenders were armed and whether the value exceeds ₱50,000 (as amended by RA 10951).'),
+   dict(id='estafa1b', name='Estafa with abuse of confidence', refs=[A('315')],
+        els=['The offender received money, goods or other personal property in trust, on commission, for administration, or under another obligation to deliver or return it.', 'He misappropriated or converted it, or denied having received it.', 'To the prejudice of another.', 'Failure to account upon demand is the usual proof of misappropriation.'],
+        key='The offender had juridical possession, and then betrayed the trust (Art. 315, par. 1(b)).', pen='By amount, under Art. 315 as amended by RA 10951.'),
+   dict(id='estafa2a', name='Estafa by false pretenses', refs=[A('315')],
+        els=['The offender used a false pretense, fraudulent act or fraudulent means.', 'It was made before or at the same time as the fraud.', 'The offended party relied on it and parted with money or property.', 'He suffered damage.'],
+        key='The owner handed it over because he was deceived (Art. 315, par. 2(a)).', pen='By amount, under Art. 315 as amended by RA 10951.'),
+   dict(id='malversation', name='Malversation', refs=[A('217')],
+        els=['The offender is a public officer.', 'He has custody or control of funds or property by reason of his office.', 'They are public funds or property for which he is accountable.', 'He appropriated, took or misappropriated them, or consented to or, through abandonment or negligence, permitted another to take them.'],
+        key='An accountable public officer and public funds. It can be committed through negligence; failure to produce the funds on demand is prima facie evidence of personal use.', pen='By amount, up to reclusion perpetua above ₱8.8 million (as amended by RA 10951), plus perpetual special disqualification and a fine.'),
+  ],
+  rows=['How the property left the owner', 'What possession the offender had', 'Force or deceit', 'Who the offender is', 'Penalty depends on'],
+  table={
+   'theft': ['Taken without consent', 'None', 'Neither', 'Anyone', 'Value'],
+   'qtheft': ['Taken without consent', 'None, or only material possession', 'Neither; grave abuse of confidence', 'Often a servant or employee', 'Value, two degrees higher'],
+   'robbery': ['Taken without consent', 'None', 'Violence or intimidation of a person', 'Anyone', 'The gravest result'],
+   'robhom': ['Taken without consent', 'None', 'Violence, and a killing', 'Anyone', 'Fixed: reclusion perpetua'],
+   'robforce': ['Taken without consent', 'None', 'Force upon things to enter', 'Anyone', 'Arms and value'],
+   'estafa1b': ['Delivered in trust, then kept', 'Juridical possession', 'Abuse of confidence', 'Agent, trustee, consignee', 'Amount'],
+   'estafa2a': ['Handed over because of deceit', 'Received from the deceived owner', 'Deceit before or at the time', 'Anyone', 'Amount'],
+   'malversation': ['Taken or lost from public custody', 'Custody by reason of office', 'Either, or negligence', 'Accountable public officer', 'Amount'],
+  },
+  path=[
+   ['Is the offender an accountable public officer, and are the funds public and in his custody by reason of his office?', 'Malversation (Art. 217).'],
+   ['Did the owner hand the property over because of a deceit made before or at the time?', 'Estafa by false pretenses (Art. 315, par. 2(a)).'],
+   ['Did the offender receive it with juridical possession (trust, commission, administration, obligation to return) and then keep it?', 'Estafa with abuse of confidence (Art. 315, par. 1(b)).'],
+   ['Was it taken with violence or intimidation of a person?', 'Robbery (Art. 294). If someone was killed by reason or on the occasion: robbery with homicide.'],
+   ['Was force used on things to get in, or on locked receptacles?', 'Robbery with force upon things (Arts. 299, 302).'],
+   ['None of these.', 'Theft (Art. 308); qualified theft if an Art. 310 circumstance is present.'],
+  ],
+  traps=[
+   'Material versus juridical possession decides theft or estafa. A bank teller, cashier or collector who receives money for the employer has only material possession; keeping it is not estafa but theft, usually qualified by grave abuse of confidence (Chua-Burce v. Court of Appeals).',
+   'Force upon things must be the means of entry. Breaking a window to get out of a house you entered through an open door is theft, not robbery.',
+   'In robbery with homicide, “homicide” is generic: it covers murder and any killing by reason or on the occasion of the robbery, including of a bystander or a co-robber.',
+   'RA 10951 (2017) rewrote every peso bracket for theft, estafa, robbery and malversation. Use the amended amounts shown on each article.',
+   'Estafa by issuing a bouncing check (Art. 315, par. 2(d)) needs deceit and damage; BP 22 punishes the issuance itself. BP 22 is not in this library yet.',
+  ],
+  cases=[
+   ['Chua-Burce v. Court of Appeals', 'G.R. No. 109595, April 27, 2000', 'A bank cash custodian had only material possession of the cash; misappropriating it is not estafa.'],
+   ['Llonillo v. People', 'G.R. No. 246787, January 30, 2024', 'Acquittal of other deceits, with civil liability from another source awarded in the same case; see Recent rulings on Art. 318.'],
+   ['Marquez v. People', 'G.R. No. 181138, December 3, 2012', 'Assigned in your Crim 2 syllabus on Arts. 299 and 302.'],
+   ['People v. Bustinera', 'G.R. No. 148233, June 8, 2004', 'Assigned in your Crim 2 syllabus.'],
+  ],
+  drills=[
+   dict(f='On a crowded jeepney, a pickpocket slipped a wallet out of a commuter’s bag without her noticing.', o=['theft', 'robbery', 'estafa2a'], a='theft',
+        w='A taking without consent and without violence, intimidation or force upon things is theft.'),
+   dict(f='Holding a knife to a store clerk’s throat, Tony took the day’s cash from the register.', o=['robbery', 'theft', 'qtheft'], a='robbery',
+        w='The taking was by intimidation of a person, which turns theft into robbery (Art. 294).'),
+   dict(f='A bank teller pocketed ₱50,000 from deposits she received at her window.', o=['qtheft', 'estafa1b', 'malversation'], a='qtheft',
+        w='The teller had only material possession of the deposits; the bank had juridical possession. Taking them with grave abuse of confidence is qualified theft, not estafa. (Malversation needs public funds.)'),
+   dict(f='A sales agent received jewelry on consignment, to sell or return within 30 days. She sold it and kept the money, and could not account when asked.', o=['estafa1b', 'theft', 'estafa2a'], a='estafa1b',
+        w='Goods received on commission with an obligation to return or account give juridical possession. Misappropriating them is estafa with abuse of confidence (Art. 315, par. 1(b)).'),
+   dict(f='Posing as the owner of a lot, with a forged title, Pedro sold it to a buyer who paid ₱2 million.', o=['estafa2a', 'estafa1b', 'theft'], a='estafa2a',
+        w='The buyer parted with his money because of a false pretense made before or at the time of the payment: estafa under Art. 315, par. 2(a). (The forged title may also be falsification.)'),
+   dict(f='A municipal treasurer could not produce ₱1 million in collections when the auditors demanded them.', o=['malversation', 'estafa1b', 'qtheft'], a='malversation',
+        w='An accountable public officer who fails to produce public funds on demand is presumed to have put them to personal use (Art. 217).'),
+   dict(f='During a house robbery, the robbers shot the owner when he resisted. He died.', o=['robhom', 'robbery', 'complexda'], a='robhom',
+        w='A killing by reason or on the occasion of robbery makes the special complex crime of robbery with homicide: one indivisible offense, not a complex crime under Art. 48.'),
+  ])
+
+# ============================================================================ E. Liberty
+F(id='liberty', title='Taking someone’s liberty', short='Kidnapping, detention, arrest, coercion',
+  q='Someone was held or moved against his will. Who held him, why, for how long, and how was he treated?', module='Crim 2, Modules 3 and 7',
+  base='slightdet',
+  crimes=[
+   dict(id='kidnap', name='Kidnapping and serious illegal detention', refs=[A('267')],
+        els=['The offender is a private individual.', 'He kidnapped or detained another, or in any manner deprived him of liberty.', 'The detention is illegal.', 'At least one of: it lasted more than three days; it was done simulating public authority; serious physical injuries were inflicted or threats to kill were made; or the victim is a minor (except when the accused is a parent, a female or a public officer).'],
+        key='Illegal detention plus one aggravating fact listed in Art. 267.', pen=RP),
+   dict(id='ransom', name='Kidnapping for ransom', refs=[A('267')],
+        els=['The elements of kidnapping or detention.', 'The purpose was to extort ransom from the victim or anyone else.'],
+        key='The purpose of ransom. None of the other circumstances is needed, and the ransom need not be paid.', pen=RP),
+   dict(id='slightdet', name='Slight illegal detention', refs=[A('268')],
+        els=['A private individual kidnapped or detained another, or deprived him of liberty.', 'None of the circumstances of Art. 267 is present.'],
+        key='The base: illegal detention by a private person, nothing more.', pen='Reclusion temporal (as amended by RA 10951); prisión mayor minimum–medium and a fine if the victim is voluntarily released within three days, the purpose unattained, before criminal proceedings.'),
+   dict(id='arbitrary', name='Arbitrary detention', refs=[A('124')],
+        els=['The offender is a public officer or employee.', 'He detained a person.', 'Without legal grounds (a crime, violent insanity, or an ailment requiring compulsory confinement are legal grounds).'],
+        key='The detainer is a public officer acting in his official capacity.', pen='By length of detention, from arresto mayor maximum (up to three days) to reclusion temporal (over six months).'),
+   dict(id='unlawfularrest', name='Unlawful arrest', refs=[A('269')],
+        els=['The offender arrested or detained another.', 'For the purpose of delivering him to the proper authorities.', 'In a case not authorized by law, or without reasonable ground.'],
+        key='The purpose is delivery to the authorities.', pen='Arresto mayor and a fine up to ₱100,000.'),
+   dict(id='coercion', name='Grave coercion', refs=[A('286')],
+        els=['The offender prevented another from doing something not prohibited by law, or compelled him to do something against his will, right or wrong.', 'By violence, threats or intimidation.', 'Without authority of law.'],
+        key='Restraint as a means to make someone act or not act, not deprivation of liberty for its own sake.', pen='Prisión correccional and a fine up to ₱100,000 (as amended by RA 10951).'),
+   dict(id='minor', name='Kidnapping and failure to return a minor', refs=[A('270')],
+        els=['Either: a child under seven was kidnapped to separate it permanently from its parents or custodians;', 'or a person entrusted with a minor’s custody deliberately failed to restore the minor to the parents or guardians.'],
+        key='The custody relationship, or the permanent separation of a young child.', pen='Reclusion temporal.'),
+  ],
+  rows=['Offender', 'Main purpose', 'What makes it graver', 'Penalty'],
+  table={
+   'kidnap': ['Private individual', 'Deprivation of liberty', 'Over 3 days; simulated authority; serious injuries or threats to kill; minor victim', 'Reclusion perpetua'],
+   'ransom': ['Private individual', 'Ransom', 'The purpose itself', 'Reclusion perpetua'],
+   'slightdet': ['Private individual', 'Deprivation of liberty', 'Nothing more (lower if released within 3 days)', 'Reclusion temporal'],
+   'arbitrary': ['Public officer, official capacity', 'Detention without legal ground', 'Length of detention', 'Arresto mayor to reclusion temporal'],
+   'unlawfularrest': ['Anyone', 'Delivery to the authorities', 'None', 'Arresto mayor, plus fine'],
+   'coercion': ['Anyone', 'To make him act or not act', 'Violence, threats or intimidation', 'Prisión correccional, plus fine'],
+   'minor': ['Anyone; a custodian', 'Permanent separation; keeping the child', 'Child under 7; breach of custody', 'Reclusion temporal'],
+  },
+  path=[
+   ['Is the offender a public officer who detained someone in his official capacity without a legal ground?', 'Arbitrary detention (Art. 124). A public officer acting privately is treated as a private individual.'],
+   ['Was the purpose to deliver the person to the authorities, without legal or reasonable ground?', 'Unlawful arrest (Art. 269).'],
+   ['Was the restraint only a means to make the victim do or not do something?', 'Grave coercion (Art. 286).'],
+   ['Was a child under seven taken to separate it permanently from its parents, or did a custodian refuse to return a minor?', 'Art. 270.'],
+   ['Was the purpose to extort ransom?', 'Kidnapping for ransom (Art. 267, maximum penalty).'],
+   ['More than three days, simulated authority, serious physical injuries or threats to kill, or a minor victim?', 'Kidnapping and serious illegal detention (Art. 267).'],
+   ['None of these.', 'Slight illegal detention (Art. 268), with the lower penalty on early voluntary release.'],
+  ],
+  traps=[
+   'Ransom need not be paid, or even received; the purpose to extort it is enough.',
+   'The minor-victim circumstance does not apply when the accused is a parent, a female or a public officer (Art. 267(4)).',
+   'If the victim is killed, dies as a consequence of the detention, is raped, or is tortured or subjected to dehumanizing acts, the maximum penalty applies as a special complex crime (last paragraph of Art. 267).',
+   'Detention incidental to another crime, such as a robbery, may be absorbed by it; ask what the offender’s main purpose was.',
+   'The voluntary release discount in Art. 268 needs all four: within three days, voluntarily, purpose not attained, before criminal proceedings.',
+  ],
+  cases=[
+   ['Astorga v. People', 'G.R. No. 154130, October 1, 2003', 'Assigned in your Crim 2 syllabus: kidnapping versus arbitrary detention.'],
+   ['People v. Pagalasan', 'G.R. Nos. 131926 & 138991, June 18, 2003', 'Assigned in your Crim 2 syllabus: serious versus slight illegal detention.'],
+   ['People v. Santos', 'G.R. No. 140074, February 27, 2002', 'Assigned in your Crim 2 syllabus: kidnapping versus coercion.'],
+  ],
+  drills=[
+   dict(f='A gang seized a businessman outside his office and called his family to demand ₱5 million. Police rescued him that night; nothing was paid.', o=['ransom', 'slightdet', 'coercion'], a='ransom',
+        w='The purpose of extorting ransom makes it kidnapping for ransom, even though the detention lasted less than a day and nothing was paid.'),
+   dict(f='Without a warrant or any legal ground, a police officer held a vendor in the station cell overnight for “disrespecting” him.', o=['arbitrary', 'slightdet', 'unlawfularrest'], a='arbitrary',
+        w='A public officer, acting in his official capacity, detained a person without legal grounds: arbitrary detention (Art. 124), graded by the one-night duration.'),
+   dict(f='A security guard, without any reasonable ground, grabbed a jeepney passenger he suspected of snatching and brought him to the police station.', o=['unlawfularrest', 'arbitrary', 'coercion'], a='unlawfularrest',
+        w='He arrested the passenger in order to deliver him to the authorities, without reasonable ground: unlawful arrest (Art. 269).'),
+   dict(f='Ana kept a 30-year-old acquaintance locked in her house for two days, without threats or injury, then let him go on her own before any complaint was filed, without getting what she wanted.', o=['slightdet', 'kidnap', 'coercion'], a='slightdet',
+        w='None of the Art. 267 circumstances is present, so it is slight illegal detention; her voluntary release within three days, purpose unattained, before proceedings, earns the lower penalty.'),
+   dict(f='A nanny entrusted with a six-year-old refused to give the child back to the parents and moved away with him.', o=['minor', 'kidnap', 'slightdet'], a='minor',
+        w='A person entrusted with a minor’s custody who deliberately fails to restore the minor to the parents commits the crime in Art. 270, paragraph 2.'),
+   dict(f='Three men forced a 15-year-old into a car and held him in a shack for two days.', o=['kidnap', 'slightdet', 'coercion'], a='kidnap',
+        w='The victim is a minor and the offenders are private individuals who are not his parents, so it is serious illegal detention even though it lasted less than three days.'),
+  ])
+
+# ============================================================================ F. Sexual crimes
+F(id='sexual', title='Sexual crimes', short='Rape, lasciviousness, seduction, abduction',
+  q='Was there penetration, and of what? How was consent overcome, or was it legally irrelevant because of age?', module='Crim 2, Module 6',
+  base='aol',
+  crimes=[
+   dict(id='rape1', name='Rape by sexual intercourse', refs=[A('266-a'), A('266-b')],
+        els=['The offender had carnal knowledge of the victim. Any penetration, however slight, consummates it.', 'Through force, threat or intimidation; or the victim was deprived of reason or unconscious; or by fraudulent machination or grave abuse of authority; or the victim was under the statutory age or demented.'],
+        key='Carnal knowledge. Since RA 11648 (2022) the article reads “a person … of another person”.', pen='Reclusion perpetua; qualified forms carry the maximum (Art. 266-B), now reclusion perpetua without parole.'),
+   dict(id='statutory', name='Statutory rape', refs=[A('266-a'), ref('ra11648', 'section-1')],
+        els=['The offender had carnal knowledge of the victim.', 'The victim was under 16 (under 12 for acts before RA 11648 took effect in 2022), or demented.', 'Force, intimidation and consent are immaterial.'],
+        key='Age alone. Exception (RA 11648): no liability if the age difference is three years or less and the act is proven consensual, non-abusive and non-exploitative, but never when the victim is under 13.', pen='Reclusion perpetua; see Art. 266-B for qualified forms.'),
+   dict(id='rape2', name='Rape by sexual assault', refs=[A('266-a'), A('266-b')],
+        els=['The offender inserted his penis into another person’s mouth or anal orifice, or any instrument or object into another person’s genital or anal orifice.', 'Under any of the circumstances of the first paragraph (force, unconsciousness, fraud or abuse of authority, statutory age, dementia).'],
+        key='The kind of penetration: by an object or into the mouth or anus.', pen='Prisión mayor; higher when qualified (Art. 266-B).'),
+   dict(id='aol', name='Acts of lasciviousness', refs=[A('336')],
+        els=['The offender committed an act of lasciviousness or lewdness on another person of either sex.', 'Under any of the circumstances of rape.'],
+        key='The base: a lewd act without penetration. For child victims read with RA 7610, Sec. 5(b), and People v. Tulagan.', pen='Prisión correccional.'),
+   dict(id='qseduction', name='Qualified seduction', refs=[A('337')],
+        els=['The offender had carnal knowledge of a minor 16 or over but under 18 (as amended by RA 11648).', 'The offender is a person in public authority, priest, house-servant, domestic, guardian, teacher, or anyone entrusted with her education or custody. Or the offender seduced his sister or descendant, whatever her age.'],
+        key='Consent obtained through abuse of the offender’s position.', pen='Prisión correccional minimum–medium; one degree higher for a sister or descendant.'),
+   dict(id='sseduction', name='Simple seduction', refs=[A('338')],
+        els=['The offender had carnal knowledge of a minor 16 or over but under 18 (as amended by RA 11648).', 'By means of deceit, typically an unfulfilled promise of marriage.'],
+        key='Consent obtained by deceit.', pen='Arresto mayor.'),
+   dict(id='fabduction', name='Forcible abduction', refs=[A('342')],
+        els=['A woman was taken away.', 'Against her will (or she was under 12, as the article is written).', 'With lewd designs.'],
+        key='Taking away with lewd designs, by force.', pen='Reclusion temporal.'),
+  ],
+  rows=['Penetration', 'How consent was overcome', 'Victim’s age that matters', 'Penalty'],
+  table={
+   'rape1': ['Penile, of the genital organ', 'Force, intimidation, unconsciousness, fraud, abuse of authority', 'Under 16: consent immaterial', 'Reclusion perpetua'],
+   'statutory': ['Penile, of the genital organ', 'Irrelevant', 'Under 16 (12 before RA 11648)', 'Reclusion perpetua'],
+   'rape2': ['Penis into mouth or anus; object into genital or anus', 'As in rape', 'As in rape', 'Prisión mayor'],
+   'aol': ['None', 'As in rape', 'Child victims: RA 7610 and Tulagan', 'Prisión correccional'],
+   'qseduction': ['Carnal knowledge', 'Consent, through abuse of position or trust', '16 to under 18', 'Prisión correccional'],
+   'sseduction': ['Carnal knowledge', 'Consent, through deceit', '16 to under 18', 'Arresto mayor'],
+   'fabduction': ['Not required', 'Taken against her will', 'Any', 'Reclusion temporal'],
+  },
+  path=[
+   ['Was there carnal knowledge (penile penetration of the genital organ, however slight)?', 'Go to the next question. If not, skip to the fourth.'],
+   ['Was the victim under 16 (under 12 for acts before RA 11648), or demented?', 'Statutory rape; consent is immaterial (check the close-in-age exception).'],
+   ['Was it through force, threat, intimidation, unconsciousness, fraud or grave abuse of authority?', 'Rape by sexual intercourse. If consent was real but obtained by abuse of position or by deceit, from a minor 16 to under 18: qualified or simple seduction.'],
+   ['Penis into the mouth or anus, or an object into the genital or anal orifice?', 'Rape by sexual assault.'],
+   ['A lewd act without penetration, under a rape circumstance?', 'Acts of lasciviousness (for child victims, in relation to RA 7610).'],
+   ['A woman taken away with lewd designs?', 'Forcible abduction if against her will (Art. 342); consented abduction under Art. 343.'],
+  ],
+  traps=[
+   'There is no frustrated rape. The slightest penetration consummates it (People v. Orita).',
+   'A husband can be convicted of raping his wife (People v. Jumawan).',
+   'Resistance is not an element of rape (People v. ZZZ, 2024).',
+   '“Qualified statutory rape” is not a proper designation (People v. ABC260708, 2024).',
+   'For child victims, use the designation and penalty rules of People v. Tulagan, as updated after RA 11648 raised the age to 16.',
+   'Forcible abduction followed by rape: whether the abduction is absorbed or complexed depends on whether the taking was only a means to the rape. Read the abduction cases in your syllabus.',
+  ],
+  cases=[
+   ['People v. Orita', 'G.R. No. 88724, April 3, 1990', 'Rape is consummated by the slightest penetration; there is no frustrated rape.'],
+   ['People v. Jumawan', 'G.R. No. 187495, April 21, 2014', 'Marital rape is punishable.'],
+   ['People v. Tulagan', 'G.R. No. 227363, March 12, 2019', 'Designation and penalties for sexual crimes against children under the RPC and RA 7610.'],
+   ['People v. ABC260708', 'G.R. No. 260708, January 23, 2024', 'Guidelines on the designation of rape; see Recent rulings on Art. 266-A.'],
+  ],
+  drills=[
+   dict(f='Holding a knife to her throat, Paolo had carnal knowledge of a 25-year-old woman.', o=['rape1', 'aol', 'rape2'], a='rape1',
+        w='Carnal knowledge through intimidation is rape by sexual intercourse.'),
+   dict(f='Holding a knife to her throat, Paolo forced his finger into the woman’s genital orifice.', o=['rape2', 'aol', 'rape1'], a='rape2',
+        w='Inserting an object, including a finger, into the genital orifice under a rape circumstance is rape by sexual assault.'),
+   dict(f='A 30-year-old man had sexual intercourse with a 15-year-old who agreed to it, in 2024. They are not related.', o=['statutory', 'sseduction', 'aol'], a='statutory',
+        w='After RA 11648, carnal knowledge of a person under 16 is rape regardless of consent. The close-in-age exception does not apply: the age gap is far more than three years.'),
+   dict(f='On a crowded bus, a stranger fondled the breast of a 20-year-old woman who was asleep.', o=['aol', 'rape2', 'fabduction'], a='aol',
+        w='A lewd act without penetration, committed while the victim was unconscious (asleep), is acts of lasciviousness.'),
+   dict(f='Rocco forced a woman into his van, intending to have sex with her. Police stopped the van a block away before anything else happened.', o=['fabduction', 'rape1', 'aol'], a='fabduction',
+        w='Taking a woman away against her will with lewd designs is forcible abduction, consummated by the taking even though nothing else happened.'),
+  ])
+
+# ============================================================================ G. Honor
+F(id='honor', title='Attacking honor', short='Libel, slander and their neighbours',
+  q='A reputation was attacked. By what means: writing, speech, an act, or an intrigue? And was it privileged?', module='Crim 2, Module 5',
+  base='libel',
+  crimes=[
+   dict(id='libel', name='Libel', refs=[A('353'), A('354'), A('355')],
+        els=['An imputation of a crime, vice or defect, real or imaginary, or of an act, omission, condition, status or circumstance.', 'Made public: communicated to a third person.', 'Malicious (malice is presumed, except in privileged communications).', 'Directed at an identifiable natural or juridical person, or one who is dead.', 'Tending to cause dishonor, discredit or contempt, or to blacken the memory of the dead.', 'By writing, printing, broadcast or similar means (Art. 355).'],
+        key='The base: a defamatory imputation in writing or a similar medium.', pen='Prisión correccional minimum–medium, or a fine of ₱40,000 to ₱1.2 million, or both (as amended by RA 10951).'),
+   dict(id='cyberlibel', name='Cyber libel', refs=[ref('ra10175', 'section-4'), ref('ra10175', 'section-6')],
+        els=['All the elements of libel under Art. 355.', 'Committed through a computer system or similar means.'],
+        key='The medium: online.', pen='One degree higher than libel (RA 10175, Sec. 6). Prescribes in one year (Causing v. People).'),
+   dict(id='oral', name='Oral defamation (slander)', refs=[A('358')],
+        els=['The elements of defamation.', 'Spoken, not written.'],
+        key='The medium: spoken words. Grave or slight depending on the words, the parties and the circumstances.', pen='Arresto mayor maximum to prisión correccional minimum if serious and insulting; otherwise arresto menor or a fine up to ₱20,000.'),
+   dict(id='deed', name='Slander by deed', refs=[A('359')],
+        els=['The offender performed an act, not covered by other articles of the Title.', 'The act cast dishonor, discredit or contempt on another.'],
+        key='An act, not words, meant to humiliate (a public slap, for example).', pen='Arresto mayor maximum to prisión correccional minimum or a fine; lower if not serious.'),
+   dict(id='intrigue', name='Intriguing against honor', refs=[A('364')],
+        els=['An intrigue: a scheme, usually passing a rumor through others.', 'Its principal purpose is to blemish the honor or reputation of a person.'],
+        key='The source cannot be pinned down; the offender works through others.', pen='Arresto menor or a fine up to ₱20,000.'),
+   dict(id='privileged', name='No crime: privileged communication', refs=[A('354')],
+        els=['A private communication in the performance of a legal, moral or social duty; or', 'a fair and true report, in good faith and without comment, of official proceedings; or', 'statements in judicial proceedings that are relevant to the case (absolutely privileged).'],
+        key='Malice is not presumed; for absolute privilege, no liability at all.', pen='None, unless actual malice is proved for a qualifiedly privileged communication.'),
+  ],
+  rows=['Medium', 'Malice', 'What sets it apart', 'Penalty'],
+  table={
+   'libel': ['Writing, print, broadcast and similar', 'Presumed', 'The base', 'Prisión correccional min–med or fine'],
+   'cyberlibel': ['A computer system', 'Presumed', 'Online', 'One degree higher'],
+   'oral': ['Spoken words', 'Presumed', 'Spoken', 'Arresto mayor max–prisión correccional min, or less'],
+   'deed': ['An act', 'Intent to humiliate', 'An act, not words', 'Arresto mayor max–prisión correccional min, or less'],
+   'intrigue': ['Rumor through others', 'Purpose to blemish', 'Source cannot be pinned down', 'Arresto menor or fine'],
+   'privileged': ['Any', 'Not presumed', 'Duty or official report', 'None'],
+  },
+  path=[
+   ['Is it privileged: a private communication made in a legal, moral or social duty, a fair report of official proceedings, or a relevant statement in a judicial proceeding?', 'No crime, unless actual malice is proved for a qualifiedly privileged communication.'],
+   ['Was it an act rather than words?', 'Slander by deed (Art. 359).'],
+   ['Was it spoken?', 'Oral defamation (Art. 358), grave or slight.'],
+   ['Was it written, printed, broadcast or similar?', 'Libel (Art. 355); through a computer system, cyber libel (RA 10175).'],
+   ['Was it a rumor passed through others to ruin a reputation, with the source not identifiable?', 'Intriguing against honor (Art. 364).'],
+  ],
+  traps=[
+   'Truth alone is not a defense. Under Art. 354 a defamatory imputation is presumed malicious even if true, unless good intention and justifiable motive are shown.',
+   'The person defamed must be identifiable, even if not named.',
+   'Cyber libel is not a new crime; it is libel through a computer system, with a penalty one degree higher, and it prescribes in one year, like libel (Causing v. People).',
+   'A public slap meant to humiliate is slander by deed, not maltreatment under Art. 266.',
+  ],
+  cases=[
+   ['Causing v. People', 'G.R. No. 258524, October 11, 2023', 'Cyber libel prescribes in one year; see Recent rulings on Art. 90.'],
+   ['Guingguing v. Court of Appeals', 'G.R. No. 128959, September 30, 2005', 'Assigned in your Crim 2 syllabus.'],
+   ['Fermin v. People', 'G.R. No. 157643, March 28, 2008', 'Assigned in your Crim 2 syllabus.'],
+  ],
+  drills=[
+   dict(f='Mara posted on Facebook that the town mayor, whom she named, had stolen relief goods. It was false.', o=['cyberlibel', 'libel', 'oral'], a='cyberlibel',
+        w='A defamatory imputation published through a computer system is cyber libel, punished one degree higher than libel.'),
+   dict(f='In a crowded market, Nena shouted that her named neighbor was a thief.', o=['oral', 'libel', 'intrigue'], a='oral',
+        w='Spoken defamation is oral defamation; whether it is grave depends on the words and circumstances.'),
+   dict(f='To humiliate him, Lito slapped a rival in front of their office mates. There was no injury.', o=['deed', 'slightpi', 'oral'], a='deed',
+        w='An act, not words, done to cast dishonor and contempt is slander by deed.'),
+   dict(f='Flyers saying that a named teacher took bribes were printed and handed out at the school gate.', o=['libel', 'oral', 'intrigue'], a='libel',
+        w='A printed defamatory imputation, made public, against an identifiable person is libel (Arts. 353, 355).'),
+   dict(f='In a pleading, a lawyer called the opposing party a “swindler” in arguing that the contract was obtained by fraud, the very issue in the case.', o=['privileged', 'libel', 'oral'], a='privileged',
+        w='Statements in pleadings that are relevant to the issues are absolutely privileged; there is no libel.'),
+  ])
+
+# also drill options that point to crimes in other families need names
+NAMES = {}
+for f in FAMILIES:
+    for c in f['crimes']:
+        NAMES.setdefault(c['id'], c['name'])
+NAMES['homicide'] = 'Homicide'
+
+
+def main():
+    by_art = {}
+    for f in FAMILIES:
+        ids = {c['id'] for c in f['crimes']}
+        assert f['base'] in ids, f['id']
+        for c in f['crimes']:
+            assert c['id'] in f['table'], (f['id'], c['id'])
+            assert len(f['table'][c['id']]) == len(f['rows']), (f['id'], c['id'])
+            for r in c['refs']:
+                if r['c'] == 'rpc':
+                    by_art.setdefault(r['i'], [])
+                    if not any(x['f'] == f['id'] and x['c'] == c['id'] for x in by_art[r['i']]):
+                        by_art[r['i']].append({'f': f['id'], 'c': c['id']})
+        for d in f['drills']:
+            assert d['a'] in d['o'], d['f'][:40]
+            for o in d['o']:
+                assert o in NAMES, o
+    out = {'method': METHOD, 'families': FAMILIES, 'names': NAMES, 'byArt': by_art}
+    js = json.dumps(out, ensure_ascii=False, separators=(',', ':'))
+    open(f'{SITE}/book2.json', 'w').write(js)
+    cat = json.load(open(f'{SITE}/catalog.json'))
+    cat['bhash'] = hashlib.md5(js.encode()).hexdigest()[:10]
+    json.dump(cat, open(f'{SITE}/catalog.json', 'w'), ensure_ascii=False, separators=(',', ':'))
+    n = sum(len(f['crimes']) for f in FAMILIES); d = sum(len(f['drills']) for f in FAMILIES)
+    print(f'families {len(FAMILIES)} · crimes {n} · drills {d} · articles linked {len(by_art)} · {len(js)//1024} KB')
+
+
+if __name__ == '__main__':
+    main()

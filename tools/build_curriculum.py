@@ -84,7 +84,7 @@ FIELDS = [
  ]},
  {'id': 'crim', 'name': 'Criminal Law', 'q': 'When may the State punish, for what, and how much?', 'tracks': [
    {'tier': 'start', 'name': 'The Revised Penal Code', 'why': 'Book One (Arts. 1 to 113) is the grammar of every crime. Learn it before Book Two.',
-    'items': [C('rpc'), Y('crim1', 'Your Criminal Law 1 syllabus'), Y('crim2', 'Your Criminal Law 2 syllabus')]},
+    'items': [C('rpc'), {'t': 'b2', 'id': 'book2', 'title': 'Book Two Studio'}, Y('crim1', 'Your Criminal Law 1 syllabus'), Y('crim2', 'Your Criminal Law 2 syllabus')]},
    {'tier': 'core', 'name': 'Computing and serving penalties', 'why': 'Read with Arts. 21 to 99 of the Code.',
     'items': [C('isl'), C('ra10951'), C('ra10592'), C('ra9346'), C('ra7659'), C('act3326')]},
    {'tier': 'core', 'name': 'Sexual offences and violence against women', 'why': '', 'items': [C('ra8353'), C('ra11648'), C('ra9262'), C('ra9995'), C('ra7877', 1)]},
