@@ -685,7 +685,7 @@ function lawHTML(d, p, cid, on) {
     ${fn.length ? `<div class="fnlist">${fn.map(f => `<p id="fn${f.n}"><sup>${f.n}</sup> ${esc(f.t)}</p>`).join('')}<p class="tiny muted">Footnotes are the publisher’s (DOLE), not part of the law.</p></div>` : ''}
     <div class="verify">${verifyChips(cid, p)}</div>
     ${(p.e || []).map(e => `<div class="note ${/missing|omitted|restored|absent/i.test(e.t) ? 'blue' : ''}" style="margin-top:10px"><b>Proofreading note.</b> ${esc(e.t)}${e.b ? ` <span class="muted">Basis: ${esc(e.b)}</span>` : ''}</div>`).join('')}
-    ${(p.a || []).map(a => `<section class="amend"><div class="row"><span class="ak">Amended text</span><span class="chip ok">${esc(a.by)} · Sec. ${esc(a.sec)}</span><span class="spacer"></span>${a.ref ? `<a class="small" href="#/code/${a.ref}">open ${esc(a.by)}</a>` : ''}</div><p class="tiny muted" style="margin:4px 0 10px">Verbatim from the amending law. Where two amendments are shown, the later law controls.</p><div class="text">${lawBody(a.p, on, null, cid)}</div></section>`).join('')}
+    ${(p.a || []).map(a => `<section class="amend"><div class="row"><span class="ak">Amended text</span><span class="chip ok">${esc(a.by)}${a.sec ? ` · Sec. ${esc(a.sec)}` : ''}</span><span class="spacer"></span>${a.ref ? `<a class="small" href="#/code/${a.ref}">open ${esc(a.by)}</a>` : ''}</div><p class="tiny muted" style="margin:4px 0 10px">Verbatim from the amending law. Where two amendments are shown, the later law controls.</p><div class="text">${lawBody(a.p, on, null, cid)}</div></section>`).join('')}
   </article>`;
 }
 function verifyChips(cid, p) {
@@ -820,6 +820,38 @@ function judgeHTML(items, fld, mode) {
       <p class="canon">${esc(canon)}</p><div class="anat">${rows.map(([k, s, mk]) => anatRow(k, s, mk, one)).join('')}</div></li>`;
   }).join('')}</ol>`;
 }
+/* ---- evolution: where the text came from, how it changed, how it is carried out and read */
+const DERIV = { civil: ['Spanish Civil Code of 1889', '1889'], family: ['Civil Code of 1950', '1950'] };
+const ENACT = { labor: [1974, 'Presidential Decree No. 442 (May 1, 1974), in force November 1, 1974; renumbered by RA 10151 (2011)'], civil: [1949, 'Republic Act No. 386 (June 18, 1949), in force August 30, 1950'], family: [1987, 'Executive Order No. 209 (July 6, 1987), in force August 3, 1988'], rpc: [1930, 'Act No. 3815 (December 8, 1930), in force January 1, 1932'] };
+const yearOf = s => { const m = /\b(1[89]\d\d|20\d\d)\b/.exec(s || ''); return m ? +m[1] : null; };
+function evolution(d, p, cid, n) {
+  const m = meta(cid) || {}; const ev = [];
+  const txt = p.p.filter(x => typeof x === 'string');
+  const y0 = (ENACT[cid] || [])[0] || yearOf(m.citation) || yearOf((d.closing || []).join(' '));
+  ev.push({ y: y0, k: 'enact', h: `Enacted in the ${(m.title || d.title || '').replace(/^The /, '')}`, s: (ENACT[cid] || [])[1] || m.citation || '' });
+  const src = txt.map(t => splitSrc(t)[1]).find(Boolean);
+  if (src) {
+    const codes = src.replace(/[()]/g, '').split(/,\s*/);
+    const dv = DERIV[cid];
+    if (codes.every(c => c === 'n')) ev.push({ y: y0, k: 'src', h: 'A new provision', s: `The source note “${src}” marks it as new: it has no counterpart in the earlier code.` });
+    else ev.push({ y: dv ? +dv[1] : null, k: 'src', h: `Drawn from ${dv ? dv[0] : 'the earlier law'}, Art. ${codes.filter(c => c !== 'n').map(c => c.replace(/a$/, '')).join(', ')}`, s: `The source note “${src}” traces it there${codes.some(c => /a$/.test(c)) ? '; the letter “a” means it was amended when carried over' : '; it was carried over without change in substance'}.` });
+  }
+  for (const t of txt) for (const mm of t.matchAll(/\((?:As )?amended by ([^)]{3,120})\)/gi)) ev.push({ y: yearOf(mm[1]), k: 'amend', h: `Amended by ${mm[1].replace(/[;,].*$/, '')}`, s: 'Noted in the text itself.' });
+  for (const a of p.a || []) ev.push({ y: a.y ? +a.y : null, k: 'amend', h: `Amended by ${a.by}${a.sec ? ', Sec. ' + a.sec : ''}`, s: a.why || a.tt || 'See the amended text above.' });
+  if (n && n.o && n.o !== '—') ev.push({ y: 1988, k: 'src', h: 'Under the 1988 Code of Professional Responsibility', s: n.o });
+  for (const i of (n && n.i) || []) ev.push({ y: yearOf(i.t), k: 'issu', h: i.t, s: i.s });
+  const cases = [...((n && n.d) || []).map(c => ({ y: yearOf(c.c), h: c.n, s: c.h })), ...((REC.by || {})[ck(cid, p.i)] || []).map(r => ({ y: yearOf(r.d), h: r.n, s: r.h }))];
+  const seen = new Set();
+  for (const c of cases.filter(c => c.y).sort((a, b) => a.y - b.y)) { if (seen.has(c.h)) continue; seen.add(c.h); if (seen.size > 7) break; ev.push({ y: c.y, k: 'case', h: c.h, s: c.s.split(/(?<=\.)\s/)[0] }); }
+  if (ev.length < 2) return '';
+  const order = { enact: 0, src: 1, amend: 2, issu: 3, case: 4 };
+  ev.sort((a, b) => (a.y ?? 9999) - (b.y ?? 9999) || order[a.k] - order[b.k]);
+  const KN = { enact: 'Enacted', src: 'Origin', amend: 'Amended', issu: 'Implemented', case: 'Interpreted' };
+  return `<div class="card flat evo" style="margin-bottom:12px"><div class="row"><h3 style="margin:0">How this provision evolved</h3><span class="spacer"></span><span class="chip">${ev.length} events</span></div>
+    <p class="small muted" style="margin:4px 0 12px">Law is built in layers. Learn the newest layer, but know the older ones: older cases, and many examination questions, were decided under them.</p>
+    <ol class="tl">${ev.map(e => `<li class="t-${e.k}"><span class="ty">${e.y || '—'}</span><div><span class="tk">${e.k === 'case' && y0 && e.y < y0 ? 'Decided under the earlier law' : KN[e.k]}</span><b>${esc(e.h)}</b>${e.s ? `<span>${esc(e.s)}</span>` : ''}</div></li>`).join('')}
+    <li class="t-now"><span class="ty">Now</span><div><span class="tk">In force</span><b>${(p.a || []).length ? 'The latest amended text above is the law today.' : 'The text above is the law today.'}</b>${(n && n.i && n.i.length) ? '<span>Read it with the implementing rules listed below.</span>' : ''}</div></li></ol></div>`;
+}
 function guideHTML(d, p, cid, n, loc) {
   const an = anatomy(p);
   const fld = fieldOf(cid); const key = ck(cid, p.i);
@@ -837,6 +869,7 @@ function guideHTML(d, p, cid, n, loc) {
       ${n.q ? `<details class="selftest"><summary><b>Self-test</b> <span class="small muted">answer before opening</span></summary><ol class="els q">${n.q.map(x => `<li>${esc(x)}</li>`).join('')}</ol></details>` : ''}
       <p class="tiny muted" style="margin:10px 0 0">Explanations are study aids, not the law. The verbatim text above controls.</p></div>`;
   }
+  h += evolution(d, p, cid, n);
   if (n && n.i && n.i.length) h += `<div class="card flat issu" style="margin-bottom:12px"><div class="row"><h3 style="margin:0">Implementing rules and issuances</h3><span class="spacer"></span><span class="chip">${n.i.length}</span></div>
     <p class="small muted" style="margin:4px 0 10px">The rules, orders and circulars that carry this provision out. Summaries are in our own words; the issuance controls.</p>
     <ol class="isl">${n.i.map(x => `<li><b>${x.u ? `<a href="${esc(x.u)}"${/^#/.test(x.u) ? '' : ' target="_blank" rel="noopener"'}>${esc(x.t)}</a>` : esc(x.t)}</b><span>${esc(x.s)}</span></li>`).join('')}</ol></div>`;
@@ -1388,6 +1421,7 @@ async function aboutView() {
   <li><b>Eight fields in one building.</b> The House of Law is a memory palace drawn after the Supreme Court’s building on Padre Faura, Manila: its four columns, three doors and seven marble steps, with the Court’s motto, <i>Batas at Bayan</i>, carved above. Each field has a fixed place in it, from the pediment down to the steps, and each topic inside a field is one object at that place. Fixed places give you somewhere to look when you forget.</li>
   <li><b>A short path in each field.</b> Start here, then the core, then deeper only when you need it. A code page offers five provisions at a time.</li>
   <li><b>Four steps on each provision.</b> Read the verbatim text. Understand it by taking it apart and making your own picture. Recall it with the text hidden. Connect it to cases. Then rate yourself, and Review brings it back just before you would forget it.</li>
+  <li><b>See how it evolved.</b> Each provision shows its history in order: where the text came from (for the Civil Code, the article of the Spanish Civil Code of 1889 that its source note names), every amending law with its year, the rules and issuances that implement it, and the decisions that interpreted it — ending with the text in force today. Older cases and many examination questions were decided under the older layers.</li>
   <li><b>Read it like a judge.</b> “Take it apart” sorts each sentence into the order a court reads a provision: the words it defines, the rule, what it lists, when it applies, what is qualified or carved out, and what follows. Each step carries the canon of construction that governs it: plain meaning (<i>verba legis</i>), a list excludes what it omits (<i>expressio unius</i>), exceptions and provisos read strictly, and penal laws read strictly against the State.</li></ol>
   <h2>The memory research behind it</h2>
   <ul class="explain small"><li><b>Places and pictures.</b> Tying items to fixed locations in an imagined building (the method of loci, the memory palace) reliably improves recall, including in people with no prior training (Dresler and others, <i>Neuron</i>, 2017). Pictures are remembered better than words alone, and words paired with an image are stored twice (Paivio’s dual coding; Shepard, 1967; Standing, 1973).</li>
