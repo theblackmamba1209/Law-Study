@@ -11,7 +11,7 @@ const today = () => new Date(Date.now() - new Date().getTimezoneOffset() * 60000
 
 /* ------------------------------------------------------------------ storage */
 const KEY = 'sinag.codal.v1';
-const DEFAULTS = { cards: {}, notes: {}, marks: {}, flags: {}, days: {}, last: null, tutor: {}, hooks: {}, lessons: {}, lastBy: {}, b2: {},
+const DEFAULTS = { cards: {}, notes: {}, marks: {}, flags: {}, days: {}, last: null, tutor: {}, hooks: {}, lessons: {}, lastBy: {}, b2: {}, cal: [],
   settings: { newPerDay: 10, focus: null, figure: '', hl: { op: false, cond: true, exc: true, num: true, pen: true, def: true }, hlv: 2, passcode: '' } };
 let S;
 try { S = Object.assign(structuredClone(DEFAULTS), JSON.parse(localStorage.getItem(KEY) || '{}')); }
@@ -692,6 +692,7 @@ function verifyChips(cid, p) {
   if (m.kind === 'admin') out.push(p.v === 'ok' ? '<span class="chip ok" title="Every word was found in a dictionary or in the other codes. Real-word OCR slips (e.g. “of” for “or”) are still possible.">OCR · machine-checked</span>' : `<span class="chip warn" title="${esc('Words to verify against your scan: ' + (p.u || []).join(', '))}">OCR · check: ${esc((p.u || []).slice(0, 4).join(', '))}</span>`);
   else if (m.kind === 'family') out.push('<span class="chip ok">Your PDF · text layer decoded exactly</span>');
   else if (m.kind === 'labor') out.push('<span class="chip ok">DOLE 2022 edition</span>');
+  else if (m.kind === 'sc') out.push('<span class="chip ok" title="Transcription published by Justitia (University of Makati School of Law) of the Supreme Court’s text; OCR slips corrected and logged on the About page">Supreme Court issuance · proofread</span>');
   else out.push('<span class="chip">LawPhil transcription</span>');
   if (p.x) out.push(`<span class="chip warn" title="${esc(p.x.join('; '))}">Proofreading flag</span>`);
   if ((p.e || []).length) out.push('<span class="chip blue">Corrected / annotated</span>');
@@ -830,10 +831,14 @@ function guideHTML(d, p, cid, n, loc) {
       <div class="explain" style="margin-top:8px">${(n.x || '').split('\n\n').map(x => `<p>${esc(x)}</p>`).join('')}</div>
       ${n.k ? `<span class="dl">${n.k.length} ${n.k.length === 1 ? 'key point' : 'elements / key points'}</span><ol class="els">${n.k.map(x => `<li>${esc(x)}</li>`).join('')}</ol>` : ''}
       ${n.w ? `<span class="dl">Why it exists</span><p class="why">${esc(n.w)}</p>` : ''}
+      ${n.o && n.o !== '—' ? `<span class="dl">Under the 1988 Code</span><p class="oldrule">${esc(n.o)}</p>` : ''}
       ${n.t ? `<span class="dl warnh">Exam traps</span><ul class="traps">${n.t.map(x => `<li>${esc(x)}</li>`).join('')}</ul>` : ''}
       ${n.q ? `<details class="selftest"><summary><b>Self-test</b> <span class="small muted">answer before opening</span></summary><ol class="els q">${n.q.map(x => `<li>${esc(x)}</li>`).join('')}</ol></details>` : ''}
       <p class="tiny muted" style="margin:10px 0 0">Explanations are study aids, not the law. The verbatim text above controls.</p></div>`;
   }
+  if (n && n.i && n.i.length) h += `<div class="card flat issu" style="margin-bottom:12px"><div class="row"><h3 style="margin:0">Implementing rules and issuances</h3><span class="spacer"></span><span class="chip">${n.i.length}</span></div>
+    <p class="small muted" style="margin:4px 0 10px">The rules, orders and circulars that carry this provision out. Summaries are in our own words; the issuance controls.</p>
+    <ol class="isl">${n.i.map(x => `<li><b>${x.u ? `<a href="${esc(x.u)}"${/^#/.test(x.u) ? '' : ' target="_blank" rel="noopener"'}>${esc(x.t)}</a>` : esc(x.t)}</b><span>${esc(x.s)}</span></li>`).join('')}</ol></div>`;
   h += `<div class="card flat" id="tutorbox" style="margin-bottom:12px" hidden></div>`;
   h += `<div class="card flat"><div class="row"><h3 style="margin:0">Take it apart</h3><span class="spacer"></span><span class="chip">auto-parsed from the text</span></div>
     <p class="small muted" style="margin:4px 0 10px">A judge reads a provision in a fixed order: the words it defines, the rule, what must be present, when it applies, what is carved out, and what follows. Each sentence of the provision is sorted into that order below.</p>
@@ -910,17 +915,67 @@ async function wireTutor(d, p, cid, cases) {
 function fmtAI(t) { return esc(t).split(/\n{2,}/).map(x => `<p>${x.replace(/\n/g, '<br>').replace(/\*\*(.+?)\*\*/g, '<b>$1</b>')}</p>`).join(''); }
 
 /* ---- recall panel: three graded difficulties */
+/* ---- metacognition: say how sure you are before you check; the app keeps your calibration */
+const CONF = ['Guessing', 'Fairly sure', 'Certain'];
+function confHTML() { return `<div class="conf" role="group" aria-label="How sure are you?"><span>Before you check, how sure are you?</span>${CONF.map((c, i) => `<button type="button" data-cf="${i}">${c}</button>`).join('')}</div>`; }
+function wireConf(root) { $$('[data-cf]', root).forEach(b => b.onclick = () => $$('[data-cf]', root).forEach(x => x.classList.toggle('on', x === b))); }
+function takeConf(root, key, pct) {
+  const b = $('[data-cf].on', root); if (!b) return '';
+  const c = +b.dataset.cf; S.cal = S.cal || []; S.cal.push({ c, s: pct, k: key, t: Date.now() }); if (S.cal.length > 600) S.cal.splice(0, S.cal.length - 600); save();
+  if (c === 2 && pct < 80) return `<div class="note bad" style="margin-top:10px"><b>You were certain, and missed part of it.</b> Look hard at the red words now: errors made with high confidence are the ones that stick best once corrected.</div>`;
+  if (c === 0 && pct >= 80) return `<div class="note blue" style="margin-top:10px"><b>You knew more than you thought.</b> Trust it, and space this one out.</div>`;
+  return '';
+}
+function calibration() {
+  const L = S.cal || []; if (L.length < 3) return '';
+  const rows = CONF.map((c, i) => { const xs = L.filter(x => x.c === i); return { c, n: xs.length, avg: xs.length ? Math.round(xs.reduce((a, x) => a + x.s, 0) / xs.length) : null }; });
+  const cert = rows[2];
+  const msg = cert.n >= 3 && cert.avg < 75 ? 'When you feel certain, you are still missing a quarter or more. Recall before you rate, and do not stop studying a provision just because it feels familiar.' : rows[0].n >= 3 && rows[0].avg >= 70 ? 'You tend to underrate yourself: your guesses are mostly right.' : 'Your confidence tracks your accuracy reasonably well. Keep checking it.';
+  return `<div class="card" style="margin-top:14px"><h3>How well you judge your own memory</h3><p class="small muted" style="margin:0 0 10px">From the confidence you gave before checking a recall (${L.length} checks). Learners who misjudge what they know stop studying too early.</p>
+    <div class="calib">${rows.map(r => `<div><span>${r.c}</span><i style="--w:${r.avg ?? 0}%"></i><b>${r.avg === null ? '—' : r.avg + '%'}</b><small>${r.n} check${r.n === 1 ? '' : 's'}</small></div>`).join('')}</div>
+    <p class="small" style="margin:10px 0 0">${msg}</p></div>`;
+}
+/* ---- a bar-style answer: Answer, Legal basis, Application, Conclusion, graded against the provision's own parts */
+function alacPanel(rbox, p, cid, n) {
+  const an = anatomy(p); const els = an.items.filter(i => i[0] === 'Element / item').length;
+  const q = (n && n.q && n.q.length) ? n.q[Math.floor(Math.random() * n.q.length)] : `Invent a short set of facts that raises ${p.l}${p.c ? ' (' + p.c + ')' : ''}, then answer it as you would in the bar examination.`;
+  const checks = [`I gave a direct answer first (yes or no, liable or not) before any explanation.`, `I cited ${p.l}${meta(cid) ? ' of the ' + meta(cid).short : ''} as the legal basis.`, `I stated the rule in the provision’s own key words.`]
+    .concat(els ? [`I applied each of the ${els} listed items or elements to the facts, one by one.`] : [])
+    .concat(an.items.some(i => i[0] === 'Condition') ? ['I checked whether the condition is met on these facts.'] : [])
+    .concat(an.items.some(i => i[0] === 'Exception' || i[0] === 'Proviso') ? ['I asked whether an exception or proviso takes the facts out of the rule.'] : [])
+    .concat(an.items.some(i => i[0] === 'Penalty') ? ['I stated the consequence or penalty.'] : [])
+    .concat(['My conclusion answers the question asked, in one sentence.']);
+  rbox.innerHTML = `<p class="small muted">Philippine bar answers are graded for a clear answer, the correct legal basis, and the application of the law to the facts. Write in four parts, then grade yourself against the checklist.</p>
+    <div class="card flat"><b>Question</b><p class="explain" style="margin:6px 0 0">${esc(q)}</p></div>
+    <div class="alac">${[['A', 'Answer', 'Yes or no; liable or not; valid or void.'], ['L', 'Legal basis', 'The provision, and the rule in its key words.'], ['A', 'Application', 'Apply each element to the facts.'], ['C', 'Conclusion', 'One sentence that answers the question.']].map(([k, h, ph], i) => `<label><span class="ak">${k}</span><b>${h}</b><textarea data-al="${i}" rows="${i === 2 ? 5 : 2}" placeholder="${esc(ph)}"></textarea></label>`).join('')}</div>
+    ${confHTML()}
+    <div class="row" style="margin-top:8px"><button class="btn primary sm" id="alg">Grade my answer</button></div><div id="alout"></div>`;
+  wireConf(rbox);
+  $('#alg', rbox).onclick = () => {
+    const txt = $$('[data-al]', rbox).map(t => t.value.trim());
+    if (!txt.some(Boolean)) return toast('Write your answer first.');
+    $('#alout', rbox).innerHTML = `<div class="card flat" style="margin-top:12px"><h3 style="margin:0 0 8px">Grade yourself honestly</h3><div class="checks">${checks.map((c, i) => `<label><input type="checkbox" data-ck="${i}"> <span>${esc(c)}</span></label>`).join('')}</div>
+      <div class="row" style="margin-top:10px"><button class="btn sm" id="alshow">Show the provision to compare</button><button class="btn primary sm" id="aldone">Save my grade</button></div><p id="alres" class="small"></p></div>`;
+    $('#alshow', rbox).onclick = () => { const l = $('#law'); if (l) { l.style.filter = ''; l.scrollIntoView({ behavior: 'smooth' }); } };
+    $('#aldone', rbox).onclick = () => {
+      const got = $$('[data-ck]:checked', rbox).length; const pct = Math.round(got / checks.length * 100);
+      const extra = takeConf(rbox, ck(cid, p.i), pct);
+      $('#alres', rbox).innerHTML = `<b>${got} of ${checks.length}</b>. ${pct >= 85 ? 'A complete answer. Rate <b>Good</b> or <b>Easy</b>.' : pct >= 60 ? 'Most of the parts are there. Rewrite the missing ones tomorrow.' : 'Rate <b>Again</b>; reread the provision and write it once more.'}` + extra;
+    };
+  };
+}
 function recallPanel(box, d, p, cid, onDone) {
   const nw = words(provText(p)).length;
   box.innerHTML = `<div class="panel"><div class="row" style="margin-bottom:10px">
     <button class="btn sm" data-m="c1">Cloze · light</button><button class="btn sm" data-m="c2">Cloze · medium</button><button class="btn sm" data-m="c3">Cloze · heavy</button>
-    <button class="btn sm" data-m="fl">First letters</button><button class="btn sm" data-m="fr">Write it out</button></div>
+    <button class="btn sm" data-m="fl">First letters</button><button class="btn sm" data-m="fr">Write it out</button><button class="btn sm" data-m="al">Bar answer (ALAC)</button></div>
     <div id="rbox"></div></div>`;
   const rbox = $('#rbox', box);
   const law = $('#law');
   const hideLaw = h => { if (law) law.style.filter = h ? 'blur(7px)' : ''; if (law) law.style.userSelect = h ? 'none' : ''; };
   const modes = {
     c1: () => cloze(1), c2: () => cloze(2), c3: () => cloze(3),
+    al: () => { hideLaw(true); alacPanel(rbox, p, cid, (NOTES[cid] || {})[p.i]); },
     fl: () => {
       hideLaw(true);
       rbox.innerHTML = `<p class="small muted">Recite each word aloud from its first letter. Tap a word to check it.</p><div class="card flat fl rtext">${(() => { const ps = p.p.filter(x => typeof x === 'string'); const { ms, info } = lawLayout(ps); return ps.map((x, i) => layoutWrap(ms[i], info[i], words(plain(ms[i] && ms[i].key !== 'ord' ? ms[i].body : x)).map(w => `<span class="h">${esc(w)}</span>`).join(' '))).join(''); })()}</div><div class="row" style="margin-top:8px"><button class="btn sm" id="flall">Reveal all</button></div>`;
@@ -929,8 +984,8 @@ function recallPanel(box, d, p, cid, onDone) {
     },
     fr: () => {
       hideLaw(true);
-      rbox.innerHTML = `<p class="small muted">Write the provision from memory${nw > 220 ? ' (long provision: write as much as you can — the first paragraph counts most)' : ''}. Then check it word by word against the verbatim text.</p><textarea id="frt" placeholder="${esc(p.l)}…"></textarea><div class="row" style="margin-top:8px"><button class="btn primary sm" id="frc">Check</button><button class="btn sm" id="frs">Show the text</button></div><div id="frout" style="margin-top:12px"></div>`;
-      $('#frs').onclick = () => hideLaw(false);
+      rbox.innerHTML = `<p class="small muted">Write the provision from memory${nw > 220 ? ' (long provision: write as much as you can — the first paragraph counts most)' : ''}. Then check it word by word against the verbatim text.</p><textarea id="frt" placeholder="${esc(p.l)}…"></textarea>${confHTML()}<div class="row" style="margin-top:8px"><button class="btn primary sm" id="frc">Check</button><button class="btn sm" id="frs">Show the text</button></div><div id="frout" style="margin-top:12px"></div>`;
+      $('#frs').onclick = () => hideLaw(false); wireConf(rbox);
       $('#frc').onclick = () => {
         const truth = words(provText(p)); const att = words($('#frt').value);
         if (!att.length) return toast('Write something first.');
@@ -940,7 +995,7 @@ function recallPanel(box, d, p, cid, onDone) {
         $('#frout').innerHTML = `<div class="row"><span class="stat">${pct}%</span><span class="small muted">of ${lim < truth.length ? 'the first ' + lim + ' words' : 'the text'} recalled in order · ${Math.round(r.precision * 100)}% of your words matched</span></div>
           <p class="small">${pct >= 95 ? 'Verbatim-level. Rate <b>Easy</b> or <b>Good</b>.' : pct >= 80 ? 'Strong. Rate <b>Good</b>; fix the red words.' : pct >= 55 ? 'Partial. Rate <b>Hard</b> and re-read the red words.' : 'Not yet. Rate <b>Again</b>, read it once more, then try again.'}</p>
           <div class="card flat diff">${r.out.map(o => o.t === 'ok' ? `<span class="okw">${esc(o.w)}</span>` : o.t === 'miss' ? `<span class="miss">${esc(o.w)}</span>` : `<span class="extra">${esc(o.w)}</span>`).join(' ')}</div>
-          <p class="tiny muted">Green: recalled · red: missed · struck: not in the text.</p>`;
+          <p class="tiny muted">Green: recalled · red: missed · struck: not in the text.</p>` + takeConf(rbox, ck(cid, p.i), pct);
         hideLaw(false); onDone && onDone(pct);
       };
     },
@@ -965,14 +1020,14 @@ function recallPanel(box, d, p, cid, onDone) {
       }).join('') + (src ? ` <span class="srcn">${esc(src)}</span>` : '');
       return layoutWrap(m, f, inner);
     }).join('');
-    rbox.innerHTML = `<p class="small muted">Fill every blank, then check. ${total} blank${total === 1 ? '' : 's'}.</p><div class="card flat cloze rtext">${html}</div><div class="row" style="margin-top:8px"><button class="btn primary sm" id="cc">Check</button><button class="btn sm" id="cr">Reveal</button></div><p id="cres" class="small"></p>`;
-    const ins = $$('input', rbox);
+    rbox.innerHTML = `<p class="small muted">Fill every blank, then check. ${total} blank${total === 1 ? '' : 's'}.</p><div class="card flat cloze rtext">${html}</div>${confHTML()}<div class="row" style="margin-top:8px"><button class="btn primary sm" id="cc">Check</button><button class="btn sm" id="cr">Reveal</button></div><p id="cres" class="small"></p>`;
+    const ins = $$('input', rbox); wireConf(rbox);
     ins[0] && ins[0].focus();
     ins.forEach((inp, k) => inp.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); (ins[k + 1] || $('#cc')).focus(); } }));
     $('#cc').onclick = () => {
       let ok = 0;
       ins.forEach(i => { const g = normWord(i.value) === normWord(i.dataset.a); i.classList.toggle('ok', g); i.classList.toggle('bad', !g); if (g) ok++; });
-      $('#cres').innerHTML = `<b>${ok}/${ins.length}</b> correct. ${ok === ins.length ? 'Rate <b>Good</b> or <b>Easy</b>.' : ok >= ins.length * .7 ? 'Rate <b>Hard</b> or <b>Good</b>.' : 'Rate <b>Again</b> and re-read.'}`;
+      $('#cres').innerHTML = `<b>${ok}/${ins.length}</b> correct. ${ok === ins.length ? 'Rate <b>Good</b> or <b>Easy</b>.' : ok >= ins.length * .7 ? 'Rate <b>Hard</b> or <b>Good</b>.' : 'Rate <b>Again</b> and re-read.'}` + takeConf(rbox, ck(cid, p.i), Math.round(ok / Math.max(1, ins.length) * 100));
       hideLaw(false); onDone && onDone(Math.round(ok / Math.max(1, ins.length) * 100));
     };
     $('#cr').onclick = () => { ins.forEach(i => { if (normWord(i.value) !== normWord(i.dataset.a)) { i.value = i.dataset.a; i.classList.add('bad'); } }); hideLaw(false); };
@@ -1168,6 +1223,7 @@ function progressView() {
   main.innerHTML = `<h1>Progress</h1>
   <div class="grid g3"><div class="card"><div class="stat">${tot.t.toLocaleString()}</div><div class="small muted">provisions opened of ${CAT.total.toLocaleString()}</div></div><div class="card"><div class="stat">${tot.m.toLocaleString()}</div><div class="small muted">mastered (interval ≥ 21 days)</div></div><div class="card"><div class="stat">${dueKeys().length}</div><div class="small muted">due now</div></div></div>
   <div class="card" style="margin-top:14px"><h3>Last 12 weeks</h3><div class="heat">${days.join('')}</div></div>
+  ${calibration()}
   <div class="card" style="margin-top:14px;overflow-x:auto"><table class="table"><tr><th>Code</th><th>Opened</th><th>Learning</th><th>Mastered</th><th style="width:30%">Coverage</th></tr>${rows.map(r => `<tr><td><a href="#/code/${r.c.id}">${esc(r.c.short)}</a></td><td>${r.k.touched}/${r.k.total}</td><td>${r.k.l}</td><td>${r.k.m}</td><td>${bar(r.k)}</td></tr>`).join('')}</table></div>
   <div class="card" style="margin-top:14px"><h3>Settings</h3><div class="row"><label class="small">New provisions per day in Review <input id="npd" type="number" min="0" max="200" value="${S.settings.newPerDay}" style="width:70px;padding:5px;border-radius:8px;border:1px solid var(--line2);background:var(--card)"></label></div></div>
   <div class="card" style="margin-top:14px"><h3>Back up & move</h3><p class="small muted">Progress lives in this browser only. GitHub Pages and Cloudflare are different addresses, so each keeps its own progress — back up here, restore there.</p>
@@ -1340,6 +1396,8 @@ async function aboutView() {
   <li><b>Text that shows its structure.</b> Signalling how material is organised, and breaking it into short segments, helps learners build a model of it (Mayer, <i>Multimedia Learning</i>, 2009: the signalling and segmenting principles). So in each provision, enumerations hang from a numbered margin and say how many items follow, each proviso starts on its own line, and a colour always means the same thing: red for penalties, gold for numbers, violet for exceptions and provisos, blue for conditions, green for definitions. Not a word of the law is changed.</li>
   <li><b>Few highlights.</b> Marking much of a text does little for learning (Dunlosky and others, 2013, rated highlighting low in usefulness), so only a few kinds of words are marked by default. Turn each kind on or off under Highlights.</li>
   <li><b>One thing stands out.</b> An item that differs from those around it is remembered better (von Restorff, 1933). Each Book Two crime card sets off one element, the one that separates the crime from its neighbours.</li>
+  <li><b>Judge your own memory.</b> Before checking a recall you say how sure you are. Learners who overrate what they know stop studying too soon (Dunlosky and Rawson, 2012), and errors made with high confidence are corrected more lastingly once shown (Butterfield and Metcalfe, 2001, the hypercorrection effect). Progress shows how well your confidence matches your accuracy.</li>
+  <li><b>Write it the way you will be tested.</b> The Bar answer mode practises the Answer–Legal basis–Application–Conclusion form, graded against the provision’s own elements, conditions and exceptions: practising the retrieval you will need on the exam transfers best (transfer-appropriate processing; Morris, Bransford and Franks, 1977).</li>
   <li><b>A comfortable line.</b> Study text is kept to about 65 characters a line. On screen, moderate lines have been linked with better comprehension than very long ones (Dyson and Haselgrove, 2001).</li></ul>
   <p class="small muted">These are general findings about memory, not studies of this app. The pictures suggested for each topic are our own inventions; replace any that do not stick with your own. A place you know well works even better: use “Use a place you know” on the Today screen.</p>
   <h2>Sources</h2>

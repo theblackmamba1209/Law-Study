@@ -689,3 +689,28 @@ a.pref{padding:0 6px;border-radius:6px;font-size:.84em;line-height:1.5;box-decor
 .judge .canon{margin:2px 0 8px;max-width:var(--measure);font:italic 400 .9rem/1.5 var(--serif);color:var(--ink3)}
 .anat .it.nl{grid-template-columns:minmax(0,1fr)}
 @media (max-width:760px){.judge>li{padding-left:36px}.seg button{padding:6px 10px;font-size:.78rem}}
+/* issuances and the old-code bridge */
+.oldrule{margin:0;max-width:var(--measure);font:500 .96rem/1.5 var(--sans);color:var(--ink2);padding:6px 10px;border-radius:8px;background:var(--line);display:inline-block}
+.isl{list-style:none;counter-reset:i;margin:0;padding:0;display:grid;gap:10px;max-width:var(--measure)}
+.isl li{counter-increment:i;display:grid;grid-template-columns:26px minmax(0,1fr);column-gap:12px;row-gap:2px}
+.isl li::before{content:counter(i);grid-row:span 2;width:24px;height:24px;border-radius:6px;display:grid;place-items:center;font:700 .74rem/1 var(--sans);color:var(--f,var(--brand));background:color-mix(in srgb,var(--f,var(--brand)) 12%,transparent);margin-top:.1em}
+.isl b{font:600 .98rem/1.4 var(--serif)}.isl b a{color:var(--ink)}.isl b a:hover{color:var(--brand)}
+.isl span{font:400 .95rem/1.55 var(--serif);color:var(--ink2)}
+/* metacognition and bar-answer practice */
+.conf{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:12px 0 2px;font-size:.84rem;color:var(--ink2)}
+.conf span{margin-right:4px}
+.conf button{border:1px solid var(--line2);background:var(--card);border-radius:999px;padding:5px 12px;font:600 .8rem var(--sans);cursor:pointer;color:var(--ink2)}
+.conf button.on{background:var(--ink);border-color:var(--ink);color:var(--card)}
+.calib{display:grid;gap:8px}
+.calib div{display:grid;grid-template-columns:96px minmax(0,1fr) 48px 70px;align-items:center;gap:10px;font-size:.86rem}
+.calib i{display:block;height:10px;border-radius:9px;background:linear-gradient(90deg,var(--ok) var(--w),var(--line) var(--w))}
+.calib b{font-variant-numeric:tabular-nums}.calib small{color:var(--ink3)}
+.alac{display:grid;gap:10px;margin-top:12px}
+.alac label{display:grid;grid-template-columns:30px minmax(0,1fr);column-gap:10px;row-gap:4px;align-items:center}
+.alac .ak{grid-row:span 2;align-self:start;width:28px;height:28px;border-radius:8px;display:grid;place-items:center;background:var(--ink);color:var(--card);font:700 .9rem var(--sans);margin-top:2px}
+.alac b{font:600 .9rem var(--sans)}
+.alac textarea{min-height:0;font-size:1rem}
+.checks{display:grid;gap:8px}
+.checks label{display:grid;grid-template-columns:22px minmax(0,1fr);gap:8px;align-items:start;font:400 .96rem/1.5 var(--serif);cursor:pointer}
+.checks input{margin-top:.3em}
+@media (max-width:760px){.calib div{grid-template-columns:84px minmax(0,1fr) 42px}.calib small{display:none}}
