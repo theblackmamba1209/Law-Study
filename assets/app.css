@@ -473,3 +473,219 @@ main:focus,main:focus-visible{outline:none}
 .opt.wrong{border-color:var(--bad);background:var(--bad-soft);color:var(--bad)}
 .opt[disabled]{cursor:default}
 @media (max-width:760px){.b2tabs{grid-template-columns:repeat(5,minmax(0,1fr))}.b2tabs button{padding:6px 4px}.b2tabs button span{font-size:.78rem}.mx{font-size:.84rem}.mx tbody th{min-width:96px}}
+
+/* ======================================================================
+   Reading typography, built for retention.
+   1. One measure (~66 characters) and one generous leading for all study prose.
+   2. Structure made visible: enumerations hang from a marker gutter and nest by level;
+      a lead-in says how many items follow; each proviso starts on its own line.
+   3. One cue per kind of information, and the same colour means the same thing
+      everywhere: red = penalty, gold = numbers, violet = exceptions and provisos,
+      blue = conditions, green = definitions and rulings, the field hue = structure.
+   ====================================================================== */
+:root{--measure:66ch;--read:1.125rem;--lead:1.72;--gut:2.5em}
+.k-def{--k:var(--ok)}.k-pen{--k:var(--bad)}.k-pro{--k:var(--warn)}.k-exc{--k:var(--violet)}.k-cond{--k:var(--blue)}.k-op{--k:var(--brand)}.k-pow{--k:var(--f-civ)}.k-el{--k:var(--gold)}.k-st{--k:var(--line2)}
+
+/* the provision */
+.law{padding:26px 30px 22px}
+.law .lh{display:flex;align-items:center;flex-wrap:wrap;gap:10px 16px;margin:0 0 20px;padding-bottom:16px;border-bottom:1px solid var(--line)}
+.lnum{display:inline-grid;justify-items:center;align-content:center;min-width:66px;padding:8px 12px 9px;border-radius:12px;background:color-mix(in srgb,var(--f,var(--brand)) 11%,var(--paper));color:var(--f,var(--brand));box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--f,var(--brand)) 22%,transparent);line-height:1}
+.lnum small{font:700 .64rem/1 var(--sans);letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px;white-space:nowrap}
+.lnum b{font:600 1.75rem/1 var(--serif);font-variant-numeric:lining-nums;letter-spacing:-.01em}
+.lnum.long b{font-size:1.15rem;line-height:1.15;text-align:center}
+.lcap{flex:1 1 14ch;min-width:0;font:600 1.6rem/1.18 var(--serif);color:var(--ink);text-wrap:balance}
+.lold{flex-basis:100%;font:500 .78rem var(--sans);color:var(--ink3)}
+.law .text{font:400 var(--read)/var(--lead) var(--serif);max-width:var(--measure);color:var(--ink);font-optical-sizing:auto;text-wrap:pretty;hanging-punctuation:first}
+.law .text p{margin:0 0 .9em}
+.law .text p.li{padding-left:0;text-indent:0}
+.law .text .en{display:grid;grid-template-columns:var(--gut) minmax(0,1fr);column-gap:.55em;align-items:baseline;margin:0 0 .55em}
+.law .text .en>p{margin:0}
+.law .text .en .mk{justify-self:end;font:650 .74em/1.5 var(--sans);font-variant-numeric:tabular-nums;color:var(--f,var(--brand));white-space:nowrap}
+.law .text .en.l1>.mk{min-width:2.1em;text-align:center;padding:.05em .45em;border-radius:7px;background:color-mix(in srgb,var(--f,var(--brand)) 12%,transparent)}
+.law .text .en.l2{margin-left:calc(var(--gut) + .55em)}
+.law .text .en.l2>.mk{color:color-mix(in srgb,var(--f,var(--brand)) 80%,var(--ink3))}
+.law .text .en.l3{margin-left:calc((var(--gut) + .55em)*2)}
+.law .text .en.l3>.mk{color:var(--ink3);font-weight:600}
+.law .text p.cont{margin-top:-.15em}
+.law .text p.cont.l1,.law .text .elide.l1{margin-left:calc(var(--gut) + .55em)}
+.law .text p.cont.l2,.law .text .elide.l2{margin-left:calc((var(--gut) + .55em)*2)}
+.law .text p.cont.l3,.law .text .elide.l3{margin-left:calc((var(--gut) + .55em)*3)}
+.law .text .en+p:not(.cont),.law .text .en+.tbl{margin-top:1.1em}
+.law .text .so{display:block;margin:.55em 0 0;padding-left:.9em;border-left:2px solid color-mix(in srgb,var(--violet) 55%,transparent)}
+.law .text .elide{color:var(--ink3);letter-spacing:.35em;font-size:.9em}
+.nitems{display:inline-block;margin-left:.55em;padding:0 .6em;border-radius:999px;background:var(--line);color:var(--ink2);font:650 .62rem/1.75 var(--sans);letter-spacing:.07em;text-transform:uppercase;vertical-align:.2em;white-space:nowrap}
+.tbl{overflow-x:auto;margin:6px 0 16px}
+.amend{padding:16px 18px}
+.amend .ak{font:700 .7rem/1 var(--sans);letter-spacing:.12em;text-transform:uppercase;color:var(--ok)}
+.amend .text{font-size:1.04rem}
+
+/* highlights: a highlighter stroke on the lower half of the line, or an underline; never a full block */
+.hl-num,.hl-pen,.hl-exc{border-radius:0;padding:0 .06em;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+.hl-num{background:linear-gradient(transparent 56%,color-mix(in srgb,var(--gold) 40%,transparent) 56%);font-weight:600}
+.hl-pen{background:linear-gradient(transparent 56%,color-mix(in srgb,var(--bad) 24%,transparent) 56%)}
+.hl-exc{background:linear-gradient(transparent 56%,color-mix(in srgb,var(--violet) 26%,transparent) 56%)}
+.hl-cond{background:none;padding:0;text-decoration:underline 2px dotted color-mix(in srgb,var(--blue) 80%,transparent);text-underline-offset:.24em;text-decoration-skip-ink:none}
+.hl-op{background:none;padding:0;color:var(--brand);font-weight:600}
+.hl-def{text-decoration:underline 2px color-mix(in srgb,var(--ok) 75%,transparent);text-underline-offset:.24em}
+.legend label{padding:4px 10px}
+.legend label span{font-family:var(--serif);font-size:.9rem}
+
+/* study prose everywhere */
+.explain{font:400 1.04rem/1.7 var(--serif);max-width:var(--measure);text-wrap:pretty}
+.explain ul,.explain ol{padding-left:1.25em}
+.explain li{margin-bottom:.45em}
+.explain li::marker{color:var(--f,var(--brand));font-weight:600}
+.lead{max-width:60ch;font-size:1.1rem;line-height:1.6}
+.howto{max-width:var(--measure);margin:0 0 14px;font-size:.94rem;color:var(--ink2)}
+.dl{display:block;margin:18px 0 8px;font:700 .68rem/1.4 var(--sans);letter-spacing:.12em;text-transform:uppercase;color:var(--ink3)}
+.dl.warnh{color:var(--warn)}
+.els{list-style:none;counter-reset:e;margin:0;padding:0;display:grid;gap:9px;max-width:var(--measure)}
+.els li{counter-increment:e;display:grid;grid-template-columns:26px minmax(0,1fr);column-gap:12px;font:400 1rem/1.6 var(--serif)}
+.els li::before{content:counter(e);width:24px;height:24px;margin-top:.12em;border-radius:50%;display:grid;place-items:center;font:700 .74rem/1 var(--sans);color:#fff;background:var(--f,var(--brand))}
+.els.q li::before{background:transparent;color:var(--f,var(--brand));box-shadow:inset 0 0 0 2px var(--f,var(--brand))}
+.why{margin:0;max-width:var(--measure);padding-left:14px;border-left:3px solid color-mix(in srgb,var(--f,var(--brand)) 40%,var(--line));font:italic 400 1.02rem/1.6 var(--serif);color:var(--ink2)}
+.traps{list-style:none;margin:0;padding:0;display:grid;gap:7px;max-width:var(--measure)}
+.traps li{position:relative;padding:9px 12px 9px 38px;border-radius:10px;background:var(--warn-soft);font:400 .98rem/1.55 var(--serif);color:var(--ink)}
+.traps li::before{content:"!";position:absolute;left:11px;top:11px;width:17px;height:17px;border-radius:50%;background:var(--warn);color:var(--card);font:800 .7rem/17px var(--sans);text-align:center}
+.selftest{margin-top:16px;padding:10px 12px;border-radius:12px;border:1px dashed var(--line2)}
+.selftest>summary{cursor:pointer}
+.selftest[open]>summary{margin-bottom:10px}
+.plain .explain p:first-child{font-size:1.08rem}
+
+/* take it apart */
+.anatsum{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 10px}
+.anatsum span{display:inline-flex;align-items:center;gap:5px;padding:3px 10px 3px 4px;border-radius:999px;font-size:.78rem;font-weight:600;color:var(--k);background:color-mix(in srgb,var(--k) 11%,transparent)}
+.anatsum b{display:grid;place-items:center;min-width:20px;height:20px;border-radius:50%;background:var(--k);color:#fff;font-size:.72rem}
+.anat{display:grid;gap:0;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--card)}
+.anat .it{display:grid;grid-template-columns:118px minmax(0,1fr);gap:14px;padding:11px 14px 11px 16px;border:0;border-top:1px solid var(--line);border-radius:0;background:transparent;box-shadow:inset 3px 0 0 var(--k)}
+.anat .it:first-child{border-top:0}
+.anat .it b{font:700 .66rem/1.9 var(--sans);letter-spacing:.09em;text-transform:uppercase;color:var(--k)}
+.anat .it.k-st b{color:var(--ink3)}
+.anat .it span{font:400 1rem/1.62 var(--serif);max-width:var(--measure)}
+.nums{display:flex;flex-wrap:wrap;gap:6px}
+.nums span{padding:4px 10px;border-radius:8px;background:var(--gold-soft);color:var(--ink);font:600 .92rem/1.3 var(--serif);font-variant-numeric:lining-nums;box-shadow:inset 0 -2px 0 color-mix(in srgb,var(--gold) 55%,transparent)}
+
+/* cases: the ruling is the thing to remember, so it carries the colour */
+.case{padding:14px 16px}
+.case .cn{font:600 1.05rem/1.35 var(--serif)}
+.case .cc{font:400 .8rem/1.45 var(--sans);color:var(--ink3);margin-top:2px}
+.case .dg{gap:10px;margin-top:12px;font:400 .98rem/1.62 var(--serif)}
+.case .dg>div{padding-left:12px;border-left:2px solid var(--line)}
+.case .dg b{font:700 .64rem/1.7 var(--sans);letter-spacing:.11em;margin-bottom:1px}
+.case .dg .d-i{border-left-color:color-mix(in srgb,var(--blue) 60%,var(--line))}.case .dg .d-i b{color:var(--blue)}
+.case .dg .d-r{border-left-color:var(--ok)}.case .dg .d-r b{color:var(--ok)}
+.case .dg .d-w{border-left-color:color-mix(in srgb,var(--gold) 70%,var(--line))}.case .dg .d-w b{color:var(--warn)}
+
+/* lessons: numbered sections give the chapter a shape you can recall */
+.lesson{counter-reset:sec}
+.lesson h2.sec{counter-increment:sec;display:flex;align-items:baseline;gap:12px;margin-top:32px;padding-top:14px;border-top:1px solid var(--line)}
+.lesson h2.sec::before{content:counter(sec,decimal-leading-zero);flex:none;font:700 .8rem/1 var(--sans);letter-spacing:.08em;color:var(--f,var(--brand))}
+.lesson .explain{font-size:1.06rem}
+
+/* Book Two: one card per crime, read top to bottom: what sets it apart, the elements, the penalty */
+.crime{padding:16px 18px;border-radius:16px}
+.crime.base{box-shadow:inset 5px 0 0 var(--f)}
+.crime .ch{display:flex;align-items:flex-start;gap:8px 12px;flex-wrap:wrap}
+.crime .cht{flex:1 1 220px;min-width:0}
+.crime .ck{display:block;font:700 .66rem/1.5 var(--sans);letter-spacing:.11em;text-transform:uppercase;color:var(--ink3)}
+.crime.base .ck{color:var(--f)}
+.crime h3{font:600 1.25rem/1.25 var(--serif)}
+.crime .refs{display:flex;gap:6px;flex-wrap:wrap;padding-top:2px}
+.delta{margin:12px 0 2px;padding:10px 14px 11px;border-radius:12px;background:color-mix(in srgb,var(--f) 8%,var(--card));border:1px solid color-mix(in srgb,var(--f) 26%,var(--line))}
+.delta .dl{margin:0 0 3px;color:var(--f)}
+.delta p{margin:0;font:500 1.04rem/1.55 var(--serif);color:var(--ink)}
+.crime>.dl{margin-top:14px}
+.crime .els li{font-size:.98rem}
+.penalty{margin-top:14px;padding-top:10px;border-top:1px dashed var(--line2)}
+.penalty .dl{margin:0 0 2px;color:var(--bad)}
+.penalty p{margin:0;font:400 .96rem/1.55 var(--serif);color:var(--ink2)}
+.b2el{margin-bottom:14px}.b2el .crime{margin-bottom:0}
+/* comparison matrix */
+.mx{font:400 .9rem/1.48 var(--serif)}
+.mx thead th{vertical-align:bottom;padding:11px 10px}
+.mx thead th small{display:block;font:700 .6rem/1.4 var(--sans);letter-spacing:.11em;text-transform:uppercase;color:var(--f)}
+.mx tbody th{font:700 .64rem/1.5 var(--sans);letter-spacing:.09em}
+.mx tbody tr:nth-child(even) td{background:color-mix(in srgb,var(--line) 32%,var(--card))}
+.mx td.b{background:color-mix(in srgb,var(--f) 5%,var(--card))}
+.mx tbody tr:nth-child(even) td.b{background:color-mix(in srgb,var(--f) 8%,var(--card))}
+.mx thead th.b{background:color-mix(in srgb,var(--f) 17%,var(--card))}
+.mx tr.key td{background:color-mix(in srgb,var(--f) 11%,var(--card))!important;font-weight:500;color:var(--ink)}
+.mx tr.key th{color:var(--f);background:color-mix(in srgb,var(--f) 11%,var(--card))}
+.mx tr.pen th{color:var(--bad)}
+.mx td.shut{color:transparent!important;background:repeating-linear-gradient(45deg,var(--line) 0 6px,transparent 6px 12px)!important}
+/* sort it: a ladder of questions */
+.ladder{list-style:none;counter-reset:s;margin:0;padding:0;max-width:720px}
+.ladder li{counter-increment:s;position:relative;display:grid;gap:7px;padding:0 0 18px 48px}
+.ladder li::before{content:counter(s);position:absolute;left:0;top:0;width:32px;height:32px;border-radius:50%;display:grid;place-items:center;background:var(--card);box-shadow:inset 0 0 0 2px var(--f);color:var(--f);font:700 .86rem/1 var(--sans);z-index:1}
+.ladder li::after{content:"";position:absolute;left:15px;top:34px;bottom:2px;width:2px;border-radius:2px;background:color-mix(in srgb,var(--f) 28%,var(--line))}
+.ladder li:last-child{padding-bottom:0}.ladder li:last-child::after{display:none}
+.ladder .lq{font:600 1.04rem/1.45 var(--serif);padding-top:4px}
+.ladder .la{font:400 .96rem/1.55 var(--serif);color:var(--ink2);padding:9px 13px;border-radius:12px;background:color-mix(in srgb,var(--f) 6%,var(--card));border:1px solid color-mix(in srgb,var(--f) 18%,var(--line))}
+.ladder .la b{color:var(--f);font-weight:600}
+.drill .facts{max-width:var(--measure);font-size:1.12rem;line-height:1.65}
+
+@media (max-width:760px){
+  :root{--read:1.0625rem;--lead:1.68;--gut:2.1em}
+  .law{padding:18px 16px 16px}
+  .law .lh{gap:10px 12px;margin-bottom:16px;padding-bottom:13px}
+  .lnum{min-width:56px;padding:7px 9px 8px}
+  .lnum b{font-size:1.45rem}
+  .lcap{font-size:1.32rem}
+  .law .text .en.l2{margin-left:1.2em}
+  .law .text .en.l3{margin-left:2.4em}
+  .law .text p.cont.l1,.law .text .elide.l1{margin-left:calc(var(--gut) + .55em)}
+  .law .text p.cont.l2,.law .text .elide.l2{margin-left:calc(var(--gut) + 1.75em)}
+  .law .text p.cont.l3,.law .text .elide.l3{margin-left:calc(var(--gut) + 2.95em)}
+  .anat .it{grid-template-columns:minmax(0,1fr);gap:2px;padding:10px 12px 11px 15px}
+  .crime{padding:14px 14px}
+  .crime h3{font-size:1.14rem}
+  .ladder li{padding-left:42px}
+  .explain{font-size:1.02rem}
+}
+.anat .amk{display:inline-block;min-width:1.9em;margin-right:.45em;padding:0 .35em;border-radius:6px;background:color-mix(in srgb,var(--k) 13%,transparent);color:var(--k);font:650 .74em/1.7 var(--sans);font-style:normal;text-align:center;vertical-align:.08em}
+.anat .it.k-st .amk{color:var(--ink3);background:var(--line)}
+.law .text p.so{margin:0 0 .9em}
+/* the one thing to remember on each crime card is set apart by form (a pull-quote in the field hue),
+   so it never reads as the small red label of a penalty */
+.delta{margin:14px 0 4px;padding:10px 16px 12px;border:0;border-left:4px solid var(--f);border-radius:0 12px 12px 0;background:color-mix(in srgb,var(--f) 7%,var(--card));box-shadow:none}
+.delta .dl{color:var(--f)}
+.delta p{font:600 1.1rem/1.5 var(--serif);color:var(--ink);text-wrap:pretty}
+.crime{max-width:820px}
+.crime.base{border-color:color-mix(in srgb,var(--f) 35%,var(--line))}
+a.pref{padding:0 6px;border-radius:6px;font-size:.84em;line-height:1.5;box-decoration-break:clone;-webkit-box-decoration-break:clone}
+.lesson h2.sec::before{font-size:.86rem;padding:3px 7px;border-radius:7px;background:color-mix(in srgb,var(--f,var(--brand)) 12%,transparent);align-self:center}
+.law .text .srcn{font:500 .72em/1 var(--sans);color:var(--ink3);letter-spacing:.02em;white-space:nowrap;cursor:help}
+.lcap.dim{display:grid;gap:3px;font:500 1.18rem/1.25 var(--serif);color:var(--ink2)}
+.lcap.dim small{font:700 .64rem/1.2 var(--sans);letter-spacing:.11em;text-transform:uppercase;color:var(--ink3)}
+.lcap.dim small:empty{display:none}
+@media (max-width:760px){.lcap.dim{font-size:1.06rem}}
+@media (max-width:400px){.steps button{padding:7px 7px}.steps button span{font-size:.8rem;letter-spacing:-.005em}}
+/* recall modes keep the shape of the text, so the layout itself becomes a retrieval cue */
+.rtext{max-width:calc(var(--measure) + 4em)}
+.rtext>p{margin:0 0 .8em}
+.rtext .en{display:grid;grid-template-columns:var(--gut) minmax(0,1fr);column-gap:.55em;align-items:baseline;margin:0 0 .5em}
+.rtext .en>p{margin:0}
+.rtext .en .mk{justify-self:end;font:650 .74em/1.5 var(--sans);color:var(--brand);white-space:nowrap}
+.rtext .en.l1>.mk{min-width:2.1em;text-align:center;padding:.05em .45em;border-radius:7px;background:var(--brand-soft)}
+.rtext .en.l2{margin-left:calc(var(--gut) + .55em)}
+.rtext .en.l3{margin-left:calc((var(--gut) + .55em)*2)}
+.rtext p.cont.l1{margin-left:calc(var(--gut) + .55em)}
+.rtext p.cont.l2{margin-left:calc((var(--gut) + .55em)*2)}
+.rtext .srcn{font:500 .72em var(--sans);color:var(--ink3)}
+.cloze.rtext{line-height:2.05}
+@media (max-width:760px){.rtext .en.l2{margin-left:1.2em}.rtext .en.l3{margin-left:2.4em}}
+/* a judge's reading: six questions, in order, each with the canon that governs it */
+.seg{display:inline-flex;padding:3px;border-radius:11px;background:var(--line);gap:2px;margin:2px 0 12px}
+.seg button{border:0;background:transparent;padding:6px 12px;border-radius:8px;font:600 .82rem var(--sans);color:var(--ink2);cursor:pointer}
+.seg button.on{background:var(--card);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.12)}
+.judge{list-style:none;margin:0;padding:0;display:grid;gap:16px}
+.judge>li{position:relative;padding-left:40px}
+.judge>li::after{content:"";position:absolute;left:13px;top:30px;bottom:-14px;width:2px;background:var(--line)}
+.judge>li:last-child::after{display:none}
+.judge .jh{display:flex;align-items:center;gap:10px;margin-bottom:2px}
+.judge .jn{position:absolute;left:0;top:0;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:var(--ink);color:var(--card);font:700 .8rem/1 var(--sans)}
+.judge .jq{font:600 1.06rem/1.3 var(--serif);color:var(--ink);padding-top:3px}
+.judge .jc{margin-left:auto;font:600 .72rem var(--sans);color:var(--ink3);font-variant-numeric:tabular-nums}
+.judge .canon{margin:2px 0 8px;max-width:var(--measure);font:italic 400 .9rem/1.5 var(--serif);color:var(--ink3)}
+.anat .it.nl{grid-template-columns:minmax(0,1fr)}
+@media (max-width:760px){.judge>li{padding-left:36px}.seg button{padding:6px 10px;font-size:.78rem}}

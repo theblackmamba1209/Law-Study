@@ -12,11 +12,13 @@ const today = () => new Date(Date.now() - new Date().getTimezoneOffset() * 60000
 /* ------------------------------------------------------------------ storage */
 const KEY = 'sinag.codal.v1';
 const DEFAULTS = { cards: {}, notes: {}, marks: {}, flags: {}, days: {}, last: null, tutor: {}, hooks: {}, lessons: {}, lastBy: {}, b2: {},
-  settings: { newPerDay: 10, focus: null, figure: '', hl: { op: true, cond: true, exc: true, num: true, pen: true, def: true }, passcode: '' } };
+  settings: { newPerDay: 10, focus: null, figure: '', hl: { op: false, cond: true, exc: true, num: true, pen: true, def: true }, hlv: 2, passcode: '' } };
 let S;
 try { S = Object.assign(structuredClone(DEFAULTS), JSON.parse(localStorage.getItem(KEY) || '{}')); }
 catch (e) { S = structuredClone(DEFAULTS); }
 S.settings = Object.assign(structuredClone(DEFAULTS.settings), S.settings || {});
+/* fewer default cues: "shall" and "may" occur in nearly every sentence, so marking them by default only adds noise */
+if (S.settings.hlv !== 2) { const h = S.settings.hl || {}; if (Object.values(h).every(Boolean)) h.op = false; S.settings.hlv = 2; }
 let saveT;
 function save() { clearTimeout(saveT); saveT = setTimeout(() => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { toast('Could not save progress in this browser.'); } }, 150); }
 function toast(msg) { const t = $('#toast'); t.textContent = msg; t.classList.add('on'); clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove('on'), 2600); }
@@ -281,13 +283,14 @@ const plain = s => typeof s === 'string' ? s.replace(FN, '') : '';
 const provText = p => p.p.filter(x => typeof x === 'string').map(plain).join('\n');
 const words = s => s.split(/\s+/).filter(Boolean);
 const NUMW = 'one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety|hundred|thousand|million|half|one-half|one-third|one-fourth|two-thirds|three-fourths|first|second|third|fourth|fifth|sixth|seventh|eighth|ninth|tenth';
+const DEFSRC = String.raw`\b(?:shall mean|refers? to|shall refer to|is understood|are understood|shall be understood|is defined as|are those|shall include)\b|(?<!\b(?:by|of|any|other|similar|employing|employ|the|a|an|such|all|these|those|no|its|his|her|their|legal|lawful|available|reasonable|adequate|financial|appropriate|effective|some|every|same|necessary|proper|whatever|peaceful|electronic|fraudulent|illegal)\s)\bmeans\b(?=[\s,](?!\s*(?:of|to|whereby|employed|used|be|by|for|through)\b))`;
 const RX = {
   pen: /\b(reclusi[oó]n perpetua|reclusi[oó]n temporal|prisi[oó]n mayor|prisi[oó]n correccional|arresto mayor|arresto menor|destierro|public censure|perpetual (?:absolute|special) disqualification|temporary (?:absolute|special) disqualification|life imprisonment|imprisonment|fine of [^,;.]{1,60}|a fine|fines?|penalty of [a-z ]{3,40}|death penalty)\b/gi,
-  num: new RegExp(`(?:₱|P(?=\s?\d))\s?\d[\d,]*(?:\.\d+)?|\b\d+(?:\.\d+)?\s?%|\b(?:\d[\d,]*(?:\.\d+)?|(?:${NUMW})(?:[ -](?:${NUMW}|and))*)(?:\s*\(\d[\d,.]*\))?\s+(?:calendar |working |consecutive |full )?(?:days?|months?|years?|hours?|weeks?|minutes?|per\s?cent(?:um)?|percent|pesos|centavos|hectares?|meters?|kilometers?|degrees?|times|members|votes|witnesses)\b|\b(?:${NUMW})(?:[ -](?:${NUMW}))*\s*\(\d[\d,.]*\)|\b(?:one-half|one-third|two-thirds|three-fourths|one-fourth|majority)\b`, 'gi'),
+  num: new RegExp(String.raw`(?:₱|P(?=\s?\d))\s?\d[\d,]*(?:\.\d+)?|\b\d+(?:\.\d+)?\s?%|\b(?:\d[\d,]*(?:\.\d+)?|(?:${NUMW})(?:[ -](?:${NUMW}|and))*)(?:\s*\(\d[\d,.]*\))?\s+(?:calendar |working |consecutive |full )?(?:days?|months?|years?|hours?|weeks?|minutes?|per\s?cent(?:um)?|percent|pesos|centavos|hectares?|meters?|kilometers?|degrees?|times|members|votes|witnesses)\b|\b(?:${NUMW})(?:[ -](?:${NUMW}))*\s*\(\d[\d,.]*\)|\b(?:one-half|one-third|two-thirds|three-fourths|one-fourth|majority)\b`, 'gi'),
   exc: /\b(unless|except(?:ing)?|notwithstanding|however|nevertheless|without prejudice to|other than|save (?:as|those|when|in)|provided,? however)\b/gi,
-  cond: /\b(if|when|whenever|in case|in the event|provided(?:,)? that|provided|as long as|so long as|only if|on condition|subject to)\b/gi,
+  cond: /\b(if|when|whenever|in case|in the event|provided(?:,)? that|provided(?=,?\s+(?:that|further|finally|also|moreover)\b)|as long as|so long as|only if|on condition|subject to)\b/gi,
   op: /\b(shall not|shall|may not|may|must not|must|cannot|can not|is prohibited|are prohibited|is hereby|are hereby|it shall be unlawful|null and void|void|voidable|unenforceable|rescissible|inexistent|liable|entitled)\b/gi,
-  def: /\b(shall mean|means|refers? to|shall refer to|is understood|are understood|shall be understood|is defined as|are those|shall include|includes)\b/gi,
+  def: new RegExp(DEFSRC, 'gi'),
 };
 const HLORDER = ['pen', 'num', 'exc', 'cond', 'op', 'def'];
 const HLCLASS = { op: 'hl-op', cond: 'hl-cond', exc: 'hl-exc', num: 'hl-num', pen: 'hl-pen', def: 'hl-def' };
@@ -323,37 +326,125 @@ function hlText(text, on) {
   for (const [a, b, k] of ss) { h += esc(text.slice(i, a)) + `<span class="${HLCLASS[k]}">${esc(text.slice(a, b))}</span>`; i = b; }
   return h + esc(text.slice(i));
 }
-function renderPara(x, on, d, cid) {
-  if (typeof x !== 'string') {
-    if (x && x.t === 'table') return `<div style="overflow-x:auto"><table>${x.rows.map(r => `<tr>${r.map(c => `<td>${esc(c)}</td>`).join('')}</tr>`).join('')}</table></div>`;
-    return '';
+/* --------- reading layout: the verbatim words, arranged so the structure shows.
+   Enumerations hang from a marker gutter and nest by level; a lead-in that ends with a colon
+   says how many items follow; each proviso starts on its own line. Not one word is changed. */
+const MK = /^(\(?)([0-9]{1,2}|[a-z]{1,2}|[ivx]{1,5})([.)])\s+/;
+const ORDW = ['First', 'Second', 'Third', 'Fourth', 'Fifth', 'Sixth', 'Seventh', 'Eighth', 'Ninth', 'Tenth', 'Eleventh', 'Twelfth'];
+const ORD = new RegExp(`^(${ORDW.join('|')})[.,—:-]`);
+const ROMAN = /^(i|ii|iii|iv|v|vi|vii|viii|ix|x|xi|xii|xiii|xiv|xv)$/;
+const PROVISO = /(?<=[:;.,]\s)(?=Provided(?:,)?(?:\s+(?:however|further(?:more)?|finally|also|moreover|lastly))?,?\s+[Tt]hat\b)/;
+function markerOf(x, last) {
+  if (typeof x !== 'string') return null;
+  const o = ORD.exec(x); if (o) return { key: 'ord', tok: o[1], mk: String(ORDW.indexOf(o[1]) + 1), body: x, first: o[1] === 'First' };
+  const m = MK.exec(x); if (!m) return null;
+  const [all, open, tok, close] = m; const shape = open ? '()' : close;
+  let type = /^\d+$/.test(tok) ? 'n' : 'a';
+  if (type === 'a' && ROMAN.test(tok)) {
+    const la = last['a' + shape];
+    const afterLetter = tok.length === 1 && la && la.length === 1 && la.charCodeAt(0) + 1 === tok.charCodeAt(0);
+    if (!afterLetter && (tok.length > 1 || tok === 'i' || last['r' + shape])) type = 'r';
   }
-  let h = on ? hlText(x, on) : esc(x);
-  h = h.replace(/⟨(\d+)⟩/g, '<sup class="fn" data-fn="$1">$1</sup>');
-  h = linkRefs(h, d, cid);
-  const li = /^\(?([0-9]{1,2}|[a-z]{1,2}|[ivx]{1,4})[.)]\s/.test(x) || /^(First|Second|Third|Fourth|Fifth|Sixth|Seventh|Eighth|Ninth|Tenth|Eleventh|Twelfth)[.,—:-]/.test(x);
-  return `<p${li ? ' class="li"' : ''}>${h}</p>`;
+  const first = tok === '1' || (type === 'a' && tok === 'a') || (type === 'r' && tok === 'i');
+  return { key: type + shape, tok, mk: all.trim(), body: x.slice(all.length), first };
 }
+const SRCN = /([.;:"”])\s(\((?:\d+[a-z]?|n)(?:,\s*(?:\d+[a-z]?|n))*\))\s*$/;
+function splitSrc(t) { const m = SRCN.exec(t); return m ? [t.slice(0, m.index + 1), m[2]] : [t, '']; }
+function inlineLaw(t, on, d, cid) {
+  let h = on ? hlText(t, on) : esc(t);
+  h = h.replace(/⟨(\d+)⟩/g, '<sup class="fn" data-fn="$1">$1</sup>');
+  return linkRefs(h, d, cid);
+}
+function lawInline(t, on, d, cid) {
+  const segs = t.split(PROVISO);
+  return segs.map((x, i) => i ? `<span class="so">${inlineLaw(x, on, d, cid)}</span>` : inlineLaw(x, on, d, cid)).join('');
+}
+function tableHTML(x) { return `<div class="tbl"><table>${x.rows.map(r => `<tr>${r.map(c => `<td>${esc(c)}</td>`).join('')}</tr>`).join('')}</table></div>`; }
+function lawLayout(paras) {
+  const last = {}; const ms = paras.map(x => { const m = markerOf(x, last); if (m) last[m.key] = m.tok; return m; });
+  const stack = []; const info = [];
+  paras.forEach((x, i) => {
+    const m = ms[i];
+    if (m) {
+      let k = stack.indexOf(m.key);
+      if (k >= 0) stack.length = k + 1; else { stack.push(m.key); k = stack.length - 1; }
+      info.push({ kind: 'item', lv: Math.min(k + 1, 3) }); return;
+    }
+    if (typeof x !== 'string') { info.push({ kind: 'table', lv: stack.length ? Math.min(stack.length, 3) : 0 }); return; }
+    if (/^\s*x\s*x\s*x\.?\s*$/i.test(x)) { info.push({ kind: 'elide', lv: Math.min(stack.length, 3) }); return; }
+    let j = i + 1; while (j < paras.length && !ms[j]) j++;
+    const nx = ms[j];
+    if (stack.length && nx && stack.includes(nx.key) && !nx.first) { info.push({ kind: 'cont', lv: Math.min(stack.length, 3) }); return; }
+    stack.length = 0; info.push({ kind: 'para', lv: 0 });
+  });
+  return { ms, info };
+}
+/* wrap one paragraph's inner html in the same hanging layout the law text uses */
+function layoutWrap(m, f, inner, extra = '') {
+  if (m) return `<div class="en l${f.lv}${extra}"><span class="mk">${esc(m.mk)}</span><p>${inner}</p></div>`;
+  return `<p class="${f.kind === 'cont' ? `cont l${f.lv}` : ''}${extra}">${inner}</p>`;
+}
+function lawBody(paras, on, d, cid) {
+  const { ms, info } = lawLayout(paras);
+  return paras.map((x, i) => {
+    const m = ms[i], f = info[i];
+    if (f.kind === 'table') return tableHTML(x);
+    if (f.kind === 'elide') return `<p class="elide l${f.lv}">${esc(x)}</p>`;
+    const text = m ? m.body : x;
+    let tag = '';
+    if (/:\s*$/.test(text) && ms[i + 1]) {
+      let n = 0;
+      for (let j = i + 1; j < paras.length; j++) {
+        const g = info[j];
+        if (g.kind === 'para') break;
+        if (g.kind === 'item') { if (g.lv <= f.lv) break; if (g.lv === f.lv + 1) n++; }
+      }
+      if (n >= 2) tag = `<span class="nitems" title="${n} items follow">${n} items</span>`;
+    }
+    const [main, src] = splitSrc(text);
+    const body = lawInline(main, on, d, cid) + (src ? ` <span class="srcn" title="Source note, not part of the rule: the earlier article this one is based on (a = amended, n = new)">${esc(src)}</span>` : '') + tag;
+    if (m) return `<div class="en l${f.lv}${tag ? ' stem' : ''}"><span class="mk" aria-hidden="${m.key === 'ord'}">${esc(m.mk)}</span><p>${body}</p></div>`;
+    return `<p class="${f.kind === 'cont' ? `cont l${f.lv}` : ''}${tag ? ' stem' : ''}${/^Provided\b/.test(text) ? ' so' : ''}">${body}</p>`;
+  }).join('');
+}
+function renderPara(x, on, d, cid) { return lawBody([x], on, d, cid); }
 
 /* --------- legal anatomy: an automatic reading guide built from the verbatim text */
 function sentences(t) { return t.replace(/\s+/g, ' ').split(/(?<=[.;:])\s+(?=[A-Z(“"])/).map(s => s.trim()).filter(s => s.length > 2); }
+function kindOf(s, item) {
+  const l = s.toLowerCase();
+  if (new RegExp(DEFSRC, 'i').test(s) || /\b(is one who|are those who|is deemed|are deemed|shall be deemed|there is \w+ when)\b/i.test(s)) return 'Definition';
+  if (/\b(reclusi[oó]n|prisi[oó]n|arresto|destierro|imprisonment|fine of|shall be punished|penalty of|shall suffer)\b/.test(l)) return 'Penalty';
+  if (item) return 'Element / item';
+  if (/\b(shall not|may not|must not|cannot|can not|is prohibited|are prohibited|unlawful|no person shall|no .{1,40} shall)\b/.test(l)) return 'Prohibition';
+  if (/\b(unless|except|notwithstanding|however|nevertheless|provided,? however)\b/.test(l)) return 'Exception';
+  if (/^(if|when|whenever|in case|should|where)\b/.test(l)) return 'Condition';
+  if (/\b(shall|must|is required|are required|is obliged|are obliged|is bound)\b/.test(l)) return 'Duty / rule';
+  if (/\b(may|is entitled|are entitled|has the right|have the right)\b/.test(l)) return 'Power / right';
+  return 'Statement';
+}
+/* one row per enumerated item (marker kept), one row per sentence elsewhere; provisos get their own row */
 function anatomy(p) {
-  const t = provText(p); const out = [];
-  const add = (k, s) => out.push([k, s]);
-  for (const s of sentences(t)) {
-    const l = s.toLowerCase();
-    if (/\b(means|shall mean|refers? to|is understood|are understood|shall be understood|is defined|are those|is one)\b/.test(l)) add('Definition', s);
-    else if (/\b(reclusi[oó]n|prisi[oó]n|arresto|destierro|imprisonment|fine of|shall be punished|penalty of|shall suffer)\b/.test(l)) add('Penalty', s);
-    else if (/\b(shall not|may not|must not|cannot|can not|is prohibited|are prohibited|unlawful|no person shall|no .{1,40} shall)\b/.test(l)) add('Prohibition', s);
-    else if (/\b(unless|except|notwithstanding|however|nevertheless|provided,? however)\b/.test(l)) add('Exception', s);
-    else if (/^(if|when|whenever|in case|should|where)\b/.test(l)) add('Condition', s);
-    else if (/\b(shall|must|is required|are required|is obliged|are obliged|is bound)\b/.test(l)) add('Duty / rule', s);
-    else if (/\b(may|is entitled|are entitled|has the right|have the right)\b/.test(l)) add('Power / right', s);
-    else if (/^\(?([0-9]{1,2}|[a-z])[.)]/.test(s)) add('Element / item', s);
-    else add('Statement', s);
+  const out = []; const last = {}; const stems = [];
+  for (const x of p.p) {
+    if (typeof x !== 'string') continue;
+    const m = markerOf(x, last); if (m) last[m.key] = m.tok;
+    const t = splitSrc(plain(m && m.key !== 'ord' ? m.body : x))[0];
+    if (/^\s*x\s*x\s*x\.?\s*$/i.test(t)) continue;
+    if (m) { out.push([kindOf(t, true), t, m.key === 'ord' ? '' : m.mk]); continue; }
+    if (/:\s*$/.test(t)) stems.push(t);
+    for (const seg of t.split(PROVISO)) for (const s of sentences(seg)) {
+      let k = /^Provided\b/.test(s) ? 'Proviso' : kindOf(s, false);
+      if (/:\s*$/.test(s) && (k === 'Exception' || k === 'Condition' || k === 'Statement')) k = 'Duty / rule';
+      out.push([k, s, '']);
+    }
   }
+  const t = provText(p);
   const periods = (t.match(RX.num) || []).filter(x => /day|month|year|hour|week|per\s?cent|percent|pesos|₱|\d{2,}/i.test(x));
-  return { items: out, periods: [...new Set(periods)].slice(0, 12) };
+  const lay = lawLayout(p.p); const nested = lay.info.some(f => f.kind === 'item' && f.lv > 1);
+  const st = stems.join(' ');
+  const mode = nested || stems.length !== 1 ? '' : /\bany (?:one )?of the following\b|\beither\b/i.test(st) ? 'any' : /\bconcur|\brequisites?\b|\ball of the following\b|\belements?\b/i.test(st) ? 'all' : '';
+  return { items: out, periods: [...new Set(periods)].slice(0, 12), mode };
 }
 
 /* --------- recall builders */
@@ -487,7 +578,7 @@ function lessonView(id) {
   const nxLink = nx && nx.t !== 'missing' ? (nx.t === 'code' ? [`#/code/${nx.id}`, meta(nx.id).short] : nx.t === 'lesson' ? [`#/lesson/${nx.id}`, CUR.lessons[nx.id].title] : nx.t === 'set' ? [`#/set/${nx.id}`, CUR.sets[nx.id].title] : nx.t === 'b2' ? ['#/b2', nx.title] : [`#/syllabus/${nx.id}`, nx.title]) : null;
   main.innerHTML = `<article class="lesson f-${f.id}"><div class="crumbs"><a href="#/learn">Learn</a><span class="sep">›</span><a href="#/field/${f.id}">${esc(f.name)}</a><span class="sep">›</span><span>${esc(at.t.name)}</span></div>
   <span class="eyebrow" style="color:var(--f)">Lesson · ${l.mins} minutes</span><h1>${esc(l.title)}</h1><p class="lead">${rich(l.lead)}</p>
-  ${l.sections.map(x => `<h2>${esc(x.h)}</h2><div class="explain">${x.p.map(p => `<p>${rich(p)}</p>`).join('')}${x.l.length ? `<ul>${x.l.map(p => `<li>${rich(p)}</li>`).join('')}</ul>` : ''}</div>`).join('')}
+  ${l.sections.map(x => `<h2 class="sec">${esc(x.h.replace(/^\d+\.\s*/, ''))}</h2><div class="explain">${x.p.map(p => `<p>${rich(p)}</p>`).join('')}${x.l.length ? `<ul>${x.l.map(p => `<li>${rich(p)}</li>`).join('')}</ul>` : ''}</div>`).join('')}
   ${l.try.length ? `<h2>Try it now</h2><div class="tryit explain">${l.try.map(p => `<p>${rich(p)}</p>`).join('')}</div>` : ''}
   <p class="tiny muted" style="margin-top:14px">Lessons are study aids in our own words. The verbatim provisions they link to are what you cite.</p>
   <div class="pn"><button class="btn${S.lessons[id] ? '' : ' primary'}" id="ldone">${S.lessons[id] ? 'Read ✓' : 'Mark as read'}</button>${nxLink ? `<a class="btn" href="${nxLink[0]}">Next: ${esc(nxLink[1])} →</a>` : `<a class="btn" href="#/field/${f.id}">Back to ${esc(f.name)}</a>`}</div></article>`;
@@ -570,15 +661,30 @@ async function checkTutor() {
   try { const r = await fetch('api/tutor', { method: 'GET' }); tutorOK = r.ok && (await r.json()).ok === true; } catch (e) { tutorOK = false; }
   return tutorOK;
 }
+const LABK = { article: 'Art.', section: 'Sec.', rule: 'Rule', canon: 'Canon', art: 'Art.', sec: 'Sec.' };
+function labelParts(l) {
+  l = l || '';
+  const c = /^(.*?),\s*(Sec\.|Section)\s*(.+)$/.exec(l);
+  if (c) return { k: c[1] + ' · Sec.', n: c[3] };
+  const m = /^(Article|Section|Rule|Canon|Art\.|Sec\.)\s*(.+)$/i.exec(l);
+  return m ? { k: LABK[m[1].toLowerCase().replace('.', '')] || m[1], n: m[2] } : { k: '', n: l };
+}
+function divCap(d, p) {
+  if (!d || p.d == null || !d.divisions[p.d]) return null;
+  const t = d.divisions[p.d].t; const m = /^(.*?)\s*[—–-]\s+(.+)$/.exec(t);
+  const tc = x => x === x.toUpperCase() ? x.toLowerCase().replace(/(^|[\s(])([a-z])/g, (a, b, c) => b + c.toUpperCase()).replace(/\b(Of|And|The|In|On|To|For|By|A|An|Or|With|Under)\b/g, w => w.toLowerCase()).replace(/^./, c => c.toUpperCase()) : x;
+  return m ? [tc(m[1]), tc(m[2])] : ['', tc(t)];
+}
 function lawHTML(d, p, cid, on) {
   const fn = p.f || [];
-  return `<article class="law" id="law">
-    <div class="lab"><h1>${esc(p.l)}${p.o ? ` <span class="muted" style="font-size:.8em">[${esc(p.o)}]</span>` : ''}</h1>${p.c ? `<span class="cap">${esc(p.c)}.</span>` : ''}</div>
-    <div class="text">${p.p.map(x => renderPara(x, on, d, cid)).join('')}</div>
+  const lp = labelParts(p.l); const fld = fieldOf(cid);
+  return `<article class="law${fld ? ' f-' + fld.id : ''}" id="law">
+    <h1 class="lh"><span class="lnum${lp.n.length > 6 ? ' long' : ''}">${lp.k ? `<small>${esc(lp.k)}</small>` : ''}<b>${esc(lp.n)}</b></span>${p.c ? `<span class="lcap">${esc(p.c)}</span>` : divCap(d, p) ? `<span class="lcap dim"><small>${esc(divCap(d, p)[0])}</small>${esc(divCap(d, p)[1])}</span>` : ''}${p.o ? `<span class="lold">formerly ${esc(p.o)}</span>` : ''}</h1>
+    <div class="text">${lawBody(p.p, on, d, cid)}</div>
     ${fn.length ? `<div class="fnlist">${fn.map(f => `<p id="fn${f.n}"><sup>${f.n}</sup> ${esc(f.t)}</p>`).join('')}<p class="tiny muted">Footnotes are the publisher’s (DOLE), not part of the law.</p></div>` : ''}
     <div class="verify">${verifyChips(cid, p)}</div>
     ${(p.e || []).map(e => `<div class="note ${/missing|omitted|restored|absent/i.test(e.t) ? 'blue' : ''}" style="margin-top:10px"><b>Proofreading note.</b> ${esc(e.t)}${e.b ? ` <span class="muted">Basis: ${esc(e.b)}</span>` : ''}</div>`).join('')}
-    ${(p.a || []).map(a => `<div class="amend"><div class="row"><b>Amended text</b><span class="chip ok">${esc(a.by)} · Sec. ${esc(a.sec)}</span><span class="spacer"></span><a class="small" href="#/code/${a.ref}">open ${esc(a.by)}</a></div><p class="tiny muted" style="margin:4px 0 8px">Verbatim from the amending law. Where two amendments are shown, the later law controls.</p><div class="text">${a.p.map(x => renderPara(x, on, null, cid)).join('')}</div></div>`).join('')}
+    ${(p.a || []).map(a => `<section class="amend"><div class="row"><span class="ak">Amended text</span><span class="chip ok">${esc(a.by)} · Sec. ${esc(a.sec)}</span><span class="spacer"></span><a class="small" href="#/code/${a.ref}">open ${esc(a.by)}</a></div><p class="tiny muted" style="margin:4px 0 10px">Verbatim from the amending law. Where two amendments are shown, the later law controls.</p><div class="text">${lawBody(a.p, on, null, cid)}</div></section>`).join('')}
   </article>`;
 }
 function verifyChips(cid, p) {
@@ -640,6 +746,7 @@ async function provView(cid, pid, q) {
     if (k === 'cases') tabbox.innerHTML = casesHTML(cid, pid, notes, cases, syl, rec);
     if (k === 'notes') { tabbox.innerHTML = `<div class="panel"><textarea id="mynote" placeholder="Your own words: what the provision says, the elements, a case that applies it, a mnemonic…">${esc(S.notes[key] || '')}</textarea><p class="tiny muted">Saved on this device as you type. Writing it in your own words is one of the strongest ways to learn it.</p></div>`; $('#mynote').addEventListener('input', e => { S.notes[key] = e.target.value; save(); }); }
     if (k === 'recall') { recallPanel(tabbox, d, p, cid); if (S.hooks[key]) $('.panel', tabbox).insertAdjacentHTML('afterbegin', `<div class="hookcue"><b>Your picture:</b> ${esc(S.hooks[key])}</div>`); }
+    if (k === 'guide') { $$('[data-av]', tabbox).forEach(b => b.onclick = () => { S.settings.anatView = b.dataset.av; save(); $$('[data-av]', tabbox).forEach(x => x.classList.toggle('on', x === b)); $('#av-judge').hidden = b.dataset.av !== 'judge'; $('#av-text').hidden = b.dataset.av !== 'text'; }); }
     if (k === 'guide') { wireTutor(d, p, cid, cases); const hk = $('#hookin'); if (hk) hk.addEventListener('input', e => { const v = e.target.value.trim(); if (v) S.hooks[key] = v.slice(0, 200); else delete S.hooks[key]; save(); }); }
   }
   show('guide');
@@ -661,44 +768,86 @@ function sibling(d, p, cid) {
   const i = arr.indexOf(p); const win = arr.slice(Math.max(0, i - 6), i + 7);
   return `<div class="card"><h3 class="small">${esc(shortDiv(dv))}</h3><ul class="plist" style="padding:0">${win.map(x => `<li><a href="#/p/${cid}/${x.i}" ${x === p ? 'style="background:var(--brand-soft)"' : ''}><span class="dot ${status(ck(cid, x.i))}"></span><span class="pl">${esc(x.l)}</span><span class="pc">${esc(x.c || '')}</span></a></li>`).join('')}</ul></div>`;
 }
+function crimeHTML(c, fam, foot = '') {
+  const isBase = c.id === fam.base; const base = fam.crimes.find(x => x.id === fam.base);
+  const chips = c.refs.map(r => `<a class="pref" href="#/p/${r.c}/${r.i}">${esc(r.l)}</a>`).join('');
+  return `<article class="crime${isBase ? ' base' : ''}" id="c-${c.id}">
+    <header class="ch"><div class="cht"><span class="ck">${isBase ? 'Base crime' : `Compare: ${esc(base.name)}`}</span><h3>${esc(c.name)}</h3></div><div class="refs">${chips}</div></header>
+    <div class="delta"><span class="dl">${isBase ? 'The base' : 'Sets it apart'}</span><p>${esc(c.key)}</p></div>
+    <span class="dl">${c.els.length} element${c.els.length === 1 ? '' : 's'}</span>
+    <ol class="els">${c.els.map(e => `<li>${esc(e)}</li>`).join('')}</ol>
+    <div class="penalty"><span class="dl">Penalty</span><p>${esc(c.pen)}</p></div>${foot}
+  </article>`;
+}
 function b2Card(cid, pid) {
   if (cid !== 'rpc' || !B2 || !B2.byArt[pid]) return '';
   const seen = new Set();
   return B2.byArt[pid].filter(x => { const k = x.f + x.c; if (seen.has(k)) return false; seen.add(k); return true; }).map(({ f, c }) => {
     const fam = B2.families.find(x => x.id === f); const cr = fam.crimes.find(x => x.id === c);
-    return `<div class="card flat b2el" style="margin-bottom:12px"><div class="row"><h3 style="margin:0">Elements: ${esc(cr.name)}</h3><span class="spacer"></span><span class="chip f-crim" style="background:color-mix(in srgb,var(--f) 14%,transparent);color:var(--f)">Book Two Studio</span></div>
-      <p class="setsapart"><b>Sets it apart:</b> ${esc(cr.key)}</p><ol class="explain" style="margin:6px 0 8px;padding-left:1.3em">${cr.els.map(e => `<li>${esc(e)}</li>`).join('')}</ol>
-      <p class="small" style="margin:0"><b>Penalty:</b> ${esc(cr.pen)}</p>
-      <div class="row" style="margin-top:10px"><a class="btn sm" href="#/b2/${f}?tab=compare">Compare with its neighbours</a><a class="btn sm ghost" href="#/b2/${f}?tab=practice">Practise sorting facts</a></div></div>`;
+    return `<div class="f-crim b2el"><div class="row" style="margin:0 0 6px"><span class="eyebrow" style="color:var(--f)">Book Two Studio · ${esc(fam.title)}</span></div>${crimeHTML(cr, fam, `<div class="row" style="margin-top:12px"><a class="btn sm" href="#/b2/${f}?tab=compare">Compare with its neighbours</a><a class="btn sm ghost" href="#/b2/${f}?tab=practice">Practise sorting facts</a></div>`)}</div>`;
   }).join('');
+}
+const ANATK = { 'Definition': 'k-def', 'Penalty': 'k-pen', 'Prohibition': 'k-pro', 'Exception': 'k-exc', 'Proviso': 'k-exc', 'Condition': 'k-cond', 'Duty / rule': 'k-op', 'Power / right': 'k-pow', 'Element / item': 'k-el', 'Statement': 'k-st' };
+function anatSummary(items) {
+  const c = {}; items.forEach(([k]) => { c[k] = (c[k] || 0) + 1; });
+  const order = Object.keys(ANATK).filter(k => c[k] && k !== 'Statement');
+  if (!order.length) return '';
+  const PL = { 'Definition': 'Definitions', 'Penalty': 'Penalties', 'Prohibition': 'Prohibitions', 'Exception': 'Exceptions', 'Proviso': 'Provisos', 'Condition': 'Conditions', 'Duty / rule': 'Duties / rules', 'Power / right': 'Powers / rights', 'Element / item': 'Elements / items' };
+  return `<div class="anatsum" aria-label="What this provision is made of">${order.map(k => `<span class="${ANATK[k]}"><b>${c[k]}</b> ${esc(c[k] === 1 ? k : PL[k])}</span>`).join('')}</div>`;
+}
+function anatRow(k, s, mk, nolabel) { return `<div class="it ${ANATK[k] || 'k-st'}${nolabel ? ' nl' : ''}">${nolabel ? '' : `<b>${esc(k)}</b>`}<span>${mk ? `<i class="amk">${esc(mk)}</i>` : ''}${hlText(s, S.settings.hl)}</span></div>`; }
+/* the order of judicial reading, each step with the canon of construction that governs it */
+const JUDGE = [
+  { ks: ['Definition'], q: 'Which words does it define?', c: 'A term the law defines carries that meaning wherever the law uses it, not its everyday sense.' },
+  { ks: ['Duty / rule', 'Prohibition', 'Power / right', 'Statement'], q: 'What is the rule?', c: 'Where the words are clear, apply them as written; there is no room for construction (verba legis).' },
+  { ks: ['Element / item'], q: 'What does it list?', c: 'A list excludes what it does not name (expressio unius est exclusio alterius). Read the lead-in to know whether every item must be present or any one is enough.', all: 'Here the items must all be present: if one is missing, the provision does not apply.', any: 'Here any one item is enough.' },
+  { ks: ['Condition'], q: 'When does it apply?', c: 'A condition is part of the rule: if it is not met, the rule does not operate.' },
+  { ks: ['Exception', 'Proviso'], q: 'What is qualified or carved out?', c: 'Exceptions and provisos are read strictly. Whatever they do not clearly cover stays under the general rule, and the one who claims an exception must prove it.' },
+  { ks: ['Penalty'], q: 'What follows?', c: '', pc: 'Penal laws are read strictly against the State and liberally in favour of the accused.' },
+];
+function judgeHTML(items, fld, mode) {
+  const crim = fld && fld.id === 'crim';
+  let n = 0;
+  return `<ol class="judge">${JUDGE.map(g => {
+    const rows = items.filter(i => g.ks.includes(i[0]));
+    if (!rows.length) return '';
+    n++;
+    const canon = g.pc ? (crim ? g.pc : 'A consequence attaches only when every part of the rule above is met.') : g.c + (mode && g[mode] ? ' ' + g[mode] : '');
+    const one = g.ks.length === 1 || g.ks.every(k => ANATK[k] === ANATK[g.ks[0]]);
+    return `<li><div class="jh"><span class="jn">${n}</span><span class="jq">${esc(g.q)}</span><span class="jc">${rows.length}</span></div>
+      <p class="canon">${esc(canon)}</p><div class="anat">${rows.map(([k, s, mk]) => anatRow(k, s, mk, one)).join('')}</div></li>`;
+  }).join('')}</ol>`;
 }
 function guideHTML(d, p, cid, n, loc) {
   const an = anatomy(p);
   const fld = fieldOf(cid); const key = ck(cid, p.i);
-  let h = '<div class="panel">' + b2Card(cid, p.i);
+  let h = `<div class="panel${fld ? ' f-' + fld.id : ''}">` + b2Card(cid, p.i);
   h += `<div class="card flat hook" style="margin-bottom:12px"><div class="row"><h3 style="margin:0">Make it a picture</h3><span class="spacer"></span>${loc ? `<span class="chip ok">${esc(loc)}</span>` : fld ? `<span class="chip f-${fld.id}" style="background:color-mix(in srgb,var(--f) 14%,transparent);color:var(--f)">${esc(fld.pname)}</span>` : ''}</div>
     <p class="small muted" style="margin:0">${loc ? `In this walk, the provision’s place is the <b>${esc(loc.toLowerCase())}</b>.` : fld ? `${esc(fld.name)} lives at the ${esc(fld.pname.toLowerCase())} of the House of Law.` : ''} In a few words, what do you see happening there that stands for this rule? Odd pictures last longest.</p>
     <input id="hookin" maxlength="200" value="${esc(S.hooks[key] || '')}" placeholder="e.g. a stopwatch hanging on the column: three months to decide" aria-label="Your picture for this provision"></div>`;
   if (n && (n.x || n.k)) {
-    h += `<div class="card flat" style="margin-bottom:12px"><div class="row"><h3 style="margin:0">In plain language</h3><span class="spacer"></span><span class="chip ok">Written for this provision</span></div>
+    h += `<div class="card flat plain" style="margin-bottom:12px"><div class="row"><h3 style="margin:0">In plain language</h3><span class="spacer"></span><span class="chip ok">Written for this provision</span></div>
       <div class="explain" style="margin-top:8px">${(n.x || '').split('\n\n').map(x => `<p>${esc(x)}</p>`).join('')}</div>
-      ${n.k ? `<h3 style="margin-top:10px">Elements / key points</h3><ol class="explain" style="margin:0;padding-left:1.3em">${n.k.map(x => `<li>${esc(x)}</li>`).join('')}</ol>` : ''}
-      ${n.w ? `<h3 style="margin-top:10px">Why it exists</h3><p class="explain">${esc(n.w)}</p>` : ''}
-      ${n.t ? `<h3 style="margin-top:10px">Exam traps</h3><ul class="explain" style="margin:0;padding-left:1.2em">${n.t.map(x => `<li>${esc(x)}</li>`).join('')}</ul>` : ''}
-      ${n.q ? `<details style="margin-top:10px"><summary><b>Self-test</b> <span class="small muted">(answer before opening)</span></summary><ol class="explain">${n.q.map(x => `<li>${esc(x)}</li>`).join('')}</ol></details>` : ''}
+      ${n.k ? `<span class="dl">${n.k.length} ${n.k.length === 1 ? 'key point' : 'elements / key points'}</span><ol class="els">${n.k.map(x => `<li>${esc(x)}</li>`).join('')}</ol>` : ''}
+      ${n.w ? `<span class="dl">Why it exists</span><p class="why">${esc(n.w)}</p>` : ''}
+      ${n.t ? `<span class="dl warnh">Exam traps</span><ul class="traps">${n.t.map(x => `<li>${esc(x)}</li>`).join('')}</ul>` : ''}
+      ${n.q ? `<details class="selftest"><summary><b>Self-test</b> <span class="small muted">answer before opening</span></summary><ol class="els q">${n.q.map(x => `<li>${esc(x)}</li>`).join('')}</ol></details>` : ''}
       <p class="tiny muted" style="margin:10px 0 0">Explanations are study aids, not the law. The verbatim text above controls.</p></div>`;
   }
   h += `<div class="card flat" id="tutorbox" style="margin-bottom:12px" hidden></div>`;
   h += `<div class="card flat"><div class="row"><h3 style="margin:0">Take it apart</h3><span class="spacer"></span><span class="chip">auto-parsed from the text</span></div>
-    <p class="small muted" style="margin:4px 0 10px">Lawyers read a provision by asking: who is covered, what must or may they do, under what conditions, with what exceptions, and what follows. Each sentence of the provision is sorted below.</p>
-    <div class="anat">${an.items.map(([k, s]) => `<div class="it"><b>${esc(k)}</b><span>${hlText(s, S.settings.hl)}</span></div>`).join('')}</div>
-    ${an.periods.length ? `<p class="small" style="margin-top:10px"><b>Numbers to remember:</b> ${an.periods.map(x => `<span class="chip gold">${esc(x)}</span>`).join(' ')}</p>` : ''}
-    <h3 style="margin-top:14px">Ask yourself</h3>
-    <ol class="explain small" style="padding-left:1.3em;margin:0">
+    <p class="small muted" style="margin:4px 0 10px">A judge reads a provision in a fixed order: the words it defines, the rule, what must be present, when it applies, what is carved out, and what follows. Each sentence of the provision is sorted into that order below.</p>
+    ${anatSummary(an.items)}
+    <div class="seg" role="tablist" aria-label="How to show the parts"><button data-av="judge" class="${S.settings.anatView === 'text' ? '' : 'on'}">As a judge reads it</button><button data-av="text" class="${S.settings.anatView === 'text' ? 'on' : ''}">In the order written</button></div>
+    <div id="av-judge" ${S.settings.anatView === 'text' ? 'hidden' : ''}>${judgeHTML(an.items, fld, an.mode)}</div>
+    <div id="av-text" ${S.settings.anatView === 'text' ? '' : 'hidden'}><div class="anat">${an.items.map(([k, s, mk]) => anatRow(k, s, mk)).join('')}</div></div>
+    ${an.periods.length ? `<span class="dl">Numbers to remember</span><div class="nums">${an.periods.map(x => `<span>${esc(x)}</span>`).join('')}</div>` : ''}
+    <span class="dl">Ask yourself</span>
+    <ol class="els q">
       <li>Restate ${esc(p.l)} in one sentence without looking.</li>
       <li>What problem was this provision written to solve? What would go wrong without it?</li>
       <li>Invent a short set of facts where it applies — then change one fact so it no longer does.</li>
-      ${an.items.some(i => i[0] === 'Exception') ? '<li>State the general rule, then the exception, then why the exception exists.</li>' : ''}
+      ${an.items.some(i => i[0] === 'Exception' || i[0] === 'Proviso') ? '<li>State the general rule, then the exception or proviso, then why it exists.</li>' : ''}
       ${an.periods.length ? '<li>Recite every number and period in it, and what happens when each runs out.</li>' : ''}
     </ol></div>`;
   return h + '</div>';
@@ -706,7 +855,7 @@ function guideHTML(d, p, cid, n, loc) {
 function recentHTML(rec, withProv) {
   return rec.map(r => `<div class="case recent"><div class="row" style="gap:6px"><div class="cn" style="flex:1;min-width:200px">${esc(r.n)}</div>${r.st === 'decision' ? '<span class="chip ok" title="Docket and date checked against the decision or an official/library listing">verified: decision</span>' : '<span class="chip warn" title="From a Supreme Court release or a news report of the ruling — read the full text before citing">verified: SC release / news</span>'}</div>
     <div class="cc">${esc([r.g, r.d, r.ct].filter(Boolean).join(' · '))}</div>
-    <div class="dg"><div><b>Ruling</b>${esc(r.h)}</div>${r.rel ? `<div><b>Why it matters here</b>${esc(r.rel)}</div>` : ''}${withProv ? withProv(r) : ''}</div>
+    <div class="dg"><div class="d-r"><b>Ruling</b>${esc(r.h)}</div>${r.rel ? `<div class="d-w"><b>Why it matters here</b>${esc(r.rel)}</div>` : ''}${withProv ? withProv(r) : ''}</div>
     <div class="tiny muted" style="margin-top:6px">Source: ${r.src.map(x => x.u ? `<a href="${esc(x.u)}" target="_blank" rel="noopener">${esc(x.t)}</a>` : esc(x.t)).join(' · ')}</div></div>`).join('');
 }
 function sylHTML(syl) {
@@ -721,7 +870,7 @@ function casesHTML(cid, pid, n, cases, syl = [], rec = []) {
   if (syl.length) h += `<h3 style="margin-top:14px">In your syllabus</h3><p class="small muted">Cases your professors assigned under this provision.</p>` + sylHTML(syl);
   const dg = (n && n.d) || [];
   if (dg.length) {
-    h += `<h3 style="margin-top:14px">Case digests</h3>` + dg.map(c => `<div class="case"><div class="cn">${esc(c.n)}</div><div class="cc">${esc(c.c || '')}</div><div class="dg">${c.f ? `<div><b>Facts</b>${esc(c.f)}</div>` : ''}${c.i ? `<div><b>Issue</b>${esc(c.i)}</div>` : ''}${c.h ? `<div><b>Ruling & doctrine</b>${esc(c.h)}</div>` : ''}${c.r ? `<div><b>Why it matters here</b>${esc(c.r)}</div>` : ''}</div></div>`).join('');
+    h += `<h3 style="margin-top:14px">Case digests</h3>` + dg.map(c => `<div class="case"><div class="cn">${esc(c.n)}</div><div class="cc">${esc(c.c || '')}</div><div class="dg">${c.f ? `<div class="d-f"><b>Facts</b>${esc(c.f)}</div>` : ''}${c.i ? `<div class="d-i"><b>Issue</b>${esc(c.i)}</div>` : ''}${c.h ? `<div class="d-r"><b>Ruling & doctrine</b>${esc(c.h)}</div>` : ''}${c.r ? `<div class="d-w"><b>Why it matters here</b>${esc(c.r)}</div>` : ''}</div></div>`).join('');
   }
   if (cases.length) {
     const byBook = {};
@@ -774,7 +923,7 @@ function recallPanel(box, d, p, cid, onDone) {
     c1: () => cloze(1), c2: () => cloze(2), c3: () => cloze(3),
     fl: () => {
       hideLaw(true);
-      rbox.innerHTML = `<p class="small muted">Recite each word aloud from its first letter. Tap a word to check it.</p><div class="card flat fl">${p.p.filter(x => typeof x === 'string').map(x => '<p>' + words(plain(x)).map(w => `<span class="h">${esc(w)}</span>`).join(' ') + '</p>').join('')}</div><div class="row" style="margin-top:8px"><button class="btn sm" id="flall">Reveal all</button></div>`;
+      rbox.innerHTML = `<p class="small muted">Recite each word aloud from its first letter. Tap a word to check it.</p><div class="card flat fl rtext">${(() => { const ps = p.p.filter(x => typeof x === 'string'); const { ms, info } = lawLayout(ps); return ps.map((x, i) => layoutWrap(ms[i], info[i], words(plain(ms[i] && ms[i].key !== 'ord' ? ms[i].body : x)).map(w => `<span class="h">${esc(w)}</span>`).join(' '))).join(''); })()}</div><div class="row" style="margin-top:8px"><button class="btn sm" id="flall">Reveal all</button></div>`;
       rbox.onclick = e => { const s = e.target.closest('.fl span'); if (s) s.classList.remove('h'); };
       $('#flall').onclick = () => { $$('.fl span', rbox).forEach(s => s.classList.remove('h')); hideLaw(false); };
     },
@@ -799,18 +948,24 @@ function recallPanel(box, d, p, cid, onDone) {
   function cloze(level) {
     hideLaw(true);
     const seed = p.i + ':' + level + ':' + Math.floor(Date.now() / DAY);
-    const blocks = p.p.filter(x => typeof x === 'string').map(plain);
+    const paras = p.p.filter(x => typeof x === 'string');
+    const { ms, info } = lawLayout(paras);
     let total = 0;
-    const html = blocks.map((b, bi) => {
-      const { toks, picked } = clozeModel({ p: [b] }, level, seed + bi);
-      return '<p>' + toks.map((t, i) => {
+    const html = paras.map((x, bi) => {
+      const m = ms[bi], f = info[bi];
+      let b = plain(m && m.key !== 'ord' ? m.body : x), pre = '';
+      if (m && m.key === 'ord') { const o = /^\S+\s*/.exec(b); pre = o[0]; b = b.slice(pre.length); }
+      const [main, src] = splitSrc(b);
+      const { toks, picked } = clozeModel({ p: [main] }, level, seed + bi);
+      const inner = esc(pre) + toks.map((t, i) => {
         if (!picked.has(i)) return esc(t);
-        const m = t.match(/^([“"(‘'[]*)(.*?)([”"),.;:!?’'\]]*)$/);
+        const mm = t.match(/^([“"(‘'[]*)(.*?)([”"),.;:!?’'\]]*)$/);
         total++;
-        return `${esc(m[1])}<input data-a="${esc(m[2])}" size="${Math.max(3, m[2].length)}" aria-label="blank">${esc(m[3])}`;
-      }).join('') + '</p>';
+        return `${esc(mm[1])}<input data-a="${esc(mm[2])}" size="${Math.max(3, mm[2].length)}" aria-label="blank">${esc(mm[3])}`;
+      }).join('') + (src ? ` <span class="srcn">${esc(src)}</span>` : '');
+      return layoutWrap(m, f, inner);
     }).join('');
-    rbox.innerHTML = `<p class="small muted">Fill every blank, then check. ${total} blank${total === 1 ? '' : 's'}.</p><div class="card flat cloze">${html}</div><div class="row" style="margin-top:8px"><button class="btn primary sm" id="cc">Check</button><button class="btn sm" id="cr">Reveal</button></div><p id="cres" class="small"></p>`;
+    rbox.innerHTML = `<p class="small muted">Fill every blank, then check. ${total} blank${total === 1 ? '' : 's'}.</p><div class="card flat cloze rtext">${html}</div><div class="row" style="margin-top:8px"><button class="btn primary sm" id="cc">Check</button><button class="btn sm" id="cr">Reveal</button></div><p id="cres" class="small"></p>`;
     const ins = $$('input', rbox);
     ins[0] && ins[0].focus();
     ins.forEach((inp, k) => inp.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); (ins[k + 1] || $('#cc')).focus(); } }));
@@ -1069,15 +1224,14 @@ async function b2View(id, q) {
   const f = B2.families.find(x => x.id === id); if (!f) return b2View(null, q);
   const tab = q.get('tab') || 'elements';
   const ordered = [f.crimes.find(c => c.id === f.base), ...f.crimes.filter(c => c.id !== f.base)];
-  const chips = c => c.refs.map(r => `<a class="pref" href="#/p/${r.c}/${r.i}">${esc(r.l)}</a>`).join(' ');
   let body = '';
-  if (tab === 'elements') body = `<p class="small muted">Learn the base crime first. Every other crime here is the base plus the element under “Sets it apart”.</p>` + ordered.map(c => `<article class="crime${c.id === f.base ? ' base' : ''}" id="c-${c.id}"><div class="row"><h3>${esc(c.name)}</h3>${c.id === f.base ? '<span class="chip">Base crime</span>' : ''}<span class="spacer"></span>${chips(c)}</div>
-      <p class="setsapart"><b>Sets it apart:</b> ${esc(c.key)}</p><ol class="explain">${c.els.map(e => `<li>${esc(e)}</li>`).join('')}</ol><p class="small" style="margin:0"><b>Penalty:</b> ${esc(c.pen)}</p></article>`).join('');
+  if (tab === 'elements') body = `<p class="howto">Learn the base crime first. Then read each neighbour for one thing only: the element under <b>Sets it apart</b>. That element is what the examiner is testing.</p>` + ordered.map(c => crimeHTML(c, f)).join('');
   if (tab === 'compare') body = `<div class="row" style="margin-bottom:8px"><p class="small muted" style="margin:0;flex:1">Cover the table and recite one row across every crime, then check. Tap a hidden cell to reveal it.</p><button class="btn sm" id="hide">Hide the answers</button></div>
-    <div class="mxwrap"><table class="mx"><thead><tr><th></th>${ordered.map(c => `<th><a href="#/b2/${f.id}?tab=elements#c-${c.id}">${esc(c.name)}</a></th>`).join('')}</tr></thead><tbody>${f.rows.map((r, i) => `<tr><th>${esc(r)}</th>${ordered.map(c => `<td>${esc(f.table[c.id][i])}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
-  if (tab === 'sort') body = `<p class="small muted">Ask these in order. The first “yes” names the crime.</p><ol class="sortq">${f.path.map(([qq, a]) => `<li><span class="sq">${esc(qq)}</span><span class="sa">${esc(a)}</span></li>`).join('')}</ol>
-    <h3 style="margin-top:20px">Traps examiners set</h3><ul class="explain">${f.traps.map(t => `<li>${esc(t)}</li>`).join('')}</ul>`;
-  if (tab === 'cases') body = `<p class="small muted">Tie each distinction to a decided case. Cases marked as assigned are from your syllabus; read them for the holding.</p>` + f.cases.map(([n, c, w]) => `<div class="case"><div class="cn">${esc(n)}</div><div class="cc">${esc(c)}</div><div class="dg"><div>${esc(w)}</div></div></div>`).join('');
+    <div class="mxwrap"><table class="mx"><thead><tr><th></th>${ordered.map((c, j) => `<th class="${j ? '' : 'b'}">${j ? '' : '<small>Base</small>'}<a href="#/b2/${f.id}?tab=elements#c-${c.id}">${esc(c.name)}</a></th>`).join('')}</tr></thead><tbody>${f.rows.map((r, i) => `<tr class="${/makes it this crime|sets it apart|decisive/i.test(r) ? 'key' : /^penalty/i.test(r) ? 'pen' : ''}"><th>${esc(r)}</th>${ordered.map((c, j) => `<td class="${j ? '' : 'b'}">${esc(f.table[c.id][i])}</td>`).join('')}</tr>`).join('')}</tbody></table></div>
+    <p class="tiny muted" style="margin-top:8px">The tinted row is the decisive one: if you can say it for every column, you can tell these crimes apart.</p>`;
+  if (tab === 'sort') body = `<p class="howto">Ask these questions in order, top to bottom. The first “yes” names the crime.</p><ol class="ladder">${f.path.map(([qq, a]) => `<li><span class="lq">${esc(qq)}</span><span class="la">${ansHTML(a)}</span></li>`).join('')}</ol>
+    <span class="dl warnh" style="margin-top:22px">Traps examiners set</span><ul class="traps">${f.traps.map(t => `<li>${esc(t)}</li>`).join('')}</ul>`;
+  if (tab === 'cases') body = `<p class="small muted">Tie each distinction to a decided case. Cases marked as assigned are from your syllabus; read them for the holding.</p>` + f.cases.map(([n, c, w]) => `<div class="case"><div class="cn">${esc(n)}</div><div class="cc">${esc(c)}</div><div class="dg"><div class="d-w"><b>The distinction it settles</b>${esc(w)}</div></div></div>`).join('');
   main.innerHTML = `<div class="f-crim">${b2crumbs(f.title)}<span class="eyebrow" style="color:var(--f)">${esc(f.module)}</span><h1>${esc(f.title)}</h1><p class="lead">${esc(f.q)}</p>
     <div class="steps b2tabs" role="tablist">${B2TABS.map(([k, n], i) => `<button role="tab" data-t="${k}" class="${k === tab ? 'on' : ''}"><small>${i + 1}</small><span>${n}</span></button>`).join('')}</div>
     <div id="b2body">${tab === 'practice' ? '' : body}</div>
@@ -1087,6 +1241,7 @@ async function b2View(id, q) {
   if (tab === 'compare') { const hb = $('#hide'); hb.onclick = () => { const on = !$('.mx').classList.contains('cover'); $('.mx').classList.toggle('cover', on); $$('.mx td').forEach(td => td.classList.toggle('shut', on)); hb.textContent = on ? 'Show all' : 'Hide the answers'; }; $('.mx').addEventListener('click', e => { const td = e.target.closest('td.shut'); if (td) td.classList.remove('shut'); }); }
   const anchor = location.hash.split('#')[2]; if (anchor) { const el = document.getElementById(anchor); el && el.scrollIntoView({ block: 'start' }); }
 }
+function ansHTML(a) { const m = /^([A-Z][^(.;:]{1,60}?)(?=\s*\(Arts?\.|\.)/.exec(a); return m ? `<b>${esc(m[1])}</b>${esc(a.slice(m[1].length))}` : esc(a); }
 function b2Drill(f, box) {
   const pool = (f ? f.drills.map(d => ({ d, f })) : B2.families.flatMap(ff => ff.drills.map(d => ({ d, f: ff })))).slice();
   for (let k = pool.length - 1; k > 0; k--) { const j = Math.floor(Math.random() * (k + 1)); [pool[k], pool[j]] = [pool[j], pool[k]]; }
@@ -1175,12 +1330,17 @@ async function aboutView() {
   <ol class="explain"><li><b>One next step.</b> Today shows a single thing to do. New provisions are capped at a small number a day; you can change it under Progress.</li>
   <li><b>Eight fields in one building.</b> The House of Law is a memory palace drawn after the Supreme Court’s building on Padre Faura, Manila: its four columns, three doors and seven marble steps, with the Court’s motto, <i>Batas at Bayan</i>, carved above. Each field has a fixed place in it, from the pediment down to the steps, and each topic inside a field is one object at that place. Fixed places give you somewhere to look when you forget.</li>
   <li><b>A short path in each field.</b> Start here, then the core, then deeper only when you need it. A code page offers five provisions at a time.</li>
-  <li><b>Four steps on each provision.</b> Read the verbatim text. Understand it by taking it apart and making your own picture. Recall it with the text hidden. Connect it to cases. Then rate yourself, and Review brings it back just before you would forget it.</li></ol>
+  <li><b>Four steps on each provision.</b> Read the verbatim text. Understand it by taking it apart and making your own picture. Recall it with the text hidden. Connect it to cases. Then rate yourself, and Review brings it back just before you would forget it.</li>
+  <li><b>Read it like a judge.</b> “Take it apart” sorts each sentence into the order a court reads a provision: the words it defines, the rule, what it lists, when it applies, what is qualified or carved out, and what follows. Each step carries the canon of construction that governs it: plain meaning (<i>verba legis</i>), a list excludes what it omits (<i>expressio unius</i>), exceptions and provisos read strictly, and penal laws read strictly against the State.</li></ol>
   <h2>The memory research behind it</h2>
   <ul class="explain small"><li><b>Places and pictures.</b> Tying items to fixed locations in an imagined building (the method of loci, the memory palace) reliably improves recall, including in people with no prior training (Dresler and others, <i>Neuron</i>, 2017). Pictures are remembered better than words alone, and words paired with an image are stored twice (Paivio’s dual coding; Shepard, 1967; Standing, 1973).</li>
   <li><b>Small groups.</b> Working memory holds only a few chunks at a time (Miller, 1956, written at Harvard; Cowan, 2001, puts it near four), which is why fields, paths and sittings are kept short.</li>
   <li><b>Make it yourself.</b> Material you generate is remembered better than material you only read (Slamecka and Graf, 1978), so the app asks for your own picture and your own words.</li>
-  <li><b>Recall, spaced and mixed.</b> Retrieving from memory beats re-reading (Roediger and Karpicke, 2006); spacing reviews over days beats cramming (Cepeda and others, 2006); mixing topics in practice beats blocking them (Rohrer and Taylor, 2007).</li></ul>
+  <li><b>Recall, spaced and mixed.</b> Retrieving from memory beats re-reading (Roediger and Karpicke, 2006); spacing reviews over days beats cramming (Cepeda and others, 2006); mixing topics in practice beats blocking them (Rohrer and Taylor, 2007).</li>
+  <li><b>Text that shows its structure.</b> Signalling how material is organised, and breaking it into short segments, helps learners build a model of it (Mayer, <i>Multimedia Learning</i>, 2009: the signalling and segmenting principles). So in each provision, enumerations hang from a numbered margin and say how many items follow, each proviso starts on its own line, and a colour always means the same thing: red for penalties, gold for numbers, violet for exceptions and provisos, blue for conditions, green for definitions. Not a word of the law is changed.</li>
+  <li><b>Few highlights.</b> Marking much of a text does little for learning (Dunlosky and others, 2013, rated highlighting low in usefulness), so only a few kinds of words are marked by default. Turn each kind on or off under Highlights.</li>
+  <li><b>One thing stands out.</b> An item that differs from those around it is remembered better (von Restorff, 1933). Each Book Two crime card sets off one element, the one that separates the crime from its neighbours.</li>
+  <li><b>A comfortable line.</b> Study text is kept to about 65 characters a line. On screen, moderate lines have been linked with better comprehension than very long ones (Dyson and Haselgrove, 2001).</li></ul>
   <p class="small muted">These are general findings about memory, not studies of this app. The pictures suggested for each topic are our own inventions; replace any that do not stick with your own. A place you know well works even better: use “Use a place you know” on the Today screen.</p>
   <h2>Sources</h2>
   <ul class="explain small"><li>Most statutes: The LawPhil Project (Arellano Law Foundation), as mirrored by LawCodex. LawPhil is a free, unofficial library.</li>
