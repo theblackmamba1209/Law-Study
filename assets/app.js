@@ -62,77 +62,89 @@ const FIGKEY = 'sinag.figure.img';
 const figImg = () => { try { return localStorage.getItem(FIGKEY) || ''; } catch (e) { return ''; } };
 const figPos = id => (figImg() && S.settings.housePos && S.settings.housePos[id]) || null;
 let figSeq = 0;
-// The House of Law: a neoclassical courthouse facade. viewBox 0 0 600 520.
-// Places (top to bottom, left to right): pediment, inscription, four columns, great doors, steps.
-const HOUSE_COLS = [150, 226, 374, 450];
+// The House of Law, after the Supreme Court building on Padre Faura, Manila (UP Main Library, 1928-30, neoclassical):
+// a central portico of four columns before three doors, seven marble steps flanked by two statues, two-storey wings.
+// Places: pediment, inscription ("BATAS AT BAYAN", the Court's motto), four columns, three doors, seven steps. viewBox 0 0 600 520.
+const HOUSE_COLS = [196, 262, 338, 404];
+const HOUSE_PIN = { pol: [366, 160], craft: [104, 212], lab: [196, 340], civ: [262, 340], com: [338, 340], crim: [404, 340], intl: [300, 384], eth: [300, 457] };
 function houseSVG(u, opt = {}) {
-  const act = opt.active || null, bg = opt.bg !== false;
-  const M = '#efe9dd', M2 = '#ddd4c3', M3 = '#c6bba7', MS = '#a99c85', G = '#d3ad5b';
-  const tint = (id, el) => act ? (act === id ? `<g class="lit f-${id}">${el}</g>` : '') : '';
-  const fl = x => `<g stroke="${M3}" stroke-width="1.1" opacity=".85"><path d="M${x - 9},262 V398"/><path d="M${x - 3},262 V398"/><path d="M${x + 3},262 V398"/><path d="M${x + 9},262 V398"/></g>`;
-  const col = (x, i) => `
-    <rect x="${x - 17}" y="255" width="34" height="146" fill="url(#${u}col)"/>${fl(x)}
-    <path d="M${x - 22},248 H${x + 22} L${x + 18},256 H${x - 18} Z" fill="${M2}"/><rect x="${x - 24}" y="242" width="48" height="7" fill="${M}"/>
-    <path d="M${x - 21},401 H${x + 21} L${x + 24},410 H${x - 24} Z" fill="${M2}"/>`;
-  const dent = []; for (let x = 104; x <= 492; x += 12) dent.push(`<rect x="${x}" y="186" width="7" height="7"/>`);
-  const studs = []; for (let r = 0; r < 4; r++) for (let c = 0; c < 2; c++) for (const s of [0, 1]) studs.push(`<circle cx="${262 + s * 48 + 7 + c * 16}" cy="${322 + r * 22}" r="1.6"/>`);
+  const act = opt.active || null;
+  const M = '#efe9dd', M2 = '#ddd4c3', M3 = '#c6bba7', MS = '#a99c85';
+  const tint = (id, el) => act === id ? `<g class="lit f-${id}">${el}</g>` : '';
+  const win = (x, y, w, h, lit, arch) => `<g><rect x="${x - 3}" y="${y - 3}" width="${w + 6}" height="${h + 6}" fill="${M2}"/>${arch ? `<path d="M${x - 3},${y + 6} A${w / 2 + 3},${w / 2 + 3} 0 0 1 ${x + w + 3},${y + 6}" fill="${M2}"/>` : ''}
+      <path d="M${x},${y + (arch ? 6 : 0)} ${arch ? `A${w / 2},${w / 2} 0 0 1 ${x + w},${y + 6}` : `H${x + w}`} V${y + h} H${x} Z" fill="${lit ? 'url(#' + u + 'lit)' : '#22314d'}"/>
+      <path d="M${x + w / 2},${y + (arch ? 2 : 0)} V${y + h} M${x},${y + h * .45} H${x + w}" stroke="${M3}" stroke-width="1.4"/>
+      <rect x="${x - 5}" y="${y + h}" width="${w + 10}" height="4" fill="${M}"/></g>`;
+  const wing = x0 => { const xs = [x0 + 22, x0 + 80]; return `
+      <rect x="${x0}" y="200" width="134" height="232" fill="url(#${u}wing)"/>
+      ${xs.map((x, i) => win(x, 240, 32, 56, (x0 + i) % 3 === 0) + win(x, 324, 32, 80, i === 1, true)).join('')}
+      <rect x="${x0 + 64}" y="232" width="6" height="200" fill="#fff" opacity=".18"/>
+      <rect x="${x0}" y="300" width="134" height="6" fill="${M2}"/>`; };
+  const col = x => `
+      <rect x="${x - 15}" y="252" width="30" height="168" fill="url(#${u}col)"/>
+      <g stroke="${M3}" stroke-width="1" opacity=".85"><path d="M${x - 8},258 V416"/><path d="M${x - 3},258 V416"/><path d="M${x + 2},258 V416"/><path d="M${x + 7},258 V416"/></g>
+      <rect x="${x - 21}" y="238" width="42" height="6" fill="${M}"/><path d="M${x - 18},244 H${x + 18} L${x + 15},253 H${x - 15} Z" fill="${M2}"/>
+      <circle cx="${x - 17}" cy="248" r="4" fill="none" stroke="${M3}" stroke-width="1.6"/><circle cx="${x + 17}" cy="248" r="4" fill="none" stroke="${M3}" stroke-width="1.6"/>
+      <path d="M${x - 18},420 H${x + 18} L${x + 21},430 H${x - 21} Z" fill="${M2}"/>`;
+  const door = (x, w, top) => `<g><rect x="${x - 4}" y="${top - 26}" width="${w + 8}" height="${432 - top + 26}" fill="#e6ddcb"/>
+      <rect x="${x}" y="${top - 22}" width="${w}" height="16" fill="url(#${u}lit)"/><path d="M${x + w / 2},${top - 22} V${top - 6}" stroke="#e6ddcb" stroke-width="1.5"/>
+      <rect x="${x}" y="${top}" width="${w / 2 - .8}" height="${432 - top}" fill="url(#${u}door)"/><rect x="${x + w / 2 + .8}" y="${top}" width="${w / 2 - .8}" height="${432 - top}" fill="url(#${u}door)"/>
+      <g fill="none" stroke="#c9a24f" stroke-width="1" opacity=".85"><rect x="${x + 4}" y="${top + 6}" width="${w / 2 - 9}" height="${(432 - top) * .38}"/><rect x="${x + 4}" y="${top + 12 + (432 - top) * .38}" width="${w / 2 - 9}" height="${(432 - top) * .48}"/><rect x="${x + w / 2 + 4}" y="${top + 6}" width="${w / 2 - 9}" height="${(432 - top) * .38}"/><rect x="${x + w / 2 + 4}" y="${top + 12 + (432 - top) * .38}" width="${w / 2 - 9}" height="${(432 - top) * .48}"/></g>
+      <rect x="${x + w / 2 - 4}" y="${top + (432 - top) * .45}" width="3" height="10" rx="1" fill="url(#${u}gold)"/><rect x="${x + w / 2 + 1}" y="${top + (432 - top) * .45}" width="3" height="10" rx="1" fill="url(#${u}gold)"/></g>`;
+  const statue = x => `<g><rect x="${x - 15}" y="422" width="30" height="52" fill="url(#${u}step)"/><rect x="${x - 18}" y="416" width="36" height="7" fill="${M}"/><rect x="${x - 18}" y="468" width="36" height="6" fill="${M2}"/>
+      <path d="M${x - 9},394 Q${x},389 ${x + 9},394 L${x + 12},416 H${x - 12} Z" fill="url(#${u}bronze)"/>
+      <path d="M${x - 9},395 L${x - 12},410 M${x + 9},395 L${x + 7},406" stroke="#3c2e1e" stroke-width="2.4" stroke-linecap="round"/>
+      <rect x="${x - 2.5}" y="386" width="5" height="6" fill="#5a4530"/><circle cx="${x}" cy="381" r="6" fill="url(#${u}bronze)"/></g>`;
+  const steps = []; for (let i = 0; i < 7; i++) { const w = 268 + i * 14, y = 432 + i * 6; steps.push(`<rect x="${300 - w / 2}" y="${y}" width="${w}" height="6" fill="url(#${u}step)"/><rect x="${300 - w / 2}" y="${y + 5}" width="${w}" height="1" fill="#000" opacity=".16"/>`); }
+  const stepPoly = (() => { let l = [], r = []; for (let i = 0; i < 7; i++) { const w = 268 + i * 14, y = 432 + i * 6; l.push(`${300 - w / 2},${y} ${300 - w / 2},${y + 6}`); r.unshift(`${300 + w / 2},${y + 6} ${300 + w / 2},${y}`); } return `<polygon points="${l.join(' ')} ${r.join(' ')}"/>`; })();
   return `<defs>
-    <linearGradient id="${u}sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0b1424"/><stop offset=".62" stop-color="#16274a"/><stop offset=".86" stop-color="#2d3e60"/><stop offset="1" stop-color="#1a2640"/></linearGradient>
-    <radialGradient id="${u}glow" cx=".5" cy=".62" r=".55"><stop offset="0" stop-color="#f4d58d" stop-opacity=".30"/><stop offset=".55" stop-color="#f4d58d" stop-opacity=".07"/><stop offset="1" stop-color="#f4d58d" stop-opacity="0"/></radialGradient>
+    <linearGradient id="${u}sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0a1322"/><stop offset=".6" stop-color="#15264a"/><stop offset=".84" stop-color="#2a3b5e"/><stop offset="1" stop-color="#1b2742"/></linearGradient>
+    <radialGradient id="${u}glow" cx=".5" cy=".6" r=".6"><stop offset="0" stop-color="#f4d58d" stop-opacity=".26"/><stop offset=".55" stop-color="#f4d58d" stop-opacity=".06"/><stop offset="1" stop-color="#f4d58d" stop-opacity="0"/></radialGradient>
     <linearGradient id="${u}col" x1="0" x2="1"><stop offset="0" stop-color="${M3}"/><stop offset=".35" stop-color="${M}"/><stop offset=".6" stop-color="#f8f4ec"/><stop offset="1" stop-color="${MS}"/></linearGradient>
     <linearGradient id="${u}ped" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f6f1e7"/><stop offset="1" stop-color="${M2}"/></linearGradient>
-    <linearGradient id="${u}wall" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8f8470"/><stop offset="1" stop-color="#b3a78f"/></linearGradient>
+    <linearGradient id="${u}wing" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e7e0d1"/><stop offset="1" stop-color="#cfc5b1"/></linearGradient>
+    <linearGradient id="${u}wall" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8c826e"/><stop offset="1" stop-color="#b1a58e"/></linearGradient>
     <linearGradient id="${u}door" x1="0" x2="1"><stop offset="0" stop-color="#3b2a1a"/><stop offset=".5" stop-color="#5c4128"/><stop offset="1" stop-color="#3b2a1a"/></linearGradient>
+    <linearGradient id="${u}lit" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe3a0"/><stop offset="1" stop-color="#e9a94a"/></linearGradient>
     <linearGradient id="${u}gold" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f0d791"/><stop offset="1" stop-color="#b8913f"/></linearGradient>
+    <linearGradient id="${u}bronze" x1="0" x2="1"><stop offset="0" stop-color="#4b3a26"/><stop offset=".5" stop-color="#8a6a3f"/><stop offset="1" stop-color="#3c2e1e"/></linearGradient>
     <linearGradient id="${u}step" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f3eee4"/><stop offset="1" stop-color="${M3}"/></linearGradient>
   </defs>
-  ${bg ? `<rect width="600" height="520" rx="22" fill="url(#${u}sky)"/><rect width="600" height="520" rx="22" fill="url(#${u}glow)"/>
-  <g fill="#fff">${[[60, 52, .5], [118, 96, .35], [470, 60, .45], [540, 118, .3], [520, 34, .25], [84, 150, .25], [404, 40, .3], [190, 36, .3]].map(([x, y, o]) => `<circle cx="${x}" cy="${y}" r="1.2" opacity="${o}"/>`).join('')}</g>` : ''}
-  <ellipse cx="300" cy="474" rx="270" ry="18" fill="#000" opacity=".35"/>
+  ${opt.bg === false ? '' : `<rect width="600" height="520" rx="22" fill="url(#${u}sky)"/><rect width="600" height="520" rx="22" fill="url(#${u}glow)"/>
+  <g fill="#fff">${[[52, 48, .5], [126, 92, .35], [482, 54, .45], [548, 110, .3], [520, 30, .25], [78, 140, .25], [418, 34, .3], [196, 40, .3]].map(([x, y, o]) => `<circle cx="${x}" cy="${y}" r="1.2" opacity="${o}"/>`).join('')}</g>`}
+  <rect x="0" y="474" width="600" height="46" fill="#000" opacity=".22"/>
+  <ellipse cx="300" cy="476" rx="290" ry="12" fill="#000" opacity=".3"/>
   <!-- flag -->
-  <path d="M300,34 V86" stroke="#e6c77a" stroke-width="2.6"/><circle cx="300" cy="33" r="2.6" fill="url(#${u}gold)"/>
-  <g transform="translate(301,38)"><rect width="34" height="10" fill="#0038a8"/><rect y="10" width="34" height="10" fill="#ce1126"/><path d="M0,0 L17.3,10 L0,20 Z" fill="#fff"/><circle cx="6" cy="10" r="2.6" fill="#fcd116"/><g fill="#fcd116"><circle cx="2" cy="2.6" r=".9"/><circle cx="2" cy="17.4" r=".9"/><circle cx="14.4" cy="10" r=".9"/></g></g>
-  <!-- back wall, lamps, doors -->
-  <rect x="120" y="252" width="360" height="152" fill="url(#${u}wall)"/>
-  <rect x="120" y="252" width="360" height="10" fill="#000" opacity=".18"/>
-  <rect x="246" y="296" width="108" height="112" fill="#e8e0d0"/><rect x="250" y="300" width="100" height="108" fill="#1c140d"/>
-  <rect x="254" y="304" width="45" height="104" fill="url(#${u}door)"/><rect x="301" y="304" width="45" height="104" fill="url(#${u}door)"/>
-  <g fill="none" stroke="#c9a24f" stroke-width="1.2" opacity=".85"><rect x="259" y="310" width="35" height="40"/><rect x="259" y="356" width="35" height="46"/><rect x="306" y="310" width="35" height="40"/><rect x="306" y="356" width="35" height="46"/></g>
-  <g fill="#e4c26e">${studs.join('')}</g>
-  <rect x="294" y="346" width="4" height="12" rx="1.5" fill="url(#${u}gold)"/><rect x="302" y="346" width="4" height="12" rx="1.5" fill="url(#${u}gold)"/>
-  <rect x="238" y="288" width="124" height="10" fill="${M}"/>
-  <path d="M300,268 L332,288 H268 Z" fill="${M2}"/>
-  ${[188, 412].map(x => `<g><rect x="${x - 1.5}" y="296" width="3" height="10" fill="#3a2a1a"/><path d="M${x - 8},306 H${x + 8} L${x + 6},328 H${x - 6} Z" fill="#2a1e14"/><path d="M${x - 5},309 H${x + 5} L${x + 4},325 H${x - 4} Z" fill="#ffd97a"/><circle cx="${x}" cy="317" r="26" fill="#ffd97a" opacity=".12"/></g>`).join('')}
-  ${tint('intl', `<rect x="250" y="300" width="100" height="108"/>`)}
-  <!-- columns -->
+  <path d="M300,58 V114" stroke="#e6c77a" stroke-width="2.6"/><circle cx="300" cy="57" r="2.6" fill="url(#${u}gold)"/>
+  <g transform="translate(301,62)"><rect width="34" height="10" fill="#0038a8"/><rect y="10" width="34" height="10" fill="#ce1126"/><path d="M0,0 L17.3,10 L0,20 Z" fill="#fff"/><circle cx="6" cy="10" r="2.6" fill="#fcd116"/><g fill="#fcd116"><circle cx="2" cy="2.6" r=".9"/><circle cx="2" cy="17.4" r=".9"/><circle cx="14.4" cy="10" r=".9"/></g></g>
+  <!-- wings -->
+  ${wing(32)}${wing(434)}
+  <!-- portico: back wall and three doors -->
+  <rect x="166" y="226" width="268" height="206" fill="url(#${u}wall)"/>
+  <rect x="166" y="226" width="268" height="12" fill="#000" opacity=".18"/>
+  ${door(215, 30, 350)}${door(280, 40, 330)}${door(355, 30, 350)}
+  ${tint('intl', `<rect x="215" y="350" width="30" height="82"/><rect x="280" y="330" width="40" height="102"/><rect x="355" y="350" width="30" height="82"/>`)}
+  <!-- four columns -->
   ${HOUSE_COLS.map(col).join('')}
-  ${act && ['lab', 'civ', 'com', 'crim'].includes(act) ? (() => { const x = HOUSE_COLS[['lab', 'civ', 'com', 'crim'].indexOf(act)]; return `<g class="lit f-${act}"><rect x="${x - 17}" y="255" width="34" height="146"/><rect x="${x - 24}" y="242" width="48" height="14"/></g>`; })() : ''}
-  <!-- entablature: architrave, frieze with inscription, cornice -->
-  <rect x="108" y="226" width="384" height="16" fill="${M2}"/><rect x="108" y="226" width="384" height="3" fill="#fff" opacity=".35"/>
-  <rect x="112" y="194" width="376" height="32" fill="url(#${u}ped)"/>
-  ${tint('craft', `<rect x="112" y="194" width="376" height="32"/>`)}
-  <text x="300" y="216" text-anchor="middle" font-family="Literata, Georgia, serif" font-size="14" font-weight="600" letter-spacing="3.2" fill="#6f5a35">SALUS POPULI SUPREMA LEX</text>
-  <rect x="98" y="180" width="404" height="8" fill="${M}"/>
-  <g fill="${M2}">${dent.join('')}</g>
-  <!-- pediment -->
-  <path d="M94,180 L300,86 L506,180 Z" fill="${M}"/>
-  <path d="M122,172 L300,96 L478,172 Z" fill="url(#${u}ped)"/>
-  <path d="M122,172 L300,96 L478,172" fill="none" stroke="${M3}" stroke-width="1.5"/>
-  ${tint('pol', `<path d="M122,172 L300,96 L478,172 Z"/>`)}
-  <circle cx="300" cy="146" r="19" fill="none" stroke="url(#${u}gold)" stroke-width="3"/>
-  <g fill="none" stroke="#b8913f" stroke-width="1.6" stroke-linecap="round"><path d="M300,134 V158 M290,140 H310 M286,140 L282,150 M314,140 L318,150 M278,150 Q282,156 286,150 M314,150 Q318,156 322,150 M294,158 H306"/></g>
-  <!-- steps -->
-  <rect x="104" y="408" width="392" height="12" fill="url(#${u}step)"/>
-  <rect x="90" y="420" width="420" height="13" fill="url(#${u}step)"/>
-  <rect x="76" y="433" width="448" height="14" fill="url(#${u}step)"/>
-  <rect x="62" y="447" width="476" height="15" fill="url(#${u}step)"/>
-  <g fill="#000" opacity=".16"><rect x="104" y="418" width="392" height="2"/><rect x="90" y="431" width="420" height="2"/><rect x="76" y="445" width="448" height="2"/><rect x="62" y="460" width="476" height="2"/></g>
-  ${tint('eth', `<path d="M104,408 H496 V420 H510 V433 H524 V447 H538 V462 H62 V447 H76 V433 H90 V420 H104 Z"/>`)}`;
+  ${['lab', 'civ', 'com', 'crim'].includes(act) ? (() => { const x = HOUSE_COLS[['lab', 'civ', 'com', 'crim'].indexOf(act)]; return `<g class="lit f-${act}"><rect x="${x - 15}" y="252" width="30" height="168"/><rect x="${x - 21}" y="238" width="42" height="15"/></g>`; })() : ''}
+  <!-- entablature across the whole front, with the motto -->
+  <rect x="26" y="190" width="548" height="10" fill="${M}"/>
+  <rect x="30" y="200" width="540" height="26" fill="url(#${u}ped)"/>
+  <rect x="160" y="196" width="280" height="34" fill="url(#${u}ped)"/><rect x="160" y="230" width="280" height="8" fill="${M2}"/>
+  ${tint('craft', `<rect x="30" y="200" width="540" height="26"/><rect x="160" y="196" width="280" height="34"/>`)}
+  <text x="300" y="219" text-anchor="middle" font-family="Literata, Georgia, serif" font-size="15" font-weight="600" letter-spacing="5" fill="#6f5a35">BATAS AT BAYAN</text>
+  <!-- pediment over the portico -->
+  <path d="M146,192 L300,112 L454,192 Z" fill="${M}"/>
+  <path d="M172,186 L300,122 L428,186 Z" fill="url(#${u}ped)"/>
+  <path d="M172,186 L300,122 L428,186" fill="none" stroke="${M3}" stroke-width="1.5"/>
+  ${tint('pol', `<path d="M172,186 L300,122 L428,186 Z"/>`)}
+  <circle cx="300" cy="162" r="17" fill="none" stroke="url(#${u}gold)" stroke-width="3"/>
+  <g fill="none" stroke="#b8913f" stroke-width="1.5" stroke-linecap="round"><path d="M300,151 V173 M291,156 H309 M287,156 L283,165 M313,156 L317,165 M279,165 Q283,170 287,165 M313,165 Q317,170 321,165 M295,173 H305"/></g>
+  <!-- seven steps and two statues -->
+  ${steps.join('')}
+  ${tint('eth', stepPoly)}
+  ${statue(98)}${statue(502)}`;
 }
-// pin positions: where each number sits
-const HOUSE_PIN_ = { pol: [380, 150], craft: [128, 210], lab: [150, 330], civ: [226, 330], com: [374, 330], crim: [450, 330], intl: [300, 380], eth: [300, 440] };
-
-const HOUSE_PIN = Object.assign({}, HOUSE_PIN_, { craft: [134, 210] });
 function figure(active, plain) {
   const u = 'fg' + (++figSeq); const img = figImg();
   const order = ['pol', 'craft', 'lab', 'civ', 'com', 'crim', 'intl', 'eth'];
@@ -417,7 +429,7 @@ async function home() {
     <div class="row">${btn}${second}</div>
     <div class="meters"><span><b>${due}</b> due</span><span><b>${nt}</b> of ${S.settings.newPerDay} new today</span><span><b>${st}</b> day streak</span><a href="#/progress">Progress</a></div></section>
   <div class="sect"><h2>The House of Law</h2><span class="spacer"></span><button class="btn sm ghost" id="foc">This semester</button><button class="btn sm ghost" id="pic">Use a place you know</button></div>
-  <p class="small muted" style="margin:-4px 0 12px;max-width:65ch">Eight fields, eight places in one building, read from the roof down to the steps. A fixed place is a fixed cue: when you forget, walk through the building again.</p>
+  <p class="small muted" style="margin:-4px 0 12px;max-width:65ch">Eight fields, eight places in one building drawn after the Supreme Court on Padre Faura, read from the roof down to the seven steps. A fixed place is a fixed cue: when you forget, walk through the building again.</p>
   <div class="plate bodymap"><div class="pfig">${figure()}</div>${partsList()}<p class="cap">Read from the roof down to the steps. Faded fields are outside this semester.</p></div>
   <div class="more"><a href="#/syllabus">Syllabus cases</a><a href="#/syllabus/recent">Recent rulings</a><a href="#/drill">Drill</a><a href="#/search">Find a case</a><a href="#/about">How this works</a></div>`;
   $('#foc').onclick = async () => { if (await chooseFocus()) home(); };
@@ -485,7 +497,7 @@ function setView(id) {
   const first = st.items.find(x => !S.cards[ck(x.c, x.i)]) || st.items[0];
   main.innerHTML = `<div class="f-${f.id}" style="max-width:760px"><div class="crumbs"><a href="#/learn">Learn</a><span class="sep">›</span><a href="#/field/${f.id}">${esc(f.name)}</a><span class="sep">›</span><span>${esc(at.t.name)}</span></div>
   <span class="eyebrow" style="color:var(--ok)">A walk · ${st.items.length} provisions</span><h1>${esc(st.title)}</h1><p class="lead">${esc(st.blurb)}</p>
-  <div class="tryit small" style="margin:12px 0"><b>How to use the walk.</b> Start at the flag on the roof of the House of Law and move down to the steps. At each place, see the provision’s key idea happening there, the stranger the better. To recall the list later, walk through the building again and say what you find at each place.</div>
+  <div class="tryit small" style="margin:12px 0"><b>How to use the walk.</b> Start at the flag on the roof of the House of Law and move down to the seven steps. At each place, see the provision’s key idea happening there, the stranger the better. To recall the list later, walk through the building again and say what you find at each place.</div>
   <ol class="walk">${st.items.map(x => `<li><a href="#/p/${x.c}/${x.i}?set=${id}"><span class="loc">${esc(x.loc)}</span><span><span class="wl">${esc(x.l)}</span>${x.cap ? ` <span class="muted small">${esc(x.cap)}</span>` : ''}<br><span class="ww">${esc(x.why)}</span>${S.hooks[ck(x.c, x.i)] ? `<br><span class="tiny" style="color:var(--warn)">Your picture: ${esc(S.hooks[ck(x.c, x.i)])}</span>` : ''}</span><i class="dot ${status(ck(x.c, x.i))}"></i></a></li>`).join('')}</ol>
   <div class="pn"><a class="btn" href="#/field/${f.id}">Back to ${esc(f.name)}</a><a class="btn primary" href="#/p/${first.c}/${first.i}?set=${id}">Start the walk →</a></div></div>`;
 }
@@ -1077,7 +1089,7 @@ async function aboutView() {
   <p>The codal provision is the backbone. Everything else — explanations, cases, drills — hangs on the verbatim text.</p>
   <h2>How this is designed</h2>
   <ol class="explain"><li><b>One next step.</b> Today shows a single thing to do. New provisions are capped at a small number a day; you can change it under Progress.</li>
-  <li><b>Eight fields in one building.</b> The House of Law is a memory palace: each field has a fixed place in it, from the pediment down to the steps, and each topic inside a field is one object at that place. Fixed places give you somewhere to look when you forget.</li>
+  <li><b>Eight fields in one building.</b> The House of Law is a memory palace drawn after the Supreme Court’s building on Padre Faura, Manila: its four columns, three doors and seven marble steps, with the Court’s motto, <i>Batas at Bayan</i>, carved above. Each field has a fixed place in it, from the pediment down to the steps, and each topic inside a field is one object at that place. Fixed places give you somewhere to look when you forget.</li>
   <li><b>A short path in each field.</b> Start here, then the core, then deeper only when you need it. A code page offers five provisions at a time.</li>
   <li><b>Four steps on each provision.</b> Read the verbatim text. Understand it by taking it apart and making your own picture. Recall it with the text hidden. Connect it to cases. Then rate yourself, and Review brings it back just before you would forget it.</li></ol>
   <h2>The memory research behind it</h2>

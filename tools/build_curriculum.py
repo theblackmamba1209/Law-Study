@@ -389,20 +389,20 @@ LESSONS = {
 }
 
 # --------------------------------------------------------------------------- the House of Law (memory palace)
-# One building, read from the roof down to the steps. Each field of law has one place in it (a fixed place is a
+# One building, drawn after the Supreme Court on Padre Faura (four columns, three doors, seven steps), read from the roof down. Each field of law has one place in it (a fixed place is a
 # fixed cue), and each track inside a field is one object at that place.
 PARTS = {
  'pol':   (1, 'pediment', 'Pediment', 'The pediment crowns the house, as the Constitution crowns the State.'),
- 'craft': (2, 'inscription', 'Inscription', 'The words carved over the door. Read them closely before you argue from them.'),
- 'lab':   (3, 'col1', 'First column', 'The first pillar: work, and the welfare of people in need.'),
+ 'craft': (2, 'inscription', 'Inscription', 'The Court’s motto carved above the columns: Batas at Bayan. Read the words closely before you argue from them.'),
+ 'lab':   (3, 'col1', 'First column', 'Four columns stand like sentries. The first: work, and the welfare of people in need.'),
  'civ':   (4, 'col2', 'Second column', 'The second pillar: persons, family, property and obligations.'),
  'com':   (5, 'col3', 'Third column', 'The third pillar: business, money and tax.'),
  'crim':  (6, 'col4', 'Fourth column', 'The fourth pillar: what the State may punish, and how much.'),
- 'intl':  (7, 'doors', 'Great doors', 'The doors open onto the world.'),
- 'eth':   (8, 'steps', 'Steps', 'Every lawyer climbs these steps, and the whole house stands on them.'),
+ 'intl':  (7, 'doors', 'Three doors', 'Three great doors open onto the world.'),
+ 'eth':   (8, 'steps', 'Seven steps', 'Seven marble steps lead up to the Court. Every lawyer climbs them, and the house stands on them.'),
 }
 PICS = {
- 'pol': ['The gold seal at the centre of the pediment.', 'Three carved figures in the pediment: Congress, the President, the Court.', 'A ballot slipped into a crack in the stone.',
+ 'pol': ['The gold emblem of the scales at the centre of the pediment.', 'Three carved figures in the pediment: Congress, the President, the Court.', 'A ballot slipped into a crack in the stone.',
          'The flag on the roof.', 'A watchman standing on the cornice.', 'Rice terraces carved along the slopes of the pediment.', 'A lightning rod and a fire bell on the roof.'],
  'craft': ['Each carved letter, read one word at a time.', 'A chisel correcting a doubtful letter.', 'A row of case numbers carved under the words.',
            'An open book carved at the end of the band.', 'Court seals pressed along the cornice.'],
@@ -413,11 +413,11 @@ PICS = {
  'crim': ['Handcuffs hanging from the capital.', 'A clock carved into the shaft, counting the sentence.', 'A raised palm painted on the column: stop.', 'A small handprint at a child’s height.',
           'A sachet and a pistol locked in an iron cage at the base.', 'A bribe envelope slipped into the fluting.', 'A rope coiled tight round the column.', 'A forged cheque nailed to the shaft.',
           'A security camera bolted near the top.'],
- 'intl': ['The two door leaves: incorporation and transformation.', 'A dove carved over the lintel.', 'A passport stamp on the brass handle.', 'Treaties nailed to the door.'],
- 'eth': ['The bottom step, where the oath is taken.', 'The second step: a lawyer’s pin set into the stone.', 'The third step: a gavel resting on it.', 'The top step: a badge of public office.'],
+ 'intl': ['The two side doors: incorporation on the left, transformation on the right.', 'A dove carved over the centre door.', 'A passport stamp on a brass handle.', 'Treaties posted on the doors.'],
+ 'eth': ['The bottom step, where the oath is taken.', 'A lawyer’s pin set into the third step.', 'A gavel resting on the fifth step.', 'A badge of public office on the top step.'],
 }
 # places for an ordered list (a walk), from the roof down, left to right
-LOCI = ['Flag', 'Roof peak', 'Gold seal', 'Cornice', 'Inscription', 'First column', 'Left lamp', 'Second column', 'Great doors', 'Third column', 'Right lamp', 'Fourth column', 'Top step', 'Bottom step']
+LOCI = ['Flag', 'Pediment', 'Inscription', 'Left wing', 'First column', 'Left door', 'Second column', 'Centre door', 'Third column', 'Right door', 'Fourth column', 'Right wing', 'Statues', 'Seven steps']
 
 LINK = re.compile(r'\{([a-z0-9]+):([a-z0-9-]+)\}')
 
