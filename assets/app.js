@@ -823,6 +823,13 @@ function judgeHTML(items, fld, mode) {
 /* ---- evolution: where the text came from, how it changed, how it is carried out and read */
 const DERIV = { civil: ['Spanish Civil Code of 1889', '1889'], family: ['Civil Code of 1950', '1950'] };
 const ENACT = { labor: [1974, 'Presidential Decree No. 442 (May 1, 1974), in force November 1, 1974; renumbered by RA 10151 (2011)'], civil: [1949, 'Republic Act No. 386 (June 18, 1949), in force August 30, 1950'], family: [1987, 'Executive Order No. 209 (July 6, 1987), in force August 3, 1988'], rpc: [1930, 'Act No. 3815 (December 8, 1930), in force January 1, 1932'] };
+// what an old-rule note (n.o) points to: the 1988 Code of Professional Responsibility, the Rules of Court
+// provisions the CPRA repealed and absorbed (Rule 138, Rule 139-B), or both
+function oldRule(o) {
+  const cpr = /\b(Rules? \d+\.\d+|Canons? \d+)\b/.test(o), roc = /\bRule 13[89]\b/.test(o);
+  const lab = cpr && roc ? 'Before the CPRA: the 1988 Code and the Rules of Court' : roc ? 'Before the CPRA: the Rules of Court' : 'Under the 1988 Code';
+  return { lab, y: cpr || /139-B/.test(o) ? 1988 : 1964, h: cpr && roc ? 'Before the CPRA — 1988 Code and Rules of Court' : roc ? 'Before the CPRA — Rules of Court' : 'Under the 1988 Code of Professional Responsibility' };
+}
 const yearOf = s => { const m = /\b(1[89]\d\d|20\d\d)\b/.exec(s || ''); return m ? +m[1] : null; };
 function evolution(d, p, cid, n) {
   const m = meta(cid) || {}; const ev = [];
@@ -838,7 +845,7 @@ function evolution(d, p, cid, n) {
   }
   for (const t of txt) for (const mm of t.matchAll(/\((?:As )?amended by ([^)]{3,120})\)/gi)) ev.push({ y: yearOf(mm[1]), k: 'amend', h: `Amended by ${mm[1].replace(/[;,].*$/, '')}`, s: 'Noted in the text itself.' });
   for (const a of p.a || []) ev.push({ y: a.y ? +a.y : null, k: 'amend', h: `Amended by ${a.by}${a.sec ? ', Sec. ' + a.sec : ''}`, s: a.why || a.tt || 'See the amended text above.' });
-  if (n && n.o && n.o !== '—') ev.push({ y: 1988, k: 'src', h: 'Under the 1988 Code of Professional Responsibility', s: n.o });
+  if (n && n.o && n.o !== '—') { const r = oldRule(n.o); ev.push({ y: r.y, k: 'src', h: r.h, s: n.o }); }
   for (const i of (n && n.i) || []) ev.push({ y: yearOf(i.t), k: 'issu', h: i.t, s: i.s });
   const cases = [...((n && n.d) || []).map(c => ({ y: yearOf(c.c), h: c.n, s: c.h })), ...((REC.by || {})[ck(cid, p.i)] || []).map(r => ({ y: yearOf(r.d), h: r.n, s: r.h }))];
   const seen = new Set();
@@ -864,7 +871,7 @@ function guideHTML(d, p, cid, n, loc) {
       <div class="explain" style="margin-top:8px">${(n.x || '').split('\n\n').map(x => `<p>${esc(x)}</p>`).join('')}</div>
       ${n.k ? `<span class="dl">${n.k.length} ${n.k.length === 1 ? 'key point' : 'elements / key points'}</span><ol class="els">${n.k.map(x => `<li>${esc(x)}</li>`).join('')}</ol>` : ''}
       ${n.w ? `<span class="dl">Why it exists</span><p class="why">${esc(n.w)}</p>` : ''}
-      ${n.o && n.o !== '—' ? `<span class="dl">Under the 1988 Code</span><p class="oldrule">${esc(n.o)}</p>` : ''}
+      ${n.o && n.o !== '—' ? `<span class="dl">${oldRule(n.o).lab}</span><p class="oldrule">${esc(n.o)}</p>` : ''}
       ${n.t ? `<span class="dl warnh">Exam traps</span><ul class="traps">${n.t.map(x => `<li>${esc(x)}</li>`).join('')}</ul>` : ''}
       ${n.q ? `<details class="selftest"><summary><b>Self-test</b> <span class="small muted">answer before opening</span></summary><ol class="els q">${n.q.map(x => `<li>${esc(x)}</li>`).join('')}</ol></details>` : ''}
       <p class="tiny muted" style="margin:10px 0 0">Explanations are study aids, not the law. The verbatim text above controls.</p></div>`;

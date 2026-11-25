@@ -12,7 +12,7 @@ Philippine law, studied one provision at a time. The verbatim codal text is the 
 
 ## What's inside
 
-`data/catalog.json` lists 114 instruments (about 12,441 provisions), grouped by Bar subject. Each code is a file in `data/codes/`. Case indexes are in `data/cases/`, and study guides are in `data/notes/`. `data/proofreading.json` is the correction log.
+`data/catalog.json` lists 120 instruments (about 13,439 provisions), grouped by Bar subject. Each code is a file in `data/codes/`. Case indexes are in `data/cases/`, and study guides are in `data/notes/`. `data/proofreading.json` is the correction log.
 
 | Source | Used for |
 |---|---|
