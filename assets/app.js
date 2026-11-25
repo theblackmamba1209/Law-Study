@@ -103,19 +103,19 @@ function manSVG(u) {
     <path d="M-12,39 C-4,32 8,30 18,34" fill="none" stroke="#3a322f" stroke-width="1" stroke-linecap="round" opacity=".7"/>
     <g fill="none" stroke="#1a2233" stroke-width="1" stroke-linejoin="round" opacity=".38"><path d="${FIG_EDGE}"/><path d="${FIG_EDGE}" transform="scale(-1,1)"/></g>`;
 }
+// where each numbered pin sits, and the exact spot it points to (figure coordinates; x = 0 is the midline)
+const FIG_PIN = { pol: [45, 25], craft: [-58, 67], lab: [98, 111], eth: [19, 176], civ: [-31, 296], crim: [-124, 350], com: [124, 350], intl: [-86, 597] };
 function figure(active, plain) {
   const u = 'fg' + (++figSeq); const img = figImg();
-  const order = ['pol', 'lab', 'eth', 'com', 'craft', 'civ', 'crim', 'intl'];
-  // keep labels on one side from touching
-  const ly = {};
-  for (const sd of [1, -1]) { let last = -99; for (const id of order.filter(i => FIG_SIDE[i] === sd).sort((x, y) => figPos(x)[1] - figPos(y)[1])) { const y = Math.max(figPos(id)[1], last + 27); ly[id] = Math.min(604, Math.max(30, y)); last = ly[id]; } }
-  const zone = id => { const f = CUR.byId[id]; const sd = FIG_SIDE[id]; const [ax, ay] = figPos(id); const y = ly[id]; const ex = sd * 112, bx = sd * 124, tx = sd * 140; const on = active === id;
-    return `<a class="zone f-${id}${on ? ' on' : ''}" data-id="${id}" href="#/field/${id}" aria-label="${esc(f.name)}: ${esc(f.pname)}">${on || !active ? `<circle class="halo" cx="${ax}" cy="${ay}" r="${on ? 13 : 8}"/>` : ''}${plain ? '' : `<path class="ld" d="M${ax},${ay} L${sd * 104},${y} H${ex}"/>`}<circle class="ldot" cx="${ax}" cy="${ay}" r="3.4"/>${plain ? '' : `<circle class="num" cx="${bx}" cy="${y}" r="10.5"/><text class="nt" x="${bx}" y="${y}">${f.n}</text><text class="lb" x="${tx}" y="${y}" text-anchor="${sd > 0 ? 'start' : 'end'}">${esc(FIG_LABEL[id])}</text>`}</a>`; };
-  return `<svg class="fig${active ? ' dim' : ''}${plain ? ' plain' : ''}" viewBox="${plain ? '150 14 220 610' : '0 12 520 616'}" role="img" aria-label="The body of law: eight fields of law placed on eight parts of one figure">
+  const order = ['pol', 'craft', 'lab', 'eth', 'crim', 'com', 'civ', 'intl'];
+  const zone = id => { const f = CUR.byId[id]; const [ax, ay] = figPos(id); const [px, py] = img ? figPos(id) : FIG_PIN[id]; const on = active === id;
+    if (plain && !on) return '';
+    return `<a class="zone f-${id}${on ? ' on' : ''}" data-id="${id}" href="#/field/${id}" aria-label="${f.n}. ${esc(f.name)}: ${esc(f.pname)}">${on ? `<circle class="halo" cx="${px}" cy="${py}" r="30"/>` : ''}${px !== ax || py !== ay ? `<path class="stem" d="M${ax},${ay} L${px},${py}"/><circle class="ldot" cx="${ax}" cy="${ay}" r="4"/>` : ''}<circle class="pinsh" cx="${px}" cy="${py + 2.5}" r="18"/><circle class="pin" cx="${px}" cy="${py}" r="18"/><text class="nt" x="${px}" y="${py + 0.5}">${f.n}</text></a>`; };
+  return `<svg class="fig${plain ? ' plain' : ''}${active && !plain ? ' dim' : ''}" viewBox="112 2 296 620" role="img" aria-label="The body of law: eight fields of law placed on eight parts of one figure">
     <defs><linearGradient id="${u}s" x1="0" x2="1" y1="0" y2="0"><stop offset="0" stop-color="#000" stop-opacity=".2"/><stop offset=".32" stop-color="#000" stop-opacity="0"/><stop offset=".62" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".24"/></linearGradient>
-      <clipPath id="${u}c"><path d="${FIG_BODY}"/><path d="${FIG_BODY}" transform="scale(-1,1)"/></clipPath><clipPath id="${u}r"><rect x="-108" y="22" width="216" height="592" rx="14"/></clipPath></defs>
+      <clipPath id="${u}c"><path d="${FIG_BODY}"/><path d="${FIG_BODY}" transform="scale(-1,1)"/></clipPath><clipPath id="${u}r"><rect x="-128" y="14" width="256" height="600" rx="16"/></clipPath></defs>
     <g transform="translate(260,0)">
-      ${img ? `<image href="${img}" x="-108" y="22" width="216" height="592" preserveAspectRatio="xMidYMid slice" clip-path="url(#${u}r)"/>` : `<ellipse class="ground" cx="0" cy="612" rx="92" ry="6"/>${manSVG(u)}`}
+      ${img ? `<image href="${img}" x="-128" y="14" width="256" height="600" preserveAspectRatio="xMidYMid slice" clip-path="url(#${u}r)"/>` : `<ellipse class="ground" cx="0" cy="612" rx="92" ry="6"/>${manSVG(u)}`}
       ${order.map(zone).join('')}
     </g></svg>`;
 }
@@ -127,11 +127,11 @@ async function figurePicture(done) {
   const draw = () => {
     $('#fga', m.el).hidden = $('#fgr', m.el).hidden = !figImg();
     if (!figImg()) { box.innerHTML = ''; return; }
-    box.innerHTML = `<p class="small"><b>${sel ? `Now tap where the ${esc(CUR.byId[sel].pname.toLowerCase())} is on your picture.` : 'To move a marker, tap its number, then tap its place on the picture.'}</b></p>` + figure(sel || undefined);
+    box.innerHTML = `<p class="small"><b>${sel ? `Now tap where the ${esc(CUR.byId[sel].pname.toLowerCase())} is on your picture.` : 'To move a number, tap it, then tap its place on the picture.'}</b></p>` + figure(sel || undefined);
     const svg = $('svg', box);
     svg.addEventListener('click', e => {
       e.preventDefault(); const z = e.target.closest('.zone');
-      if (z && (!sel || e.target.closest('.num,.nt,.lb'))) { sel = z.dataset.id; return draw(); }
+      if (z) { sel = z.dataset.id; return draw(); }
       if (!sel) return;
       const pt = svg.createSVGPoint(); pt.x = e.clientX; pt.y = e.clientY; const q = pt.matrixTransform(svg.getScreenCTM().inverse());
       S.settings.figPos = S.settings.figPos || {}; S.settings.figPos[sel] = [Math.round(q.x - 260), Math.round(q.y)]; save(); sel = null; draw();
@@ -154,7 +154,7 @@ async function figurePicture(done) {
 }
 function partsList() {
   const foc = focusIds();
-  return `<ol class="parts">${CUR.fields.map(f => { const k = fieldCount(f); const lb = S.lastBy[f.id]; return `<li class="f-${f.id}${foc.includes(f.id) ? '' : ' off'}"><a href="#/field/${f.id}"><span class="n">${f.n}</span><span><span class="t">${esc(f.name)}</span><br><span class="p">${esc(f.pname)}</span>${lb ? ` <span class="tiny muted">· last: ${esc(lb.l)}</span>` : ''}<span class="hk">${esc(f.hook)}</span></span><span class="pct">${k.touched ? k.touched.toLocaleString() + ' studied' : ''}</span></a></li>`; }).join('')}</ol>`;
+  return `<ol class="parts">${CUR.fields.map(f => `<li class="f-${f.id}${foc.includes(f.id) ? '' : ' off'}"><a href="#/field/${f.id}"><span class="n">${f.n}</span><span class="tx"><span class="t">${esc(f.name)}</span><span class="p">${esc(f.pname)}</span><span class="hk">${esc(f.hook)}</span></span></a></li>`).join('')}</ol>`;
 }
 async function nameFigure() {
   const t = await askText('Name your figure', S.settings.figure || '', 'A name you will remember. Picture him or her as vividly as you can.');
@@ -398,7 +398,7 @@ async function home() {
     <div class="meters"><span><b>${due}</b> due</span><span><b>${nt}</b> of ${S.settings.newPerDay} new today</span><span><b>${st}</b> day streak</span><a href="#/progress">Progress</a></div></section>
   <div class="sect"><h2>The body of law</h2><span class="spacer"></span><button class="btn sm ghost" id="foc">This semester</button><button class="btn sm ghost" id="nm">Name the figure</button><button class="btn sm ghost" id="pic">Use my own picture</button></div>
   <p class="small muted" style="margin:-4px 0 12px;max-width:65ch">Eight fields, eight places on ${esc(figName())}, read from head to toe. A fixed place is a fixed cue: when you forget, walk down the body.</p>
-  <div class="bodymap"><figure class="plate" style="margin:0">${figure()}<figcaption>Read from head to toe</figcaption></figure>${partsList()}</div>
+  <div class="plate bodymap"><div class="pfig">${figure()}</div>${partsList()}<p class="cap">Read from head to toe. Faded fields are outside this semester.</p></div>
   <div class="more"><a href="#/syllabus">Syllabus cases</a><a href="#/syllabus/recent">Recent rulings</a><a href="#/drill">Drill</a><a href="#/search">Find a case</a><a href="#/about">How this works</a></div>`;
   $('#foc').onclick = async () => { if (await chooseFocus()) home(); };
   $('#nm').onclick = async () => { if (await nameFigure()) home(); };
