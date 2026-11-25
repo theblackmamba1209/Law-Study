@@ -350,13 +350,16 @@ function stripHead(ps, cap) {
   if (s.trim()) out[fi] = s; else out.splice(fi, 1);
   return { ps: out, cap: newCap.replace(/[\s.;:—–-]+$/, '').trim() };
 }
+const isPart = a => !a.cons && /\bx\s*x\s*x\b/i.test(a.p.filter(x => typeof x === 'string').join(' '));
 function inForce(p) {
-  const a = (p.a || []).at(-1);
+  const as = p.a || []; const a = as.at(-1);
   if (!a) return { ps: p.p, a: null, partial: false, cap: p.c || '' };
-  const src = a.cons || a.p;
-  if (!a.cons && /\bx\s*x\s*x\b/i.test(src.filter(x => typeof x === 'string').join(' '))) return { ps: p.p, a, partial: true, cap: p.c || '' };
-  const h = stripHead(src, p.c);
-  return { ps: h.ps, a, partial: false, cap: h.cap || p.c || '' };
+  if (!isPart(a)) { const h = stripHead(a.cons || a.p, p.c); return { ps: h.ps, a, partial: false, cap: h.cap || p.c || '' }; }
+  // the latest law rewrote only parts ("x x x"): the base is the last whole text before it, and the parts follow
+  let k = as.length - 1; while (k >= 0 && isPart(as[k])) k--;
+  const parts = as.slice(k + 1);
+  if (k >= 0) { const h = stripHead(as[k].cons || as[k].p, p.c); return { ps: h.ps, a, partial: true, base: as[k], parts, cap: h.cap || p.c || '' }; }
+  return { ps: p.p, a, partial: true, base: null, parts, cap: p.c || '' };
 }
 const provText = p => inForce(p).ps.filter(x => typeof x === 'string').map(plain).join('\n');
 const words = s => s.split(/\s+/).filter(Boolean);
@@ -603,7 +606,7 @@ async function home() {
   <div class="sect"><h2>The House of Law</h2><span class="spacer"></span><button class="btn sm ghost" id="foc">This semester</button><button class="btn sm ghost" id="pic">Use a place you know</button></div>
   <p class="small muted" style="margin:-4px 0 12px;max-width:65ch">Eight fields, eight places in one building drawn after the Supreme Court on Padre Faura, read from the roof down to the seven steps. A fixed place is a fixed cue: when you forget, walk through the building again.</p>
   <div class="plate bodymap"><div class="pfig">${figure()}</div>${partsList()}<p class="cap">Read from the roof down to the steps. Faded fields are outside this semester.</p></div>
-  <div class="more"><a href="#/sprint">Sprint</a><a href="#/syllabus">Syllabus cases</a><a href="#/syllabus/recent">Recent rulings</a><a href="#/drill">Drill</a><a href="#/search">Find a case</a><a href="#/about">How this works</a></div>`;
+  <div class="more"><a href="#/map">The whole map</a><a href="#/sprint">Sprint</a><a href="#/syllabus">Syllabus cases</a><a href="#/syllabus/recent">Recent rulings</a><a href="#/drill">Drill</a><a href="#/search">Find a case</a><a href="#/about">How this works</a></div>`;
   $('#foc').onclick = async () => { if (await chooseFocus()) home(); };
   $('#pic').onclick = () => figurePicture(home);
 }
@@ -615,7 +618,7 @@ function learn() {
     const start = first.t === 'code' ? meta(first.id).short : first.t === 'lesson' ? CUR.lessons[first.id].title : first.title || '';
     return `<a class="tile f-${f.id}" href="#/field/${f.id}"><span class="p">${f.n} · ${esc(f.pname)}</span><span class="t">${esc(f.name)}</span><span class="q">${esc(f.q)}</span><div class="thin"><i style="width:${Math.min(100, k.pct).toFixed(1)}%"></i></div><span class="go">${lb ? `Continue: <b>${esc(lb.l)}</b>` : `Start here: <b>${esc(start)}</b>`}</span></a>`; };
   const mine = CUR.fields.filter(f => foc.includes(f.id)), rest = CUR.fields.filter(f => !foc.includes(f.id));
-  main.innerHTML = `<h1>Learn</h1><p class="lead">Pick one field. Inside it you will find a short path: start here, then the core, then deeper only when you need it.</p>
+  main.innerHTML = `<div class="crumbs"><a href="#/map">The whole map</a><span class="sep">›</span><span>Fields and study paths</span></div><h1>Learn</h1><p class="lead">Pick one field. Inside it you will find a short path: start here, then the core, then deeper only when you need it.</p>
   <div class="sect"><h2>This semester</h2><span class="spacer"></span><button class="btn sm ghost" id="foc">Change</button></div>
   <div class="tiles">${mine.map(tile).join('') || '<p class="muted">No fields chosen yet.</p>'}</div>
   ${rest.length ? `<div class="sect"><h2>Other fields</h2></div><div class="tiles">${rest.map(tile).join('')}</div>` : ''}
@@ -760,15 +763,17 @@ function lawHTML(d, p, cid, on) {
   const fn = p.f || [];
   const lp = labelParts(p.l); const fld = fieldOf(cid);
   const F = inForce(p), cur = !!(F.a && !F.partial);
-  const cap = cur ? F.cap : p.c;
+  const cap = cur || F.partial ? F.cap : p.c;
   const stat = (p.e || []).filter(e => e.k === 'status'), notes = (p.e || []).filter(e => e.k !== 'status');
   const amendSec = (a, label) => `<section class="amend"><div class="row"><span class="ak">${label}</span><span class="chip ok">${esc(a.by)}${a.sec ? ` · Sec. ${esc(a.sec)}` : ''}${a.y ? ` · ${esc(a.y)}` : ''}</span><span class="spacer"></span>${a.ref ? `<a class="small" href="#/code/${a.ref}">open ${esc(a.by)}</a>` : ''}</div><p class="tiny muted" style="margin:4px 0 10px">Verbatim from the amending law.</p><div class="text">${lawBody(a.p, on, null, cid)}</div></section>`;
   const nA = (p.a || []).length;
   return `<article class="law${fld ? ' f-' + fld.id : ''}${p.st ? ' gone' : ''}" id="law">
     <h1 class="lh"><span class="lnum${lp.n.length > 6 ? ' long' : ''}">${lp.k ? `<small>${esc(lp.k)}</small>` : ''}<b>${esc(lp.n)}</b></span>${cap ? `<span class="lcap">${esc(cap)}</span>` : divCap(d, p) ? `<span class="lcap dim"><small>${esc(divCap(d, p)[0])}</small>${esc(divCap(d, p)[1])}</span>` : ''}${p.o ? `<span class="lold">formerly ${esc(p.o)}</span>` : ''}</h1>
     ${stat.map(e => `<div class="status st-${esc(p.st || 'note')}">${/^(Repealed|Superseded)\b/.test(e.t) ? '' : `<b>${p.st === 'repealed' ? 'Repealed' : p.st === 'superseded' ? 'Superseded' : 'Status'}.</b> `}${esc(e.t)}${e.b ? ` <span class="muted">Basis: ${esc(e.b)}</span>` : ''}<span class="tiny">You do not need to memorize this text; learn the law that replaced it.</span></div>`).join('')}
-    ${cur ? `<div class="inforce${p.st ? ' part' : ''}"><span class="ak">${p.st ? 'Last text before repeal' : 'Text in force'}</span><span class="chip ok">as amended by ${esc(F.a.by)}${F.a.y ? ` (${esc(F.a.y)})` : ''}</span>${F.a.cons ? '<span class="chip">consolidated</span>' : ''}</div>` : F.partial ? `<div class="inforce part"><span class="ak">Partly amended</span><span class="chip warn">${esc(F.a.by)}${F.a.y ? ` (${esc(F.a.y)})` : ''}</span><span class="tiny muted">The text below is the earlier text; the amended part follows it.</span></div>` : ''}
-    <div class="text">${lawBody(cur ? F.ps : p.p, on, d, cid)}</div>
+    ${cur ? `<div class="inforce${p.st ? ' part' : ''}"><span class="ak">${p.st ? 'Last text before repeal' : 'Text in force'}</span><span class="chip ok">as amended by ${esc(F.a.by)}${F.a.y ? ` (${esc(F.a.y)})` : ''}</span>${F.a.cons ? '<span class="chip">consolidated</span>' : ''}</div>` : F.partial ? `<div class="inforce part"><span class="ak">Partly amended</span>${F.parts.map(a => `<span class="chip warn">${esc(a.by)}${a.y ? ` (${esc(a.y)})` : ''}</span>`).join('')}<span class="tiny muted">${F.parts.length > 1 ? 'Later laws rewrote parts of this provision. Read the latest changes first.' : 'A later law rewrote part of this provision. Read the change first.'} Where a change shows “x x x”, the words it left out are unchanged. Everything a change does not touch still reads as in the text below it.</span></div>
+      ${F.parts.slice().reverse().map((a, k) => `<section class="amend chg"><div class="row"><span class="ak">${k === 0 ? 'Latest change' : 'Earlier change'}</span><span class="chip warn">${esc(a.by)}${a.sec ? ` · Sec. ${esc(a.sec)}` : ''}${a.y ? ` · ${esc(a.y)}` : ''}</span><span class="spacer"></span>${a.ref ? `<a class="small" href="#/code/${a.ref}">open ${esc(a.by)}</a>` : ''}</div><div class="text">${lawBody(a.p, on, null, cid)}</div></section>`).join('')}
+      <div class="inforce base"><span class="ak">The text these changes amend</span><span class="chip">${F.base ? `as restated by ${esc(F.base.by)}${F.base.y ? ` (${esc(F.base.y)})` : ''}` : 'as enacted'}</span></div>` : ''}
+    <div class="text">${lawBody(cur || F.partial ? F.ps : p.p, on, d, cid)}</div>
     ${fn.length ? `<div class="fnlist">${fn.map(f => `<p id="fn${f.n}"><sup>${f.n}</sup> ${esc(f.t)}</p>`).join('')}<p class="tiny muted">Footnotes are the publisher’s (DOLE), not part of the law.</p></div>` : ''}
     <div class="verify">${verifyChips(cid, p)}</div>
     ${notes.map(e => `<div class="note ${/missing|omitted|restored|absent/i.test(e.t) ? 'blue' : ''}" style="margin-top:10px"><b>${(p.a || []).length && (/amend|rewrote|restated|raised|repealed|added|changed|limited|replaced/i.test(e.t) || /\b(RA|CA|BP|PD|EO|Act No\.)\s*\d/.test(e.t)) ? 'History note.' : 'Proofreading note.'}</b> ${esc(e.t)}${e.b ? ` <span class="muted">Basis: ${esc(e.b)}</span>` : ''}</div>`).join('')}
@@ -776,6 +781,9 @@ function lawHTML(d, p, cid, on) {
       <section class="amend orig"><div class="row"><span class="ak">Earlier text</span><span class="chip">as in the source</span></div><div class="text">${lawBody(p.p, on, d, cid)}</div></section>
       ${(p.a || []).map((a, k) => amendSec(a, k === nA - 1 ? 'Latest amendment' : 'Amended')).join('')}
       <p class="tiny muted">Read in order: each later law controls the earlier one.</p></details>`
+      : F.partial ? `<details class="hist"><summary><b>How the text read before</b> <span class="muted small">every amending law, verbatim, in order</span></summary>
+        ${F.base ? `<section class="amend orig"><div class="row"><span class="ak">Text as enacted</span><span class="chip">as in the source</span></div><div class="text">${lawBody(p.p, on, d, cid)}</div></section>` : ''}
+        ${(p.a || []).map(a => amendSec(a, 'Amended')).join('')}<p class="tiny muted">Read in order: each later law controls the earlier one.</p></details>`
       : (p.a || []).map(a => amendSec(a, 'Amended text')).join('')}
   </article>`;
 }
@@ -1101,7 +1109,7 @@ function recallPanel(box, d, p, cid, onDone) {
   const F = inForce(p);
   const head = p.st ? `<div class="status st-${esc(p.st)}" style="margin-bottom:10px"><b>${p.st === 'repealed' ? 'Repealed' : 'Superseded'}.</b> Recall is optional here: spend the effort on the law that replaced it.</div>`
     : F.a && !F.partial ? `<p class="tiny muted" style="margin:0 0 8px">Recall uses the text in force (as amended by ${esc(F.a.by)}${F.a.y ? `, ${esc(F.a.y)}` : ''}).</p>`
-    : F.partial ? `<p class="tiny muted" style="margin:0 0 8px">Partly amended by ${esc(F.a.by)}: recall uses the earlier text — check the amended part shown with the article.</p>` : '';
+    : F.partial ? `<p class="tiny muted" style="margin:0 0 8px">Partly amended (latest: ${esc(F.a.by)}${F.a.y ? `, ${esc(F.a.y)}` : ''}). Recall uses ${F.base ? `the text as restated by ${esc(F.base.by)}` : 'the earlier text'}; learn the changed parts shown above it with the provision.</p>` : '';
   box.innerHTML = `<div class="panel">${head}<div class="row" style="margin-bottom:10px">
     <button class="btn sm" data-m="c1">Cloze · light</button><button class="btn sm" data-m="c2">Cloze · medium</button><button class="btn sm" data-m="c3">Cloze · heavy</button>
     <button class="btn sm" data-m="fl">First letters</button><button class="btn sm" data-m="fr">Write it out</button><button class="btn sm" data-m="al">Bar answer (ALAC)</button></div>
@@ -1215,13 +1223,146 @@ async function reviewView() {
   step();
 }
 
+/* ---- the map: all of law school on one screen, then zoom in, one level at a time
+   Five states per provision, from the memory model: locked in (recall predicted to hold three weeks: stability ≥ 21 days
+   and recall now at or above your target), learning, slipping (recall now below target), opened, not started.
+   A part is locked in when every provision under it is. Repealed and superseded provisions are not counted. */
+const LOCK_DAYS = 21;
+function lockState(key) {
+  const c = S.cards[key];
+  if (!c) return 'n';
+  if (c.s == null || !c.last) return 'o';
+  const r = recallNow(upgrade(c));
+  if (r < goal()) return 'x';
+  return c.s >= LOCK_DAYS ? 'k' : 'g';
+}
+function tally(keys) { const t = { k: 0, g: 0, x: 0, o: 0, n: 0, total: keys.length }; for (const k of keys) t[lockState(k)]++; return t; }
+/* code-level tally without loading the code: cards carry the state; the catalogue carries the count */
+function codeTally(cid) {
+  const m = meta(cid); const t = { k: 0, g: 0, x: 0, o: 0, n: 0, total: m.live ?? m.count }; const pre = cid + '|';
+  for (const k in S.cards) if (k.startsWith(pre)) t[lockState(k)]++;
+  t.n = Math.max(0, t.total - t.k - t.g - t.x - t.o); return t;
+}
+function addT(a, b) { for (const k of ['k', 'g', 'x', 'o', 'n', 'total']) a[k] += b[k]; return a; }
+const zeroT = () => ({ k: 0, g: 0, x: 0, o: 0, n: 0, total: 0 });
+function lockBar(t) {
+  const w = x => (t.total ? x / t.total * 100 : 0).toFixed(2) + '%';
+  return `<div class="lbar" role="img" aria-label="${t.k} locked in, ${t.g} learning, ${t.x} slipping, ${t.o} opened, ${t.n} not started"><i class="k" style="width:${w(t.k)}"></i><i class="g" style="width:${w(t.g)}"></i><i class="x" style="width:${w(t.x)}"></i><i class="o" style="width:${w(t.o)}"></i></div>`;
+}
+function lockLine(t) {
+  const pc = t.total ? Math.floor(t.k / t.total * 100) : 0;
+  if (t.total && t.k === t.total) return `<span class="lk done">🔒 Locked in</span>`;
+  return `<span class="lk"><b>${pc}%</b> locked in</span>${t.x ? ` <span class="lk x">${t.x} slipping</span>` : ''}${t.g ? ` <span class="lk g">${t.g} learning</span>` : ''}<span class="lk n">${(t.total - t.k - t.g - t.x).toLocaleString()} to go</span>`;
+}
+/* pictures of progress: a ring, a waffle of 100 squares (each 1%), and a mosaic with one square per provision */
+function ringHTML(t, size = 64, label) {
+  const p = x => (t.total ? x / t.total * 100 : 0);
+  const a = p(t.k), b = a + p(t.g), c = b + p(t.x), d = c + p(t.o);
+  const pc = t.total ? Math.floor(t.k / t.total * 100) : 0;
+  return `<span class="ring" style="--sz:${size}px;background:conic-gradient(var(--ok) 0 ${a}%,var(--blue) ${a}% ${b}%,var(--warn) ${b}% ${c}%,var(--line2) ${c}% ${d}%,var(--line) ${d}% 100%)"><span>${t.total && t.k === t.total ? '🔒' : pc + '%'}${label ? `<small>${label}</small>` : ''}</span></span>`;
+}
+function waffle(t) {
+  const cells = []; const tot = t.total || 1; let used = 0;
+  const share = x => x ? Math.max(1, Math.round(x / tot * 100)) : 0;
+  for (const k of ['k', 'g', 'x', 'o']) { let n = share(t[k]); n = Math.min(n, 100 - used); for (let i = 0; i < n; i++) cells.push(k); used += n; }
+  while (cells.length < 100) cells.push('n');
+  return `<span class="waf" aria-hidden="true">${cells.map(c => `<i class="${c}"></i>`).join('')}</span>`;
+}
+const STNAME = { k: 'Locked in', g: 'Learning', x: 'Slipping', o: 'Opened', n: 'Not started' };
+function mosaic(keys, d, cid, link) {
+  return `<span class="mos${keys.length > 600 ? ' fine' : ''}">${keys.map(k => { const st = lockState(k); if (!link) return `<i class="${st}"></i>`; const p = d.byId[k.split('|')[1]]; return `<a class="${st}" href="#/p/${cid}/${p.i}" title="${esc(p.l)}${p.c ? ' — ' + esc(p.c) : ''}: ${STNAME[st]}"></a>`; }).join('')}</span>`;
+}
+const sittingMins = n => Math.max(2, Math.round(n * 1.5));
+function mapFigure(rows) {
+  const u = 'mf' + (++figSeq);
+  const zone = ({ f, t }) => { const [px, py] = figPos(f.id) || HOUSE_PIN[f.id]; const C = 2 * Math.PI * 25; const pk = t.total ? t.k / t.total : 0, pg = t.total ? (t.k + t.g) / t.total : 0;
+    return `<a class="zone f-${f.id}" href="#/map/${f.id}" aria-label="${f.n}. ${esc(f.name)}: ${Math.floor(pk * 100)}% locked in"><circle class="trk" cx="${px}" cy="${py}" r="25"/>
+      <circle class="arcg" cx="${px}" cy="${py}" r="25" stroke-dasharray="${(C * pg).toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 ${px} ${py})"/><circle class="arck" cx="${px}" cy="${py}" r="25" stroke-dasharray="${(C * pk).toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 ${px} ${py})"/>
+      <circle class="pinsh" cx="${px}" cy="${py + 2.5}" r="17"/><circle class="pin" cx="${px}" cy="${py}" r="17"/><text class="nt" x="${px}" y="${py + 0.5}">${f.n}</text></a>`; };
+  return `<svg class="fig mapfig" viewBox="0 0 600 520" role="img" aria-label="The House of Law: each field’s place, ringed by how much of it you have locked in">${houseSVG(u)}${rows.map(zone).join('')}</svg>`;
+}
+const LEGEND = `<div class="lleg"><span><i class="k"></i>Locked in</span><span><i class="g"></i>Learning</span><span><i class="x"></i>Slipping</span><span><i class="o"></i>Opened</span><span><i class="n"></i>Not started</span></div>`;
+function mapCrumbs(parts) { return `<div class="crumbs mapcr">${parts.map((p, i) => i === parts.length - 1 ? `<span>${esc(p[0])}</span>` : `<a href="${p[1]}">${esc(p[0])}</a><span class="sep">›</span>`).join('')}</div>`; }
+function provKeysUnder(d, cid, i) { const out = []; const walk = j => { for (const p of d.divProv[j]) if (!p.st) out.push(ck(cid, p.i)); d.kids[j].forEach(walk); }; walk(i); return out; }
+async function mapView(parts) {
+  setNav('library');
+  const [fid, cid, dv] = parts;
+  let html = '';
+  if (!fid) {
+    // level 0: the whole of law school
+    const foc = focusIds();
+    const rows = CUR.fields.map(f => { const t = fieldCodes(f).reduce((a, c) => addT(a, codeTally(c)), zeroT()); return { f, t, mine: foc.includes(f.id) }; });
+    const all = rows.filter(r => r.mine).reduce((a, r) => addT(a, r.t), zeroT());
+    const nx = rows.filter(r => r.mine).sort((a, b) => (b.t.x - a.t.x) || (a.t.k / (a.t.total || 1) - b.t.k / (b.t.total || 1)))[0];
+    html = `<div class="mapv zin">${mapCrumbs([['Law school', '#/map']])}
+      <span class="eyebrow">The whole map</span><h1>Everything you will be examined on</h1>
+      <div class="maphero"><div class="mhfig">${mapFigure(rows)}</div>
+        <div class="mhside"><p class="lead" style="margin:0 0 10px">Eight fields, eight places in one building. Start from the whole, then zoom in: a field, a code, a Book or Title, a chapter, a provision. Lock in each part, then move on.</p>
+          <div class="mhstat">${ringHTML(all, 84, 'locked in')}<div class="small">${lockLine(all)}<br><span class="muted">${all.total.toLocaleString()} provisions in this semester’s fields</span></div></div>
+          ${nx ? `<div class="mapnext"><span class="eyebrow">Next to lock in</span><a class="btn primary" href="#/map/${nx.f.id}">${esc(nx.f.name)} →</a><span class="small muted">${nx.t.x ? `${nx.t.x} provision${nx.t.x === 1 ? ' is' : 's are'} slipping here.` : 'The least locked-in field you are taking this semester.'}</span></div>` : ''}</div></div>
+      <div class="mapgrid">${rows.map(({ f, t, mine }) => `<a class="mtile f-${f.id}${mine ? '' : ' dim'}" href="#/map/${f.id}"><span class="mth"><span><span class="p">${f.n} · ${esc(f.pname)}</span><span class="t">${esc(f.name)}</span></span>${ringHTML(t, 52)}</span>${waffle(t)}<span class="ml">${lockLine(t)}</span></a>`).join('')}</div>
+      ${LEGEND}<p class="tiny muted">Each square in a tile is 1% of that field. Faded fields are outside this semester. <a href="#/learn">Change your fields</a> · <a href="#/about">What “locked in” means</a></p></div>`;
+  } else if (!cid) {
+    // level 1: one field, its codes by tier
+    const f = CUR.byId[fid]; if (!f) return mapView([]);
+    const tierName = { start: 'Start here', core: 'Core', deep: 'Go deeper when you need it' };
+    const ft = fieldCodes(f).reduce((a, c) => addT(a, codeTally(c)), zeroT());
+    let nxt = null;
+    const tiers = ['start', 'core', 'deep'].map(tier => {
+      const items = f.tracks.filter(t => t.tier === tier).flatMap(t => t.items.filter(i => i.t === 'code' && !i.x).map((i, k) => ({ id: i.id, track: t.name, pic: k === 0 ? t.pic : '' })));
+      if (!items.length) return '';
+      return `<div class="tier">${tierName[tier]}</div><div class="mcodes">${items.map(({ id, track, pic }) => { const m = meta(id); const t = codeTally(id); if (!nxt && t.k < t.total) nxt = id;
+        return `<a class="mcode" href="#/map/${fid}/${id}">${ringHTML(t, 56)}<span class="mt"><b>${esc(m.short)}</b><span class="tiny muted">${esc(track)} · ${(m.live ?? m.count).toLocaleString()} provisions${m.live != null && m.live < m.count ? ` in force (${(m.count - m.live).toLocaleString()} repealed)` : ''}</span><span class="ml">${lockLine(t)}</span>${pic ? `<span class="mpic">Picture: ${esc(pic)}</span>` : ''}</span>${waffle(t)}</a>`; }).join('')}</div>`;
+    }).join('');
+    html = `<div class="mapv zin f-${f.id}">${mapCrumbs([['Law school', '#/map'], [f.name, '']])}
+      <div class="fieldhero"><div class="fhfig">${figure(f.id, true)}</div><div><span class="eyebrow" style="color:var(--f)">${f.n} · ${esc(f.pname)}</span><h1>${esc(f.name)}</h1><p class="hook" style="margin:0 0 8px">${esc(f.q)}</p>
+      <div class="mhstat">${ringHTML(ft, 72, 'locked in')}<div class="small">${lockLine(ft)}</div></div></div></div>
+      ${nxt ? `<div class="mapnext"><span class="eyebrow">Next to lock in</span><a class="btn primary" href="#/map/${fid}/${nxt}">${esc(meta(nxt).short)} →</a><span class="small muted">In the order this field is best learned: foundations first.</span></div>` : ''}
+      ${tiers}
+      <p class="small" style="margin-top:14px"><a href="#/field/${fid}">Open this field’s study path</a> for its lessons and memory walks.</p></div>`;
+  } else {
+    // level 2+: a code, or a division inside it
+    const f = CUR.byId[fid] || fieldOf(cid); const d = await loadCode(cid); const m = meta(cid);
+    const at = dv != null && dv !== '' ? +dv : null;
+    const chain = []; let v = at; while (v != null) { chain.unshift(v); v = d.divisions[v].p; }
+    const kids = at == null ? d.roots : d.kids[at];
+    const direct = (at == null ? d.loose : d.divProv[at]).filter(p => !p.st);
+    const allKeys = at == null ? d.provisions.filter(p => !p.st).map(p => ck(cid, p.i)) : provKeysUnder(d, cid, at);
+    const T = tally(allKeys);
+    const kidRows = kids.map(i => { const keys = provKeysUnder(d, cid, i); return { i, keys, t: tally(keys) }; }).filter(r => r.keys.length);
+    const nx = kidRows.find(r => r.t.k < r.t.total);
+    const title = at == null ? d.title : d.divisions[at].t;
+    const cr = [['Law school', '#/map']]; if (f) cr.push([f.name, `#/map/${f.id}`]); cr.push([m.short, `#/map/${fid}/${cid}`]);
+    chain.forEach((j, k) => cr.push([shortDiv(d.divisions[j].t), `#/map/${fid}/${cid}/${j}`]));
+    cr[cr.length - 1][1] = '';
+    const scope = at == null ? `c=${cid}` : `c=${cid}&d=${at}`;
+    const due = allKeys.filter(k => lockState(k) === 'x').length;
+    html = `<div class="mapv zin${f ? ' f-' + f.id : ''}">${mapCrumbs(cr)}
+      <span class="eyebrow">${at == null ? esc(m.citation) : esc(m.short)}</span><h1>${esc(title)}</h1>
+      <div class="card mapsum"><div class="mhstat">${ringHTML(T, 76, 'locked in')}<div class="small">${lockLine(T)}<br><span class="muted">${T.total.toLocaleString()} provisions${T.total <= 15 ? ` · one sitting, about ${sittingMins(T.total - T.k)} minutes` : ''}</span></div></div>
+        <div class="row" style="margin-top:10px">${T.k < T.total ? `<a class="btn primary" href="#/sprint?${scope}">${due ? `Bring back ${due} slipping` : T.k + T.g ? 'Lock in the next ones' : 'Start locking this in'}</a>` : '<span class="chip ok">Every provision here is locked in</span>'}<a class="btn" href="#/code/${cid}${at != null ? '?div=' + at : ''}">Read it in order</a></div></div>
+      ${nx && kidRows.length > 1 ? `<div class="mapnext"><span class="eyebrow">Next to lock in</span><a class="btn" href="#/map/${fid}/${cid}/${nx.i}">${esc(shortDiv(d.divisions[nx.i].t))} →</a></div>` : ''}
+      ${kidRows.length ? `<div class="mblocks">${kidRows.map(r => `<a class="mblock${r.t.k === r.t.total ? ' done' : ''}" href="#/map/${fid}/${cid}/${r.i}"><span class="mbh">${ringHTML(r.t, 44)}<span class="mt"><b>${esc(d.divisions[r.i].t)}</b><span class="tiny muted">${r.keys.length} provision${r.keys.length === 1 ? '' : 's'}${r.keys.length <= 15 && r.t.k < r.t.total ? ` · one sitting` : ''}</span></span></span>${mosaic(r.keys, d, cid, false)}</a>`).join('')}</div>` : ''}
+      ${direct.length ? `<div class="card flat mosdirect">${mosaic(direct.map(p => ck(cid, p.i)), d, cid, true)}<span class="tiny muted">One square per provision. Tap one to study it.</span></div><ul class="plist mapprov">${direct.map(p => { const st = lockState(ck(cid, p.i)); return `<li><a href="#/p/${cid}/${p.i}"><span class="ls ${st}" title="${{ k: 'Locked in', g: 'Learning', x: 'Slipping', o: 'Opened', n: 'Not started' }[st]}">${st === 'k' ? '🔒' : ''}</span><span class="pl">${esc(p.l)}</span><span class="pc">${esc(p.c || inForce(p).cap || firstWords(p))}</span></a></li>`; }).join('')}</ul>` : ''}
+      ${LEGEND}</div>`;
+  }
+  main.innerHTML = html;
+}
+
 /* ---- sprint: a few minutes, one provision at a time
    Built for a short attention span. A hard time box; one item on screen; the provisions you are closest to forgetting
    come first; new material is read once, then tested at once (reading alone fades fast); an item you miss comes back
    three cards later in the same sprint until you get it (successive relearning); the sprint ends with a break. */
 const fmtClock = ms => { const t = Math.ceil(ms / 1000); return Math.floor(t / 60) + ':' + String(t % 60).padStart(2, '0'); };
-async function sprintPool(maxNew) {
+async function sprintPool(maxNew, scope) {
   const now = Date.now();
+  if (scope) {
+    // a sprint on one part of the map: what is slipping there first, then the next provisions in order
+    const inS = new Set(scope);
+    const due = dueKeys().filter(k => inS.has(k)).map(k => [k, recallNow(upgrade(S.cards[k]), now) ?? 0]).sort((a, b) => a[1] - b[1]).map(x => x[0]);
+    const fresh = scope.filter(k => !S.cards[k] || (!S.cards[k].reps && !S.cards[k].last)).slice(0, maxNew);
+    return { due, fresh };
+  }
   const due = dueKeys().map(k => [k, recallNow(upgrade(S.cards[k]), now) ?? 0]).sort((a, b) => a[1] - b[1]).map(x => x[0]);
   const fresh = Object.entries(S.cards).filter(([, c]) => !c.reps && !c.last && !c.due).sort((a, b) => (a[1].seen || 0) - (b[1].seen || 0)).map(([k]) => k).slice(0, maxNew);
   if (fresh.length < maxNew && S.last && meta(S.last.c)) {
@@ -1235,11 +1376,17 @@ async function sprintPool(maxNew) {
   }
   return { due, fresh };
 }
-async function sprintView() {
+async function sprintView(q) {
   setNav('review');
   const mins = S.settings.sprint || 5;
   const room = Math.max(0, S.settings.newPerDay - newToday());
-  const { due, fresh } = await sprintPool(Math.min(2, room));
+  let scope = null, scopeName = '';
+  if (q && q.get('c') && meta(q.get('c'))) {
+    const cid = q.get('c'); const d = await loadCode(cid); const dv = q.get('d');
+    scope = dv != null ? provKeysUnder(d, cid, +dv) : d.provisions.filter(p => !p.st).map(p => ck(cid, p.i));
+    scopeName = dv != null ? `${d.short} · ${shortDiv(d.divisions[+dv].t)}` : d.short;
+  }
+  const { due, fresh } = await sprintPool(scope ? Math.max(3, Math.min(5, room)) : Math.min(2, room), scope);
   const queue = due.slice(0, 8);
   fresh.forEach((k, j) => queue.splice(Math.min(queue.length, j === 0 ? 1 : 4), 0, k));
   if (!queue.length) {
@@ -1272,7 +1419,7 @@ async function sprintView() {
       <div class="tryit small"><b>Now rest for five minutes.</b> Stand up, look at something far away, have some water, and do not pick up your phone. A few minutes of quiet rest right after learning helps the brain keep what it just took in (Dewar and others, 2012).</div>
       <p class="small muted">${nd ? `Next provision due ${nd <= Date.now() ? 'now' : new Date(nd).toLocaleString([], { weekday: 'short', hour: 'numeric', minute: '2-digit' })}.` : ''} Two or three short sprints spread over the day beat one long sitting.</p>
       <div class="row"><button class="btn primary" id="spagain">Another sprint</button><a class="btn" href="#/">Home</a></div></div>`;
-    $('#spagain').onclick = () => sprintView();
+    $('#spagain').onclick = () => sprintView(q);
   };
   const step = async () => {
     if (i >= queue.length || (over && shown > 0 && i >= shown)) return finish();
@@ -1290,7 +1437,7 @@ async function sprintView() {
     const first = plain(ps[0] || '').split(/(?<=[.;:])\s/)[0];
     const hint = first.split(/\s+/).map(w => w.replace(/^([“"(‘'\[]*)([A-Za-z0-9])[^\s]*/, '$1$2…')).join(' ');
     main.innerHTML = `<div class="sprint">
-      <div class="sphead"><span id="sptime" class="sptime">${fmtClock(left())}</span><div class="spbar"><i id="spbar" style="width:${Math.min(100, elapsed / (mins * 600))}%"></i></div><span class="small muted">${queue.length - i} left</span><button class="btn sm ghost" id="spend">End</button></div>
+      ${scopeName ? `<p class="tiny muted" style="margin:6px 0 0">Locking in: <b>${esc(scopeName)}</b></p>` : ''}<div class="sphead"><span id="sptime" class="sptime">${fmtClock(left())}</span><div class="spbar"><i id="spbar" style="width:${Math.min(100, elapsed / (mins * 600))}%"></i></div><span class="small muted">${queue.length - i} left</span><button class="btn sm ghost" id="spend">End</button></div>
       <p id="spover" class="small spover" ${over ? '' : 'hidden'}>Time is up. Finish this one, then rest.</p>
       <div class="card spcard">
         <div class="small muted">${esc(d.short)}${isNew ? ' · <b class="newtag">New</b>' : r != null ? ` · your recall now ≈ ${Math.round(r * 100)}%` : ''}${c0 && (c0.lapses || 0) >= LEECH ? ' · <b style="color:var(--warn)">stubborn</b>' : ''}</div>
@@ -1673,6 +1820,7 @@ async function aboutView() {
   <h2>How this is designed</h2>
   <ol class="explain"><li><b>One next step.</b> Today shows a single thing to do. New provisions are capped at a small number a day; you can change it under Progress.</li>
   <li><b>Short sprints for a short attention span.</b> A sprint lasts five minutes (three to fifteen, your choice), shows one provision at a time and hides everything else on the screen. The provisions you are closest to forgetting come first. A new one is read once and tested at once. One you miss comes back three cards later, in the same sprint, until you get it. Time away from the tab does not count, and each sprint ends with a five-minute break.</li>
+  <li><b>One map, from the whole to the part.</b> The Map shows all of law school at once, with eight fields, and lets you zoom in: a field, then its codes, then a code’s Books and Titles, then chapters, then single provisions. Each level shows the same bar. <b>Locked in</b> means the memory model predicts you will still recall that provision three weeks from now (stability of 21 days or more) and your recall today is at or above your target. A part is locked in when every provision under it is. <b>Slipping</b> means recall today has dropped below your target. From any level you can start a sprint on that part alone, so you lock in a chapter before moving on to the next one.</li>
   <li><b>A memory model, not a fixed timetable.</b> Every rating updates an estimate of how well you would recall that provision today (the FSRS model). Each provision comes back on the day your recall would fall to your target, 90% by default. Under Progress you can see your average recall, what is slipping, what falls due over the next two weeks, and which provisions keep slipping. Those need a new picture, not more rereading.</li>
   <li><b>Eight fields in one building.</b> The House of Law is a memory palace drawn after the Supreme Court’s building on Padre Faura, Manila: its four columns, three doors and seven marble steps, with the Court’s motto, <i>Batas at Bayan</i>, carved above. Each field has a fixed place in it, from the pediment down to the steps, and each topic inside a field is one object at that place. Fixed places give you somewhere to look when you forget.</li>
   <li><b>A short path in each field.</b> Start here, then the core, then deeper only when you need it. A code page offers five provisions at a time.</li>
@@ -1733,7 +1881,8 @@ async function route() {
     else if (parts[0] === 'code') await codeView(parts[1], q);
     else if (parts[0] === 'p') await provView(parts[1], parts.slice(2).join('/'), q);
     else if (parts[0] === 'review') await reviewView();
-    else if (parts[0] === 'sprint') await sprintView();
+    else if (parts[0] === 'sprint') await sprintView(q);
+    else if (parts[0] === 'map') await mapView(parts.slice(1));
     else if (parts[0] === 'drill') await drillView(q);
     else if (parts[0] === 'search') await searchView(q);
     else if (parts[0] === 'progress') progressView();
