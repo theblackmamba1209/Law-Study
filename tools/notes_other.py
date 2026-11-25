@@ -1,0 +1,260 @@
+# Study guides for high-yield provisions of the RPC, Civil Code, Family Code and Labor Code.
+RPC = {
+"article-3": {
+ "x": "A felony is an act or omission punished by the Revised Penal Code. It can be committed in two ways. By dolo (deceit), the offender acts on purpose with criminal intent. By culpa (fault), harm results from imprudence, negligence, lack of foresight or lack of skill.",
+ "k": ["Elements of a felony: (1) an act or omission; (2) punishable by the RPC; (3) done by means of dolo or culpa.", "Dolo requires freedom, intelligence and intent.", "Culpa requires freedom, intelligence, and imprudence, negligence, lack of skill or lack of foresight.", "Actus non facit reum nisi mens sit rea: the act is not criminal unless the mind is criminal (for felonies)."],
+ "w": "It ties criminal liability to a blameworthy state of mind, so accidents and good-faith acts are not punished as crimes.",
+ "t": ["Mala in se (RPC felonies: intent matters) versus mala prohibita (special laws: the act itself is punished, and good faith is generally no defense).", "Reckless imprudence is a crime in itself under Art. 365, not just a mode of committing another felony (Ivler v. Modesto-San Pedro).", "Motive is different from intent. Motive is generally immaterial, except to identify the accused or when the evidence is circumstantial."],
+ "q": ["What are the requisites of dolo? Of culpa?", "Is good faith a defense in mala prohibita?"]},
+"article-4": {
+ "x": "You are criminally liable (1) for the wrong you actually cause while committing a felony, even if it differs from what you intended, and (2) for an impossible crime — when you try to commit a crime against persons or property, but it cannot happen because it is inherently impossible or because the means you used were inadequate or ineffectual.",
+ "k": ["Par. 1 (praeter intentionem, error in personae, aberratio ictus): the offender must be committing a felony, and the wrong done must be the direct, natural and logical consequence of it (proximate cause).", "Par. 2 (impossible crime): the act would be a crime against persons or property; it was done with evil intent; its accomplishment is inherently impossible or the means are inadequate or ineffectual; and the act is not punished by another provision.", "The penalty for an impossible crime is in Art. 59."],
+ "w": "Par. 1 makes wrongdoers answer for the consequences of their crimes. Par. 2 punishes criminal tendency even when no harm results.",
+ "t": ["The felony must be the proximate cause — an efficient intervening cause breaks the chain.", "Impossible crime applies only to crimes against persons or property. Factual impossibility counts (Intod v. CA).", "Under par. 1 the offender must be committing a felony, not merely a lawful act."],
+ "q": ["Distinguish error in personae, aberratio ictus and praeter intentionem.", "Give the elements of an impossible crime."],
+ "d": [{"n": "Intod v. Court of Appeals", "c": "G.R. No. 103119, October 21, 1992", "h": "The accused fired at the bedroom where they believed the victim slept, but she was not home. This was an impossible crime: factual impossibility, where an extraneous circumstance unknown to the actor prevents the crime, falls under Art. 4(2).", "r": "Factual impossibility is covered by Art. 4(2)."}]},
+"article-6": {
+ "x": "A felony is punished whether consummated, frustrated or attempted. It is consummated when all its elements are present. It is frustrated when the offender has done every act needed to produce the felony, but it does not happen for reasons independent of his will. It is attempted when he begins by overt acts but does not complete all of them, for reasons other than his own spontaneous desistance.",
+ "k": ["Attempted: overt acts commenced; not all acts of execution performed; non-completion due to causes other than spontaneous desistance.", "Frustrated: all acts of execution performed; felony not produced; by causes independent of the offender’s will.", "Consummated: all elements present.", "Subjective phase (offender still controls) versus objective phase (beyond his control)."],
+ "w": "It grades liability by how close the offender came to completing the crime.",
+ "t": ["Some crimes have no frustrated stage, e.g., rape (People v. Orita) and theft (Valenzuela v. People).", "Spontaneous desistance during the attempted stage exempts from liability for the attempted felony, but not for any other crime already committed.", "In homicide or murder, a frustrated stage requires a mortal wound that would have caused death without timely medical help."],
+ "q": ["Why is there no frustrated theft?", "What is the effect of spontaneous desistance?"],
+ "d": [{"n": "People v. Orita", "c": "G.R. No. 88724, April 3, 1990", "h": "Rape has no frustrated stage. Entry of the labia, however slight, consummates it; without it, the crime is only attempted.", "r": "Applies Art. 6 to rape."},
+       {"n": "Valenzuela v. People", "c": "G.R. No. 160188, June 21, 2007", "h": "Theft is consummated once the offender gains possession of the thing, even if he has no opportunity to dispose of it. Theft therefore cannot be frustrated.", "r": "Applies Art. 6 to theft."}]},
+"article-8": {
+ "x": "Conspiracy and proposal to commit a felony are punished only when the law specially provides for it. There is conspiracy when two or more persons agree to commit a felony and decide to commit it. There is proposal when a person who has decided to commit a felony proposes its execution to others.",
+ "k": ["Conspiracy as a crime: punished only in specific cases (e.g., treason, rebellion, coup d’état, sedition).", "Conspiracy as a mode of committing a crime: once proved, the act of one is the act of all.", "It may be inferred from conduct before, during and after the crime showing a joint purpose and community of interest."],
+ "w": "Group criminality is more dangerous, so the law treats all conspirators as equally liable once they act on the agreement.",
+ "t": ["Mere presence at the scene, or knowledge of the plan without participation, is not conspiracy.", "A conspirator who desists before the crime is committed may escape liability for the crime itself."],
+ "q": ["Distinguish conspiracy as a crime from conspiracy as a manner of incurring liability."]},
+"article-11": {
+ "x": "These are justifying circumstances. The person who acts under them commits no crime at all and has no civil liability (except under par. 4, state of necessity, where those benefited pay). The act is treated as lawful.",
+ "k": ["Self-defense: (1) unlawful aggression; (2) reasonable necessity of the means employed to prevent or repel it; (3) lack of sufficient provocation on the part of the person defending himself.", "Defense of relatives and of strangers carry modified third requisites.", "State of necessity: the evil sought to be avoided actually exists; the injury feared is greater than that done; and there is no other practical and less harmful means.", "Fulfillment of duty; obedience to a lawful order of a superior."],
+ "w": "The law does not demand that people submit to unlawful attack, and it does not punish acts it actually permits or commands.",
+ "t": ["Unlawful aggression is indispensable. Without it there is no self-defense, complete or incomplete.", "Aggression must be actual or imminent; it ceases when the aggressor retreats or is disarmed.", "Pleading self-defense admits the killing; the burden shifts to the accused to prove it by clear and convincing evidence.", "Reasonable necessity is judged by the circumstances as they appeared to the defender, not by mathematical equality of weapons."],
+ "q": ["What is the indispensable requisite of self-defense?", "Who bears civil liability in a state of necessity?"]},
+"article-12": {
+ "x": "These are exempting circumstances. The act is wrongful, but the person is not criminally liable because one of the conditions of voluntariness — intelligence, freedom or intent — is missing. Civil liability generally remains.",
+ "k": ["Imbecile or insane person (unless acting in a lucid interval).", "Minors: under RA 9344 (as amended by RA 10630), a child 15 or below is exempt; above 15 but below 18 is exempt unless he acted with discernment.", "Accident without fault or intention while doing a lawful act with due care.", "Compulsion of irresistible force; uncontrollable fear of an equal or greater injury.", "Failure to perform an act required by law, when prevented by a lawful or insuperable cause."],
+ "w": "Punishment presupposes a free and intelligent choice; where it is absent, the person is not blameworthy.",
+ "t": ["Paragraphs 2 and 3 on age have been superseded by RA 9344 — always cite the current ages.", "Insanity must exist at the time of the act and must be a complete deprivation of intelligence or freedom of will; it is proved by clear and convincing evidence.", "Exempting circumstances leave civil liability (Art. 101); justifying circumstances generally do not."],
+ "q": ["What ages are exempt under RA 9344?", "Distinguish justifying from exempting circumstances as to civil liability."]},
+"article-13": {
+ "x": "Mitigating circumstances lower the penalty. They do not erase guilt. They show reduced blameworthiness: youth, lack of intent to commit so grave a wrong, provocation, passion, voluntary surrender, plea of guilty, physical defects, illness, and similar circumstances.",
+ "k": ["Ordinary mitigating circumstances may be offset by aggravating ones (Art. 64).", "Privileged mitigating circumstances (e.g., minority, incomplete justification or exemption under Art. 69) lower the penalty by one or two degrees and cannot be offset.", "Voluntary surrender: not actually arrested; surrender to a person in authority or his agent; spontaneous.", "Plea of guilty: spontaneous, in open court, before the prosecution presents evidence."],
+ "w": "Penalties should match moral culpability.",
+ "t": ["Passion or obfuscation and vindication of a grave offense cannot be appreciated together if they arise from the same facts.", "The catch-all paragraph 10 allows any circumstance of similar nature and analogous to those listed."],
+ "q": ["What are the requisites of voluntary surrender?", "How do privileged mitigating circumstances differ from ordinary ones?"]},
+"article-14": {
+ "x": "Aggravating circumstances raise the penalty because they show greater perversity, greater danger, or an aggravated injury. Examples are treachery, evident premeditation, abuse of superior strength, nighttime, dwelling, recidivism, and cruelty.",
+ "k": ["Generic (can be offset by mitigating circumstances), specific, qualifying (change the nature of the crime — e.g., treachery turns homicide into murder), and inherent.", "Treachery (alevosia): means of execution that ensure the crime without risk to the offender from the defense the victim might make, deliberately adopted.", "Evident premeditation: time the offender decided to commit the crime; an overt act showing he clung to it; and enough time to reflect.", "Under the Rules of Criminal Procedure, qualifying and aggravating circumstances must be alleged in the information to be appreciated."],
+ "w": "The law punishes more severely those who commit crimes in ways that show greater malice or that exploit the victim’s helplessness.",
+ "t": ["Treachery must be present at the inception of the attack.", "Recidivism (a previous conviction by final judgment for a crime in the same title) is distinct from reiteracion, habitual delinquency and quasi-recidivism.", "Aggravating circumstances not alleged in the information cannot be considered, even if proved."],
+ "q": ["What are the elements of treachery?", "Distinguish recidivism, reiteracion, habitual delinquency and quasi-recidivism."]},
+"article-48": {
+ "x": "When a single act constitutes two or more grave or less grave felonies (compound crime), or when one offense is a necessary means for committing the other (complex crime proper), only one penalty is imposed: the penalty for the most serious crime, applied in its maximum period.",
+ "k": ["Compound crime: a single act results in two or more grave or less grave felonies.", "Complex crime proper: one offense is the necessary means to commit the other.", "The penalty is that for the most serious crime, in its maximum period."],
+ "w": "A single criminal impulse is treated as a single crime, but punished more heavily.",
+ "t": ["Light felonies are not complexed.", "Special complex crimes (e.g., robbery with homicide, rape with homicide) are fixed by law and are not governed by Art. 48.", "Art. 48 cannot be applied if it would impose a heavier penalty than separate prosecution."],
+ "q": ["Distinguish compound crimes from complex crimes proper.", "Why is robbery with homicide not an Art. 48 complex crime?"]},
+"article-266-a": {
+ "x": "Rape is committed in two ways. First, by a man who has carnal knowledge of a woman through force, threat or intimidation; when she is deprived of reason or unconscious; by fraudulent machination or grave abuse of authority; or when she is below the statutory age, even without those circumstances. Second, by sexual assault: inserting the penis into another person’s mouth or anal orifice, or any instrument or object into the genital or anal orifice of another, under the same circumstances.",
+ "k": ["Rape by sexual intercourse: offender is a man; carnal knowledge of a woman; under the circumstances listed.", "Rape by sexual assault: any person; the insertion described; under the same circumstances.", "Statutory rape: the victim is below the statutory age. RA 11648 (2022) raised the age to below 16, with a close-in-age exemption under the conditions stated there.", "RA 8353 reclassified rape as a crime against persons (no longer a private crime)."],
+ "w": "It protects bodily integrity and sexual autonomy. For statutory rape, the law conclusively treats a child as incapable of consent.",
+ "t": ["Use the age as amended by RA 11648, not the original “under twelve.”", "In statutory rape, force and consent are immaterial; proof of age and of the act suffices.", "There is no frustrated rape (People v. Orita)."],
+ "q": ["What is the current age for statutory rape?", "Distinguish the two modes of committing rape."]},
+}
+
+CIVIL = {
+"article-19": {
+ "x": "In using your rights and doing your duties, you must act with justice, give everyone what is due them, and observe honesty and good faith. This is the principle of abuse of rights: a legal right exercised in bad faith, to harm another, can make you liable.",
+ "k": ["Elements of abuse of rights: (1) a legal right or duty; (2) exercised in bad faith; (3) for the sole intent of prejudicing or injuring another.", "Art. 19 states the standard. Liability usually flows through Art. 20 (violation of law) or Art. 21 (contrary to morals)."],
+ "w": "Rights are given for legitimate purposes; using them as weapons is a wrong the law should redress.",
+ "t": ["Good faith is presumed; bad faith must be proved.", "Art. 19 alone may ground damages when the conduct is clearly in bad faith (Globe Mackay v. CA)."],
+ "q": ["What are the elements of abuse of rights?", "How do Arts. 19, 20 and 21 relate to one another?"],
+ "d": [{"n": "Globe Mackay Cable and Radio Corp. v. Court of Appeals", "c": "G.R. No. 81262, August 25, 1989", "h": "An employer that publicly accused an employee of fraud, filed baseless criminal cases, and sabotaged his later job prospects abused its rights. It was liable for damages under Arts. 19 and 21 even though dismissal itself is a recognized prerogative.", "r": "The classic abuse-of-rights case."}]},
+"article-20": {
+ "x": "Anyone who, contrary to law, wilfully or negligently causes damage to another must pay for it.",
+ "k": ["An act contrary to law; done wilfully or negligently; causing damage to another."],
+ "w": "It is a catch-all source of liability for violations of law that cause harm, even when the law violated does not itself provide a remedy.",
+ "t": ["Art. 20 covers violations of law; Art. 21 covers acts that are legal but contrary to morals, good customs or public policy."],
+ "q": ["Distinguish Art. 20 from Art. 21."]},
+"article-21": {
+ "x": "Anyone who wilfully causes loss or injury to another in a manner contrary to morals, good customs or public policy must compensate the victim. It fills gaps where no specific law covers a moral wrong.",
+ "k": ["An act that is legal; contrary to morals, good customs or public policy; done with intent to injure."],
+ "w": "The Code Commission wanted courts to be able to remedy the “countless gaps” in the statutes where a wrong causes real harm.",
+ "t": ["Mere breach of a promise to marry is not actionable. It becomes actionable when coupled with acts contrary to morals, such as deceit used to obtain sexual consent (Baksh v. CA).", "Moral damages are recoverable in Art. 21 cases (Art. 2219(10))."],
+ "q": ["When is breach of promise to marry actionable?"],
+ "d": [{"n": "Baksh v. Court of Appeals", "c": "G.R. No. 97336, February 19, 1993", "h": "A man who promised to marry a woman, induced her to live with him on that promise, and then abandoned her was liable for damages under Art. 21. It was not the breach of promise itself, but the fraud and deceit behind it that offended morals and good customs.", "r": "Shows how Art. 21 reaches wrongs no statute covers."}]},
+"article-1156": {
+ "x": "An obligation is a legal tie (juridical necessity) that requires a person to give something, to do something, or not to do something.",
+ "k": ["Elements: active subject (creditor/obligee); passive subject (debtor/obligor); object or prestation (to give, to do, not to do); juridical or legal tie (vinculum juris).", "Kinds of prestation: real (to give) and personal (to do or not to do)."],
+ "w": "It defines the basic unit of private-law relations studied in all of Book IV.",
+ "t": ["Natural obligations (Arts. 1423–1430) are not enforceable by action. Civil obligations are."],
+ "q": ["Give the four elements of an obligation."]},
+"article-1157": {
+ "x": "Obligations come from only five sources: law, contracts, quasi-contracts, delicts (acts punished by law), and quasi-delicts.",
+ "k": ["Law (Art. 1158); contracts (Art. 1159); quasi-contracts (Art. 1160); delicts (Art. 1161); quasi-delicts (Art. 1162).", "The enumeration is exclusive."],
+ "w": "Knowing the source tells you which rules govern — contract rules, the RPC on civil liability, or Arts. 2176 and following.",
+ "t": ["The same act may give rise to both civil liability ex delicto and liability for quasi-delict. The injured party may not recover twice (Art. 2177)."],
+ "q": ["List the five sources of obligations.", "Can one act give rise to liability ex delicto and ex quasi-delicto?"]},
+"article-1159": {
+ "x": "A contract has the force of law between the parties, and they must perform it in good faith.",
+ "k": ["Obligatory force of contracts (pacta sunt servanda).", "Requires a valid contract — not contrary to law, morals, good customs, public order or public policy (Art. 1306).", "Compliance must be in good faith."],
+ "w": "Commerce depends on the reliability of promises.",
+ "t": ["Courts cannot relieve a party from a bad bargain freely entered into, absent a vice of consent or illegality."],
+ "q": ["What does it mean that contracts have the force of law between the parties?"]},
+"article-1170": {
+ "x": "Those who, in performing their obligations, are guilty of fraud, negligence or delay, or who in any way contravene the tenor of the obligation, are liable for damages.",
+ "k": ["Grounds: fraud (dolo), negligence (culpa), delay (mora), and contravention of the tenor of the obligation.", "Fraud in performance (incidental) differs from fraud in obtaining consent (causal, which makes the contract voidable — Art. 1338)."],
+ "w": "It is the basic rule on damages for breach of obligations.",
+ "t": ["Responsibility for fraud cannot be waived in advance (Art. 1171). Responsibility for negligence may be regulated by agreement, within limits (Art. 1172)."],
+ "q": ["Distinguish dolo causante from dolo incidente."]},
+"article-1173": {
+ "x": "Fault or negligence of the obligor is the omission of the diligence the nature of the obligation requires, given the circumstances of persons, time and place. If neither the law nor the contract sets the standard, it is the diligence of a good father of a family.",
+ "k": ["Standard: as stipulated, or as required by law, otherwise diligence of a good father of a family (ordinary diligence).", "Common carriers must observe extraordinary diligence (Art. 1733).", "If negligence shows bad faith, the provisions of Arts. 1171 and 2201(2) apply."],
+ "w": "It gives a flexible yardstick for judging whether a debtor did enough.",
+ "t": ["Banks must observe the highest degree of diligence in handling depositors’ accounts, given the fiduciary relationship."],
+ "q": ["What is the default standard of diligence?"]},
+"article-1174": {
+ "x": "Unless the law, the contract, or the nature of the obligation requires the assumption of risk, no one is liable for events that could not be foreseen, or that, though foreseen, were inevitable.",
+ "k": ["Requisites of a fortuitous event: (1) the cause is independent of the debtor’s will; (2) it is unforeseeable or unavoidable; (3) it makes normal fulfilment impossible; (4) the debtor is free from any participation in or aggravation of the injury.", "Exceptions: when the law so provides, when stipulated, when the nature of the obligation requires assumption of risk; also when the debtor is in delay or has promised the same thing to two or more persons (Art. 1165)."],
+ "w": "Liability rests on fault; no one should answer for what no human care could prevent.",
+ "t": ["If the debtor’s negligence concurs with the fortuitous event, he is not excused (Nakpil & Sons v. CA)."],
+ "q": ["List the requisites of a fortuitous event.", "Give three exceptions where liability exists despite a fortuitous event."],
+ "d": [{"n": "Nakpil & Sons v. Court of Appeals", "c": "G.R. No. L-47851, October 3, 1986", "h": "A building collapsed in the 1968 earthquake, but defects in its design and construction contributed to the damage. The architect and contractor were liable. One who negligently contributes to the loss cannot invoke an act of God.", "r": "Concurrent negligence defeats the fortuitous-event defense."}]},
+"article-1191": {
+ "x": "In reciprocal obligations, the power to rescind is implied: if one party does not perform, the injured party may choose between demanding performance or rescission, with damages in either case. The court decrees rescission unless there is just cause to fix a period.",
+ "k": ["Reciprocal obligations arise from the same cause, and each party is debtor and creditor of the other.", "Remedies: specific performance or rescission (resolution), plus damages.", "The remedy is alternative. Rescission may still be sought after choosing fulfilment, if fulfilment becomes impossible.", "Rescission requires a substantial and fundamental breach.", "Rights of third persons in good faith are protected."],
+ "w": "It lets the innocent party escape a bargain the other side has seriously broken.",
+ "t": ["Art. 1191 “rescission” (resolution for breach) is different from rescission under Art. 1381 (rescissible contracts due to lesion or fraud on creditors).", "Generally, rescission requires judicial action. Extrajudicial rescission may be stipulated, but it is subject to judicial review if contested."],
+ "q": ["Distinguish Art. 1191 rescission from Art. 1381 rescission.", "Does a slight breach justify rescission?"],
+ "d": [{"n": "Song Fo & Co. v. Hawaiian-Philippine Co.", "c": "47 Phil. 821 (1925)", "h": "A delay of only twenty days in paying an account was not so substantial and fundamental a breach as to justify rescinding the contract.", "r": "Only a substantial breach permits rescission under Art. 1191."}]},
+"article-1305": {
+ "x": "A contract is a meeting of minds between two persons, by which one binds himself, with respect to the other, to give something or to render some service.",
+ "k": ["Essential elements (Art. 1318): consent, object, cause.", "Stages: preparation (negotiation), perfection (meeting of minds), consummation (performance)."],
+ "w": "It defines the most common source of obligations.",
+ "t": ["“Two persons” means two parties. One person may represent two parties in some cases, subject to the rules on auto-contracts."],
+ "q": ["What are the stages of a contract?"]},
+"article-1318": {
+ "x": "Every contract needs three things: consent of the contracting parties, a certain object, and a cause for the obligation.",
+ "k": ["Consent: meeting of offer and acceptance on the object and cause (Art. 1319).", "Object: things or services within the commerce of men, not impossible, determinate or determinable (Arts. 1347–1349).", "Cause: the essential reason for the contract (Arts. 1350–1355)."],
+ "w": "Without any of these essentials, there is no contract at all.",
+ "t": ["Absence of an essential element makes the contract void or inexistent. A defect in it (e.g., vitiated consent) makes it voidable."],
+ "q": ["Distinguish an absent element from a vitiated one."]},
+"article-1409": {
+ "x": "These contracts are void or inexistent from the beginning: those contrary to law, morals, good customs, public order or public policy; absolutely simulated ones; those whose cause or object did not exist; those whose object is outside the commerce of men; those for impossible services; those where the parties’ intention on the principal object cannot be ascertained; and those expressly prohibited or declared void by law. They cannot be ratified, and the right to set up the defense of illegality cannot be waived.",
+ "k": ["Seven kinds listed in Art. 1409.", "Void contracts produce no effect, cannot be ratified, and the action or defense of inexistence does not prescribe (Art. 1410).", "In pari delicto rules apply to illegal contracts (Arts. 1411–1412)."],
+ "w": "The law will not lend its force to agreements that offend its basic policies.",
+ "t": ["Do not confuse void (Art. 1409) with voidable (Art. 1390), unenforceable (Art. 1403) and rescissible (Art. 1381) contracts."],
+ "q": ["Rank the four kinds of defective contracts from least to most defective.", "Can a void contract be ratified?"]},
+}
+
+FAMILY = {
+"article-1": {
+ "x": "Marriage is a special contract of permanent union between a man and a woman, entered into according to law, to establish conjugal and family life. It is the foundation of the family and an inviolable social institution. Its nature, consequences and incidents are governed by law, not by agreement — except that marriage settlements may fix the spouses’ property relations within limits set by the Code.",
+ "k": ["Marriage is both a contract and a social institution.", "Parties may stipulate only on property relations (marriage settlements), not on the essence of marriage.", "Related: Art. XV, Sec. 2 of the Constitution."],
+ "w": "The State has a strong interest in the stability of families, so the core of marriage is fixed by law.",
+ "t": ["Stipulations that marriage may be dissolved at will are void."],
+ "q": ["In what respect may spouses stipulate on their marriage?"]},
+"article-2": {
+ "x": "No marriage is valid unless two essential requisites are present: legal capacity of the contracting parties, who must be a male and a female; and consent freely given in the presence of the solemnizing officer.",
+ "k": ["Legal capacity: age (18 and above — Art. 5) and no impediment (Arts. 37–38).", "Consent freely given, in the presence of the solemnizing officer.", "Absence of an essential requisite makes the marriage void. A defect in one makes it voidable (Art. 4)."],
+ "w": "Marriage requires real, capable consent.",
+ "t": ["Distinguish essential requisites (Art. 2) from formal requisites (Art. 3)."],
+ "q": ["What are the essential requisites of marriage?"]},
+"article-3": {
+ "x": "The formal requisites of marriage are: authority of the solemnizing officer; a valid marriage license (except in the cases in Chapter 2); and a marriage ceremony in which the parties appear personally before the solemnizing officer and declare, before at least two witnesses of legal age, that they take each other as husband and wife.",
+ "k": ["Authority of the solemnizing officer (Art. 7).", "Valid marriage license, except for exempt marriages (Arts. 27–34).", "Ceremony with personal appearance and a declaration before two witnesses of legal age."],
+ "w": "Formalities give certainty and publicity to the creation of a marriage.",
+ "t": ["Absence of a formal requisite makes the marriage void. An irregularity does not affect validity, but the persons responsible may be liable (Art. 4).", "A marriage before an unauthorized officer is valid if either or both parties believed in good faith that he had authority (Art. 35(2))."],
+ "q": ["Distinguish absence, defect and irregularity of the requisites."]},
+"article-4": {
+ "x": "The absence of any essential or formal requisite makes the marriage void from the beginning (except as stated in Art. 35(2)). A defect in an essential requisite makes it voidable (Art. 45). An irregularity in a formal requisite does not affect validity, but the responsible parties may be liable civilly, criminally and administratively.",
+ "k": ["Absence → void ab initio.", "Defect in an essential requisite → voidable.", "Irregularity in a formal requisite → valid, with liability for those responsible."],
+ "w": "It sets a graded system of consequences tied to how serious the flaw is.",
+ "t": ["An irregular license (e.g., issued in the wrong municipality) does not void the marriage. A total absence of a license does."],
+ "q": ["What is the effect of a license issued without the required publication?"]},
+"article-26": {
+ "x": "A marriage validly celebrated abroad is generally valid here, except those prohibited under Arts. 35(1), (4), (5), (6), 36, 37 and 38. Under the second paragraph, if a Filipino is married to a foreigner and a divorce is validly obtained abroad capacitating the foreign spouse to remarry, the Filipino spouse also gets capacity to remarry under Philippine law.",
+ "k": ["Lex loci celebrationis, with exceptions.", "Par. 2 requires a valid mixed marriage at the time of celebration (or the Filipino later becoming a foreigner — Republic v. Orbecido), a valid foreign divorce, and capacity of the foreign spouse to remarry.", "The foreign divorce and the foreign law must be proved as facts, by recognition in a Philippine court."],
+ "w": "It avoids the absurd result of a Filipino who remains married to a foreigner who is no longer married to them.",
+ "t": ["Par. 2 applies even if the Filipino spouse initiated or obtained the divorce (Republic v. Manalo).", "Divorce between two Filipinos abroad is not recognized here, unless one is no longer a Filipino at the time of the divorce."],
+ "q": ["Does Art. 26(2) apply if the Filipino spouse filed the divorce?", "How is a foreign divorce proved?"],
+ "d": [{"n": "Republic v. Manalo", "c": "G.R. No. 221029, April 24, 2018", "h": "A Filipina who herself obtained a divorce in Japan from her Japanese husband could have it recognized and gain capacity to remarry under Art. 26(2). The provision does not require that the foreign spouse be the one who initiated the divorce.", "r": "The controlling reading of Art. 26(2)."}]},
+"article-35": {
+ "x": "These marriages are void from the beginning: those contracted by a party below eighteen (even with parental consent); those solemnized by a person without authority (unless either party believed in good faith that he had authority); those without a license (except exempt marriages); bigamous or polygamous marriages not falling under Art. 41; those contracted through mistake of one party as to the identity of the other; and subsequent marriages void under Art. 53.",
+ "k": ["Six grounds listed in Art. 35.", "Void marriages may be attacked at any time; the action does not prescribe (Art. 39).", "A judicial declaration of nullity is required for purposes of remarriage (Art. 40)."],
+ "w": "These defects go to the very existence of a valid marriage.",
+ "t": ["Good-faith belief in the officer’s authority saves the marriage under Art. 35(2).", "Mistake as to identity voids the marriage. Mistake as to character or qualities does not (cf. Art. 46)."],
+ "q": ["Give the void marriages under Art. 35.", "Why must a void marriage be judicially declared void before remarrying?"]},
+"article-36": {
+ "x": "A marriage is void if either party, at the time of the wedding, was psychologically incapacitated to comply with the essential marital obligations, even if the incapacity becomes manifest only after the wedding.",
+ "k": ["Juridical antecedence (it existed at the time of the marriage), gravity, and incurability in the legal sense.", "Psychological incapacity is a legal concept, not a medical illness. It may be proved by clear and convincing evidence of the spouse’s personality structure through ordinary witnesses; expert testimony is not required (Tan-Andal v. Andal).", "The essential marital obligations are in Arts. 68–71 and 220, 221 and 225."],
+ "w": "Consent is meaningless if a party is truly incapable of assuming the obligations of marriage.",
+ "t": ["Mere refusal, neglect, difficulty, immaturity, or sexual infidelity is not psychological incapacity by itself.", "Molina guidelines remain relevant, but Tan-Andal modified them: there is no need to prove a medically rooted illness, and incurability is legal, not clinical."],
+ "q": ["What three characteristics must psychological incapacity have?", "After Tan-Andal, is an expert opinion required?"],
+ "d": [{"n": "Republic v. Court of Appeals and Molina", "c": "G.R. No. 108763, February 13, 1997", "h": "The Court issued guidelines on Art. 36: the burden of proof is on the plaintiff; the root cause must be medically or clinically identified and explained; the incapacity must exist at the time of the marriage, be permanent or incurable, and be grave. Doubts are resolved in favor of the marriage.", "r": "The original framework, since modified."},
+       {"n": "Tan-Andal v. Andal", "c": "G.R. No. 196359, May 11, 2021", "h": "Psychological incapacity is not a mental incapacity or personality disorder that must be proved by experts. It is a legal concept: a durable aspect of a person’s personality structure, existing at the time of the marriage, that makes it impossible to understand and comply with essential marital obligations. It must be proved by clear and convincing evidence, and incurability is understood in a legal, not medical, sense.", "r": "The current controlling interpretation of Art. 36."}]},
+"article-37": {
+ "x": "Marriages between ascendants and descendants of any degree, and between brothers and sisters (full or half blood), whether the relationship is legitimate or illegitimate, are void as incestuous.",
+ "k": ["Ascendants and descendants of any degree.", "Brothers and sisters, whole or half blood.", "Legitimacy of the relationship is immaterial."],
+ "w": "Universal prohibitions grounded in morality and public policy.",
+ "t": ["Collateral relatives by blood up to the fourth degree (e.g., first cousins) fall under Art. 38, not Art. 37."],
+ "q": ["Which relationships make a marriage incestuous?"]},
+"article-38": {
+ "x": "Certain marriages are void for reasons of public policy: between collateral blood relatives up to the fourth civil degree; between step-parents and step-children; between parents-in-law and children-in-law; between an adopting parent and the adopted child; between the surviving spouse of the adopting parent and the adopted child; between the surviving spouse of the adopted child and the adopter; between an adopted child and a legitimate child of the adopter; between adopted children of the same adopter; and between parties where one, intending to marry the other, killed that other person’s spouse or his or her own spouse.",
+ "k": ["Nine grounds, listed in the article.", "The list is exclusive; marriages between relatives not listed (e.g., brothers- and sisters-in-law) are valid."],
+ "w": "Protecting family relationships of trust and preventing marriage procured by crime.",
+ "t": ["Marriage between a brother-in-law and a sister-in-law is not prohibited under the Family Code.", "Adoption provisions should be read with RA 11642."],
+ "q": ["Is marriage between first cousins void? Between a man and his sister-in-law?"]},
+"article-45": {
+ "x": "A marriage may be annulled for causes existing at the time of the wedding: lack of parental consent (party 18–21); insanity; fraud; force, intimidation or undue influence; physical incapacity to consummate that is incurable; or a serious and incurable sexually transmissible disease.",
+ "k": ["Six grounds, each with its own rules on who may sue and when (Art. 47).", "Some grounds may be cured by free cohabitation after the defect ceases.", "A voidable marriage is valid until annulled."],
+ "w": "These defects affect consent or the capacity to fulfil marriage, but less fundamentally than void grounds.",
+ "t": ["Fraud is limited to the circumstances in Art. 46. No other misrepresentation as to character, health, rank, fortune or chastity is fraud.", "Prescriptive periods differ per ground (Art. 47)."],
+ "q": ["List the grounds for annulment and who may file for each."]},
+"article-147": {
+ "x": "When a man and a woman capacitated to marry each other live together as husband and wife without marriage, or under a void marriage, their wages and salaries are owned in equal shares, and property acquired by their joint work or industry is governed by co-ownership. Property acquired while living together is presumed obtained by joint efforts. A party who did not participate in acquisition is deemed to have contributed through care and maintenance of the family and household.",
+ "k": ["Requisites: capacity to marry each other; living exclusively as husband and wife; without marriage or under a void marriage.", "Equal sharing; presumption of joint effort; care of the home counts as contribution.", "Neither may dispose of his or her share in the common property during cohabitation without the other’s consent."],
+ "w": "It protects partners — especially homemakers — in unions the law does not recognize as valid marriages.",
+ "t": ["Art. 148 applies instead when the parties are not capacitated to marry each other (e.g., one is married to someone else). Under Art. 148, only actual joint contributions are shared, in proportion to the contributions.", "Property relations in a void marriage under Art. 36 are governed by Art. 147 (Valdes v. RTC)."],
+ "q": ["Distinguish Art. 147 from Art. 148."],
+ "d": [{"n": "Valdes v. Regional Trial Court, Quezon City", "c": "G.R. No. 122749, July 31, 1996", "h": "When a marriage is declared void under Art. 36, the spouses’ property relations are governed by Art. 147 (co-ownership), not by the rules on absolute community or conjugal partnership.", "r": "Applies Art. 147 to void marriages."}]},
+}
+
+LABOR = {
+"article-294": {
+ "x": "In regular employment, the employer may terminate an employee only for a just cause or when authorized by the Labor Code. An employee unjustly dismissed is entitled to reinstatement without loss of seniority rights and other privileges, and to full backwages, inclusive of allowances and other benefits, from the time compensation was withheld until actual reinstatement.",
+ "k": ["Security of tenure: dismissal only for just or authorized causes, and with due process.", "Reliefs for illegal dismissal: reinstatement and full backwages. Separation pay may be given in lieu of reinstatement when reinstatement is no longer viable (strained relations, position abolished, and the like)."],
+ "w": "It implements the constitutional guarantee of security of tenure (Art. XIII, Sec. 3).",
+ "t": ["The employer bears the burden of proving a valid dismissal.", "If the cause is valid but procedural due process was not observed, the dismissal stands and the employer pays nominal damages (Agabon)."],
+ "q": ["What reliefs does an illegally dismissed employee get?"]},
+"article-295": {
+ "x": "An employee is regular if engaged to perform activities usually necessary or desirable in the employer’s usual business or trade, whatever the written agreement or oral understanding says — unless the employment is for a specific project or undertaking whose completion was determined at engagement, or is seasonal and for the duration of the season. Any employee who has rendered at least one year of service, continuous or broken, becomes regular with respect to the activity for which he is employed.",
+ "k": ["Regular employment by nature of work (necessary or desirable).", "Regular employment by length of service (casual employee with one year of service).", "Exceptions: project employment and seasonal employment.", "Fixed-term employment is valid if the term was knowingly and voluntarily agreed upon without force or improper pressure (Brent School)."],
+ "w": "It prevents employers from defeating security of tenure through labels in contracts.",
+ "t": ["The nature of the work, not the label in the contract, determines regular status.", "Repeated rehiring of project employees for work necessary to the business may make them regular."],
+ "q": ["What are the two ways of becoming a regular employee?", "When is a fixed-term contract valid?"],
+ "d": [{"n": "Brent School, Inc. v. Zamora", "c": "G.R. No. L-48494, February 5, 1990", "h": "Employment for a fixed period is not prohibited, even for work necessary or desirable to the business, if the term was knowingly and voluntarily agreed upon without force, duress or improper pressure. It is also valid if the parties dealt on more or less equal terms.", "r": "The leading case on fixed-term employment."}]},
+"article-296": {
+ "x": "Probationary employment may not exceed six months from the start of work, unless covered by an apprenticeship agreement providing a longer period. A probationary employee may be terminated for a just cause, or for failing to qualify as a regular employee under reasonable standards made known to him at the time of engagement. One allowed to work after the probationary period is a regular employee.",
+ "k": ["Maximum six months (with recognized exceptions, e.g., apprenticeship; teachers under DepEd/CHED rules).", "Standards for regularization must be made known at the time of engagement; otherwise the employee is deemed regular.", "Termination: just cause or failure to meet the reasonable standards."],
+ "w": "It gives the employer a fair chance to assess fitness, without allowing indefinite probation.",
+ "t": ["If the standards were not communicated at engagement, the employee is treated as regular from day one.", "Working beyond the probationary period makes the employee regular."],
+ "q": ["What happens if regularization standards were not communicated at hiring?"]},
+"article-297": {
+ "x": "An employer may terminate employment for just causes attributable to the employee: serious misconduct or wilful disobedience of lawful orders connected with work; gross and habitual neglect of duties; fraud or wilful breach of trust; commission of a crime against the employer, his family or representative; and analogous causes.",
+ "k": ["Five just causes.", "Procedural due process: the two-notice rule (a notice specifying the grounds, an opportunity to be heard, then a notice of decision).", "No separation pay is due for a just-cause dismissal, except as a measure of social justice in limited cases (not for serious misconduct or acts reflecting moral depravity)."],
+ "w": "Employers may protect their business from employee wrongdoing, but only through a fair process.",
+ "t": ["Loss of trust and confidence applies to employees occupying positions of trust, and must rest on clearly established facts.", "If the cause is valid but notice was lacking, the dismissal is upheld, with nominal damages (Agabon)."],
+ "q": ["List the just causes.", "Describe the two-notice rule."],
+ "d": [{"n": "Agabon v. NLRC", "c": "G.R. No. 158693, November 17, 2004", "h": "When the dismissal is for a just cause but the employer did not comply with statutory due process, the dismissal is valid. The employer must pay nominal damages for violating the employee’s procedural rights.", "r": "The consequence of a procedural lapse in just-cause dismissals."}]},
+"article-298": {
+ "x": "An employer may terminate employment because of the installation of labor-saving devices, redundancy, retrenchment to prevent losses, or the closing or cessation of operations. It must serve written notice on the workers and the DOLE at least one month before the intended date, and pay separation pay at the rates the article fixes.",
+ "k": ["Authorized causes: labor-saving devices and redundancy (separation pay of at least one month per year of service); retrenchment and closure not due to serious losses (one month or one-half month per year, whichever is higher).", "Closure due to serious business losses: no separation pay is required.", "One-month prior written notice to both the employee and the DOLE.", "A fraction of at least six months is considered one whole year."],
+ "w": "It recognizes management prerogative to respond to business realities, while cushioning workers who lose jobs through no fault of their own.",
+ "t": ["Retrenchment requires proof of actual or imminent substantial losses, usually through audited financial statements, and fair criteria in selecting who goes.", "If notice is lacking for an authorized cause, the dismissal stands, with nominal damages (JAKA Food Processing)."],
+ "q": ["Which authorized causes carry one month of pay per year of service?", "What must be proved to justify retrenchment?"],
+ "d": [{"n": "JAKA Food Processing Corp. v. Pacot", "c": "G.R. No. 151378, March 28, 2005", "h": "In a dismissal for an authorized cause without the required notices, the dismissal is valid but the employer pays nominal damages. The amount is higher than in just-cause cases, because the dismissal was initiated by the employer’s own exercise of management prerogative.", "r": "The authorized-cause counterpart of Agabon."}]},
+}
