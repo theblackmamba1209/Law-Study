@@ -352,3 +352,10 @@ main:focus,main:focus-visible{outline:none}
 @media (max-width:900px){.bodymap{grid-template-columns:minmax(0,1fr)!important;gap:14px}.bodymap>.plate{position:static;max-width:460px;justify-self:center;width:100%}}
 .fhead .fig.plain{max-height:230px}
 @media (min-width:901px){.bodymap{grid-template-columns:minmax(0,430px) minmax(0,560px)}.bodymap>.plate{position:sticky;top:84px}}
+
+/* drawn or photographed figure: places are marked with dots and halos, not tints */
+.fig .zone .halo{fill:var(--f);opacity:.28}
+.fig .zone.on .halo{opacity:.4;stroke:var(--f);stroke-width:2}
+.fig .zone .ldot{fill:var(--f);stroke:#fff;stroke-width:1.6}
+.fig.dim .zone:not(.on) .ldot{opacity:.35}
+.fig.plain .zone:not(.on) .ldot{display:none}

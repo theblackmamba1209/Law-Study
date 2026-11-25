@@ -61,36 +61,96 @@ const FIG_BODY = 'M0,30 C16,30 27,44 27,62 C27,74 24,84 19,92 C16,97 13,99 13,10
 const FIG_EDGE = FIG_BODY.replace(/ L0,324 Z$/, ' L0,324');
 const FIG_HEAD = 'M0,30 C17,30 27,44 27,62 C27,82 14,102 0,102 C-14,102 -27,82 -27,62 C-27,44 -17,30 0,30 Z';
 const FIG_LABEL = { pol: 'Political', craft: 'Lawyer’s Craft', lab: 'Labor & Social', eth: 'Ethics', crim: 'Criminal', com: 'Commercial', civ: 'Civil', intl: 'International' };
+const FIG_SIDE = { pol: 1, craft: -1, lab: 1, eth: 1, civ: -1, crim: -1, com: 1, intl: -1 };
+const FIG_POS0 = { pol: [9, 31], craft: [-21, 64], lab: [58, 131], eth: [18, 172], civ: [-32, 296], crim: [-91, 346], com: [91, 346], intl: [-42, 600] };
+const FIGKEY = 'sinag.figure.img';
+const figImg = () => { try { return localStorage.getItem(FIGKEY) || ''; } catch (e) { return ''; } };
+const figPos = id => (figImg() && S.settings.figPos && S.settings.figPos[id]) || FIG_POS0[id];
 let figSeq = 0;
+/* The drawn figure: a man in a shirt, belt and trousers, so that every place on him is a real thing to hang a picture on. */
+function manSVG(u) {
+  const sk = '#c9966e', sk2 = '#a8744d', hair = '#1c1817', shirt = '#d5e0f1', shirt2 = '#b3c2da', tr = '#263149', tr2 = '#3b4864', belt = '#33241b', shoe = '#5b3a26';
+  const both = d => `<path d="${d}"/><path d="${d}" transform="scale(-1,1)"/>`;
+  return `<g clip-path="url(#${u}c)">
+      <rect x="-112" y="20" width="224" height="600" fill="${sk}"/>
+      <ellipse cx="0" cy="105" rx="14" ry="7" fill="${sk2}" opacity=".75"/>
+      <rect x="-112" y="109" width="224" height="187" fill="${shirt}"/>
+      <rect x="-112" y="296" width="50" height="23" fill="${shirt}"/><rect x="62" y="296" width="50" height="23" fill="${shirt}"/>
+      <rect x="-112" y="312" width="50" height="7" fill="${shirt2}"/><rect x="62" y="312" width="50" height="7" fill="${shirt2}"/>
+      <path d="M-7,109 L0,123 L7,109 Z" fill="${sk}"/>
+      <rect x="-60" y="296" width="120" height="296" fill="${tr}"/>
+      <rect x="-60" y="289" width="120" height="13" fill="${belt}"/>
+      <rect x="-64" y="582" width="128" height="32" fill="${shoe}"/>
+      <rect x="-64" y="606" width="128" height="8" fill="#2b1b12"/>
+      <rect x="-112" y="20" width="224" height="600" fill="url(#${u}s)"/>
+    </g>
+    <g fill="#f3f6fb" stroke="${shirt2}" stroke-width=".8" stroke-linejoin="round">${both('M3,110 L16,104 L19,117 L8,128 Z')}</g>
+    <g fill="none" stroke="${shirt2}" stroke-width="1" stroke-linecap="round"><path d="M0,124 V288"/>${both('M48,160 Q42,176 46,192')}${both('M30,262 Q40,270 50,266')}${both('M62,150 Q66,170 64,188')}</g>
+    <g fill="${shirt2}"><circle cx="0" cy="152" r="1.5"/><circle cx="0" cy="182" r="1.5"/><circle cx="0" cy="212" r="1.5"/><circle cx="0" cy="242" r="1.5"/><circle cx="0" cy="272" r="1.5"/></g>
+    <rect x="-7" y="288" width="14" height="15" rx="2" fill="none" stroke="#caa24a" stroke-width="1.8"/>
+    <g fill="none" stroke="${tr2}" stroke-width="1" stroke-linecap="round" opacity=".9"><path d="M0,303 V328"/>${both('M29,330 Q31,450 29,572')}${both('M40,306 Q46,312 52,310')}</g>
+    <g fill="none" stroke="#7a5238" stroke-width="1" opacity=".8">${both('M20,594 Q34,588 50,598')}</g>
+    ${both(`M27,60 C31,58 33,64 31,71 C30,76 28,78 26,76 Z`).replace(/<path /g, `<path fill="${sk2}" `)}
+    <path d="${FIG_HEAD}" fill="${sk}"/>
+    <path d="${FIG_HEAD}" fill="url(#${u}s)" opacity=".8"/>
+    <path d="M-27,61 C-27,82 -14,102 0,102 C14,102 27,82 27,61 C25,71 21,77 15,80 C11,75 5,73.5 0,75 C-5,73.5 -11,75 -15,80 C-21,77 -25,71 -27,61 Z" fill="${hair}" opacity=".93"/>
+    <path d="M-6.5,85.5 Q0,83.2 6.5,85.5 Q0,90 -6.5,85.5 Z" fill="#9a5f4e"/>
+    <g fill="none" stroke="${hair}" stroke-width="2.5" stroke-linecap="round">${both('M5,57.5 Q12,53.5 19,57')}</g>
+    <g>${both('M5.5,63.5 Q11.5,59.8 17.5,63.5 Q11.5,66.6 5.5,63.5 Z').replace(/<path /g, '<path fill="#f7f3ee" ')}<circle cx="11.5" cy="63.2" r="2.2" fill="#2a1a10"/><circle cx="-11.5" cy="63.2" r="2.2" fill="#2a1a10"/></g>
+    <g fill="none" stroke="${hair}" stroke-width="1.1" stroke-linecap="round">${both('M5,63.2 Q11.5,59.4 18,63.2')}</g>
+    <path d="M-1.5,64 C-2.5,70 -4.5,74 -3.5,76.5 Q0,78.6 3.5,76.5" fill="none" stroke="${sk2}" stroke-width="1.2" stroke-linecap="round"/>
+    <path d="M-28,63 C-32,40 -19,22 2,22.5 C21,22.5 32,38 28,63 C27,55 24,49 19,45.5 C9,46.5 -3,44 -12,39 C-18,44 -24,50 -26,56 C-27,58 -27.5,60 -28,63 Z" fill="${hair}"/>
+    <path d="M-12,39 C-4,32 8,30 18,34" fill="none" stroke="#3a322f" stroke-width="1" stroke-linecap="round" opacity=".7"/>
+    <g fill="none" stroke="#1a2233" stroke-width="1" stroke-linejoin="round" opacity=".38"><path d="${FIG_EDGE}"/><path d="${FIG_EDGE}" transform="scale(-1,1)"/></g>`;
+}
 function figure(active, plain) {
-  const u = 'fg' + (++figSeq);
-  // region shapes, in figure coordinates (x = 0 is the midline); clipped to the silhouette where they reach its edge
-  const shape = {
-    pol: `<path d="${FIG_HEAD}"/>`,
-    craft: `<rect x="-22" y="56.5" width="44" height="9" rx="4.5"/><rect x="-8" y="85" width="16" height="3.6" rx="1.8"/>`,
-    lab: `<rect x="-82" y="113" width="164" height="38" clip-path="url(#${u}c)"/>`,
-    eth: `<path d="M17,187 l-12.5,-12.5 a7.8,7.8 0 0 1 12.5,-9.3 a7.8,7.8 0 0 1 12.5,9.3 z"/>`,
-    civ: `<rect x="-58" y="288" width="116" height="22" clip-path="url(#${u}c)"/>`,
-    crim: `<rect x="-103" y="319" width="25" height="54" clip-path="url(#${u}c)"/>`,
-    com: `<rect x="78" y="319" width="25" height="54" clip-path="url(#${u}c)"/>`,
-    intl: `<rect x="-62" y="581" width="124" height="32" clip-path="url(#${u}c)"/>`,
-  };
-  // leader lines: [side, anchor x, y]  (figure's right hand is on the viewer's left)
-  const lead = { pol: [1, 20, 40], craft: [-1, -25, 61], lab: [1, 64, 131], eth: [1, 31, 176], civ: [-1, -58, 299], crim: [-1, -100, 346], com: [1, 100, 346], intl: [-1, -47, 600] };
-  const order = ['pol', 'lab', 'civ', 'crim', 'com', 'intl', 'eth', 'craft'];
-  const zone = id => { const f = CUR.byId[id]; const [sd, ax, y] = lead[id]; const ex = sd * 112, bx = sd * 124, tx = sd * 140;
-    return `<a class="zone f-${id}${active === id ? ' on' : ''}" href="#/field/${id}" aria-label="${esc(f.name)}: ${esc(f.pname)}"><g class="reg">${shape[id]}</g>${plain ? '' : `<path class="ld" d="M${ax},${y} H${ex}"/><circle class="ldot" cx="${ax}" cy="${y}" r="2.6"/><circle class="num" cx="${bx}" cy="${y}" r="10.5"/><text class="nt" x="${bx}" y="${y}">${f.n}</text><text class="lb" x="${tx}" y="${y}" text-anchor="${sd > 0 ? 'start' : 'end'}">${esc(FIG_LABEL[id])}</text>`}</a>`; };
-  return `<svg class="fig${active ? ' dim' : ''}${plain ? ' plain' : ''}" viewBox="${plain ? '150 18 220 606' : '0 14 520 614'}" role="img" aria-label="The body of law: eight fields of law placed on eight parts of one figure">
-    <defs><linearGradient id="${u}g" x1="0" x2="1" y1="0" y2="0"><stop offset="0" style="stop-color:var(--body2)"/><stop offset=".5" style="stop-color:var(--body)"/><stop offset="1" style="stop-color:var(--body2)"/></linearGradient>
-      <clipPath id="${u}c"><path d="${FIG_BODY}"/><path d="${FIG_BODY}" transform="scale(-1,1)"/></clipPath></defs>
+  const u = 'fg' + (++figSeq); const img = figImg();
+  const order = ['pol', 'lab', 'eth', 'com', 'craft', 'civ', 'crim', 'intl'];
+  // keep labels on one side from touching
+  const ly = {};
+  for (const sd of [1, -1]) { let last = -99; for (const id of order.filter(i => FIG_SIDE[i] === sd).sort((x, y) => figPos(x)[1] - figPos(y)[1])) { const y = Math.max(figPos(id)[1], last + 27); ly[id] = Math.min(604, Math.max(30, y)); last = ly[id]; } }
+  const zone = id => { const f = CUR.byId[id]; const sd = FIG_SIDE[id]; const [ax, ay] = figPos(id); const y = ly[id]; const ex = sd * 112, bx = sd * 124, tx = sd * 140; const on = active === id;
+    return `<a class="zone f-${id}${on ? ' on' : ''}" data-id="${id}" href="#/field/${id}" aria-label="${esc(f.name)}: ${esc(f.pname)}">${on || !active ? `<circle class="halo" cx="${ax}" cy="${ay}" r="${on ? 13 : 8}"/>` : ''}${plain ? '' : `<path class="ld" d="M${ax},${ay} L${sd * 104},${y} H${ex}"/>`}<circle class="ldot" cx="${ax}" cy="${ay}" r="3.4"/>${plain ? '' : `<circle class="num" cx="${bx}" cy="${y}" r="10.5"/><text class="nt" x="${bx}" y="${y}">${f.n}</text><text class="lb" x="${tx}" y="${y}" text-anchor="${sd > 0 ? 'start' : 'end'}">${esc(FIG_LABEL[id])}</text>`}</a>`; };
+  return `<svg class="fig${active ? ' dim' : ''}${plain ? ' plain' : ''}" viewBox="${plain ? '150 14 220 610' : '0 12 520 616'}" role="img" aria-label="The body of law: eight fields of law placed on eight parts of one figure">
+    <defs><linearGradient id="${u}s" x1="0" x2="1" y1="0" y2="0"><stop offset="0" stop-color="#000" stop-opacity=".2"/><stop offset=".32" stop-color="#000" stop-opacity="0"/><stop offset=".62" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".24"/></linearGradient>
+      <clipPath id="${u}c"><path d="${FIG_BODY}"/><path d="${FIG_BODY}" transform="scale(-1,1)"/></clipPath><clipPath id="${u}r"><rect x="-108" y="22" width="216" height="592" rx="14"/></clipPath></defs>
     <g transform="translate(260,0)">
-      <ellipse class="ground" cx="0" cy="611" rx="92" ry="6"/>
-      <g fill="url(#${u}g)"><path d="${FIG_BODY}"/><path d="${FIG_BODY}" transform="scale(-1,1)"/></g>
-      ${order.map(id => `<g class="regonly f-${id}${active === id ? ' on' : ''}">${shape[id]}</g>`).join('')}
-      <g class="anat"><path d="M-48,127 Q-28,133 -9,128 M48,127 Q28,133 9,128"/><path d="M0,140 V204"/><path d="M-41,176 Q-22,192 -3,180 M41,176 Q22,192 3,180"/><path d="M-30,226 Q0,236 30,226" opacity=".6"/><circle cx="0" cy="246" r="1.8"/><path d="M-41,452 Q-31,462 -21,452 M41,452 Q31,462 21,452"/></g>
-      <g class="edge"><path d="${FIG_EDGE}"/><path d="${FIG_EDGE}" transform="scale(-1,1)"/><path d="M19,92 C13,99 6,102 0,102 C-6,102 -13,99 -19,92"/></g>
+      ${img ? `<image href="${img}" x="-108" y="22" width="216" height="592" preserveAspectRatio="xMidYMid slice" clip-path="url(#${u}r)"/>` : `<ellipse class="ground" cx="0" cy="612" rx="92" ry="6"/>${manSVG(u)}`}
       ${order.map(zone).join('')}
     </g></svg>`;
+}
+async function figurePicture(done) {
+  const m = modal(`<h3>Your own figure</h3><p class="small muted">Use any full-length picture you like: a photograph, a drawing, a character. It is stored on this device only. A figure you chose yourself is easier to remember.</p>
+    <div class="row"><label class="btn primary">Choose a picture<input type="file" id="fgf" accept="image/*" hidden></label><button class="btn" id="fga">Move the markers</button><button class="btn ghost" id="fgr">Use the drawn figure</button></div>
+    <div id="fgbox" style="margin-top:10px;max-width:420px"></div><div class="row" style="justify-content:flex-end;margin-top:10px"><button class="btn" id="mok">Done</button></div>`);
+  const box = $('#fgbox', m.el); let sel = null;
+  const draw = () => {
+    $('#fga', m.el).hidden = $('#fgr', m.el).hidden = !figImg();
+    if (!figImg()) { box.innerHTML = ''; return; }
+    box.innerHTML = `<p class="small"><b>${sel ? `Now tap where the ${esc(CUR.byId[sel].pname.toLowerCase())} is on your picture.` : 'To move a marker, tap its number, then tap its place on the picture.'}</b></p>` + figure(sel || undefined);
+    const svg = $('svg', box);
+    svg.addEventListener('click', e => {
+      e.preventDefault(); const z = e.target.closest('.zone');
+      if (z && (!sel || e.target.closest('.num,.nt,.lb'))) { sel = z.dataset.id; return draw(); }
+      if (!sel) return;
+      const pt = svg.createSVGPoint(); pt.x = e.clientX; pt.y = e.clientY; const q = pt.matrixTransform(svg.getScreenCTM().inverse());
+      S.settings.figPos = S.settings.figPos || {}; S.settings.figPos[sel] = [Math.round(q.x - 260), Math.round(q.y)]; save(); sel = null; draw();
+    });
+  };
+  $('#fga', m.el).onclick = draw;
+  $('#fgr', m.el).onclick = () => { try { localStorage.removeItem(FIGKEY); } catch (e) {} S.settings.figPos = {}; save(); sel = null; draw(); toast('Back to the drawn figure.'); };
+  $('#fgf', m.el).onchange = e => {
+    const f = e.target.files[0]; if (!f) return;
+    const r = new FileReader();
+    r.onload = () => { const im = new Image(); im.onload = () => {
+      const sc = Math.min(1, 1100 / im.height, 800 / im.width); const c = document.createElement('canvas'); c.width = Math.round(im.width * sc); c.height = Math.round(im.height * sc);
+      const g = c.getContext('2d'); g.fillStyle = '#fcfdff'; g.fillRect(0, 0, c.width, c.height); g.drawImage(im, 0, 0, c.width, c.height);
+      try { localStorage.setItem(FIGKEY, c.toDataURL('image/jpeg', 0.85)); S.settings.figPos = {}; save(); toast('Picture saved on this device.'); sel = null; draw(); } catch (err) { toast('That picture is too large to keep. Try a smaller one.'); }
+    }; im.onerror = () => toast('That file could not be read as a picture.'); im.src = r.result; };
+    r.readAsDataURL(f);
+  };
+  $('#mok', m.el).onclick = () => { m.close(); done && done(); };
+  draw();
 }
 function partsList() {
   const foc = focusIds();
@@ -336,12 +396,13 @@ async function home() {
   <section class="next"><span class="eyebrow">Your next step</span><h1>${head}</h1><p class="muted" style="margin:0">${sub}</p>
     <div class="row">${btn}${second}</div>
     <div class="meters"><span><b>${due}</b> due</span><span><b>${nt}</b> of ${S.settings.newPerDay} new today</span><span><b>${st}</b> day streak</span><a href="#/progress">Progress</a></div></section>
-  <div class="sect"><h2>The body of law</h2><span class="spacer"></span><button class="btn sm ghost" id="foc">This semester</button><button class="btn sm ghost" id="nm">Name the figure</button></div>
+  <div class="sect"><h2>The body of law</h2><span class="spacer"></span><button class="btn sm ghost" id="foc">This semester</button><button class="btn sm ghost" id="nm">Name the figure</button><button class="btn sm ghost" id="pic">Use my own picture</button></div>
   <p class="small muted" style="margin:-4px 0 12px;max-width:65ch">Eight fields, eight places on ${esc(figName())}, read from head to toe. A fixed place is a fixed cue: when you forget, walk down the body.</p>
   <div class="bodymap"><figure class="plate" style="margin:0">${figure()}<figcaption>Read from head to toe</figcaption></figure>${partsList()}</div>
   <div class="more"><a href="#/syllabus">Syllabus cases</a><a href="#/syllabus/recent">Recent rulings</a><a href="#/drill">Drill</a><a href="#/search">Find a case</a><a href="#/about">How this works</a></div>`;
   $('#foc').onclick = async () => { if (await chooseFocus()) home(); };
   $('#nm').onclick = async () => { if (await nameFigure()) home(); };
+  $('#pic').onclick = () => figurePicture(home);
 }
 
 function learn() {
