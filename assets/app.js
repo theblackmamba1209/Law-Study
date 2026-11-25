@@ -41,6 +41,35 @@ async function loadCode(id) {
   CODES[id] = d;
   return d;
 }
+let SYL = null, SYX = null, REC = null;
+async function loadSyllabus() { if (!SYL) SYL = await getJSON('data/syllabus.json?v=' + (CAT.shash || CAT.built)).catch(() => ({ courses: [] })); return SYL; }
+async function loadSylIndex() { if (!SYX) SYX = await getJSON('data/syllabus_index.json?v=' + (CAT.shash || CAT.built)).catch(() => ({})); return SYX; }
+async function loadRecent() { if (!REC) REC = await getJSON('data/recent.json?v=' + (CAT.rhash || CAT.built)).catch(() => ({ by: {}, general: [] })); return REC; }
+const COURSE = { cl2: 'Con Law 2', crim1: 'Crim 1', crim2: 'Crim 2', ethics: 'Ethics', pil: 'PIL' };
+
+/* ------------------------------------------------------------------ in-page dialogs (no alert/confirm/prompt: they are blocked in some hosts) */
+function modal(html) {
+  const wrap = document.createElement('div'); wrap.className = 'modal'; wrap.innerHTML = `<div class="mbox" role="dialog" aria-modal="true">${html}</div>`;
+  document.body.appendChild(wrap);
+  const close = () => wrap.remove();
+  wrap.addEventListener('click', e => { if (e.target === wrap) close(); });
+  return { el: wrap, close };
+}
+function askText(title, value = '', placeholder = '') {
+  return new Promise(res => {
+    const m = modal(`<h3>${esc(title)}</h3><textarea id="mtxt" rows="5" placeholder="${esc(placeholder)}">${esc(value)}</textarea><div class="row" style="margin-top:10px;justify-content:flex-end"><button class="btn" id="mno">Cancel</button><button class="btn primary" id="mok">Save</button></div>`);
+    const t = $('#mtxt', m.el); t.focus();
+    $('#mno', m.el).onclick = () => { m.close(); res(null); };
+    $('#mok', m.el).onclick = () => { const v = t.value; m.close(); res(v); };
+  });
+}
+function askYes(msg, yes = 'Yes') {
+  return new Promise(res => {
+    const m = modal(`<p>${esc(msg)}</p><div class="row" style="margin-top:10px;justify-content:flex-end"><button class="btn" id="mno">Cancel</button><button class="btn primary" id="mok">${esc(yes)}</button></div>`);
+    $('#mno', m.el).onclick = () => { m.close(); res(false); };
+    $('#mok', m.el).onclick = () => { m.close(); res(true); };
+  });
+}
 async function loadExtras(id) {
   const m = meta(id);
   if (m.cases && !CASES[id]) CASES[id] = await getJSON(`data/cases/${id}.json?v=${m.hash}`).catch(() => ({}));
@@ -251,6 +280,11 @@ async function home() {
       <div><div class="stat">${st}</div><div class="small muted">day streak</div></div></div>
       <p class="small muted" style="margin:12px 0 0">${CAT.total.toLocaleString()} provisions in ${CAT.codes.length} codes and laws. Progress is saved on this device. Use <a href="#/progress">Progress → Back up</a> before switching browsers.</p></div>
   </section>
+  <div class="grid g3" style="margin-top:14px">
+    <a class="card codecard" href="#/syllabus"><span class="t">Your syllabus</span><span class="c">Con Law 2 · Crim 1 · Crim 2 · Ethics · PIL</span><span class="small muted">Every assigned case, filed under the provision it is taught with</span></a>
+    <a class="card codecard" href="#/syllabus/recent"><span class="t">Recent jurisprudence</span><span class="c">2023–2026 rulings</span><span class="small muted">Filed under the provisions they apply, each marked by how it was verified</span></a>
+    <a class="card codecard" href="#/search"><span class="t">Find a case</span><span class="c">Search by case name</span><span class="small muted">Shows every provision a case is filed under — textbook, syllabus and recent</span></a>
+  </div>
   <div class="subject"><h2>Core codes</h2><span class="muted small">the backbone of the Bar</span></div>
   <div class="grid g3">${core.map(codeCard).join('')}</div>
   <p style="margin-top:22px"><a class="btn" href="#/library">Open the full library (${CAT.codes.length})</a></p>`;
@@ -335,7 +369,7 @@ function lawHTML(d, p, cid, on) {
 }
 function verifyChips(cid, p) {
   const m = meta(cid); const out = [];
-  if (m.kind === 'admin') out.push(p.v === 'ok' ? '<span class="chip ok">OCR · machine-checked</span>' : '<span class="chip warn">OCR · check against your copy</span>');
+  if (m.kind === 'admin') out.push(p.v === 'ok' ? '<span class="chip ok" title="Every word was found in a dictionary or in the other codes. Real-word OCR slips (e.g. “of” for “or”) are still possible.">OCR · machine-checked</span>' : `<span class="chip warn" title="${esc('Words to verify against your scan: ' + (p.u || []).join(', '))}">OCR · check: ${esc((p.u || []).slice(0, 4).join(', '))}</span>`);
   else if (m.kind === 'family') out.push('<span class="chip ok">Your PDF · text layer decoded exactly</span>');
   else if (m.kind === 'labor') out.push('<span class="chip ok">DOLE 2022 edition</span>');
   else out.push('<span class="chip">LawPhil transcription</span>');
@@ -347,7 +381,7 @@ function verifyChips(cid, p) {
 
 async function provView(cid, pid) {
   setNav('library');
-  const d = await loadCode(cid); await loadExtras(cid);
+  const d = await loadCode(cid); await loadExtras(cid); await Promise.all([loadSylIndex(), loadRecent()]);
   const p = d.byId[pid];
   if (!p) { main.innerHTML = `<div class="empty">That provision is not in this code. <a href="#/code/${cid}">Back to ${esc(d.short)}</a></div>`; return; }
   const key = ck(cid, pid);
@@ -356,8 +390,10 @@ async function provView(cid, pid) {
   const prev = d.provisions[p.ix - 1], next = d.provisions[p.ix + 1];
   const notes = (NOTES[cid] || {})[pid];
   const cases = (CASES[cid] || {})[pid] || [];
+  const syl = SYX[ck(cid, pid)] || [], rec = REC.by[ck(cid, pid)] || [];
+  const ncase = cases.length + syl.length + rec.length + (((notes || {}).d) || []).length;
   const on = S.settings.hl;
-  const tabs = [['guide', 'Study guide'], ['recall', 'Recall'], ['cases', `Cases${cases.length ? ' (' + cases.length + ')' : ''}`], ['notes', 'My notes']];
+  const tabs = [['guide', 'Study guide'], ['recall', 'Recall'], ['cases', `Cases${ncase ? ' (' + ncase + ')' : ''}${rec.length ? ' <span class="newdot" title="has 2023–2026 rulings">new</span>' : ''}`], ['notes', 'My notes']];
   main.innerHTML = `${crumbs(d, p, cid)}
   <div class="pv"><div>
     <div class="legend" style="margin-bottom:10px">${HLORDER.map(k => `<label><input type="checkbox" data-hl="${k}" ${on[k] ? 'checked' : ''}><span class="${HLCLASS[k]}">${HLNAME[k]}</span></label>`).join('')}</div>
@@ -378,7 +414,7 @@ async function provView(cid, pid) {
   const show = k => { $$('.tabs button').forEach(b => b.classList.toggle('on', b.dataset.tab === k)); renderTab(k); };
   function renderTab(k) {
     if (k === 'guide') tabbox.innerHTML = guideHTML(d, p, cid, notes);
-    if (k === 'cases') tabbox.innerHTML = casesHTML(cid, pid, notes, cases);
+    if (k === 'cases') tabbox.innerHTML = casesHTML(cid, pid, notes, cases, syl, rec);
     if (k === 'notes') { tabbox.innerHTML = `<div class="panel"><textarea id="mynote" placeholder="Your own words: what the provision says, the elements, a case that applies it, a mnemonic…">${esc(S.notes[key] || '')}</textarea><p class="tiny muted">Saved on this device as you type. Writing it in your own words is one of the strongest ways to learn it.</p></div>`; $('#mynote').addEventListener('input', e => { S.notes[key] = e.target.value; save(); }); }
     if (k === 'recall') recallPanel(tabbox, d, p, cid);
     if (k === 'guide') wireTutor(d, p, cid, cases);
@@ -388,8 +424,8 @@ async function provView(cid, pid) {
   $$('[data-hl]').forEach(c => c.onchange = () => { S.settings.hl[c.dataset.hl] = c.checked; save(); $('#lawbox').innerHTML = lawHTML(d, p, cid, S.settings.hl); });
   $$('[data-rate]').forEach(b => b.onclick = () => { const c = rate(key, +b.dataset.rate); toast(`Next review in ${fmtIvl(c.ivl)}.`); $('#cstat').textContent = cardLine(key); if (next) setTimeout(() => location.hash = `#/p/${cid}/${next.i}`, 450); });
   $('#mark').onclick = () => { if (S.marks[key]) delete S.marks[key]; else S.marks[key] = Date.now(); save(); $('#mark').textContent = S.marks[key] ? '★ Bookmarked' : '☆ Bookmark'; };
-  $('#flag').onclick = () => {
-    const t = prompt('Describe the error (what the text says vs. what the official text says, and your source):', S.flags[key]?.t || '');
+  $('#flag').onclick = async () => {
+    const t = await askText('Report a text error', S.flags[key]?.t || '', 'What the text says here vs. what the official text says, and your source');
     if (t === null) return; if (t.trim()) S.flags[key] = { t: t.trim(), at: Date.now(), l: `${d.short} ${p.l}` }; else delete S.flags[key]; save(); provView(cid, pid);
   };
   main.onclick = e => { const s = e.target.closest('sup.fn'); if (s) { const f = $('#fn' + s.dataset.fn); f && f.scrollIntoView({ behavior: 'smooth', block: 'center' }); } };
@@ -429,11 +465,25 @@ function guideHTML(d, p, cid, n) {
     </ol></div>`;
   return h + '</div>';
 }
-function casesHTML(cid, pid, n, cases) {
+function recentHTML(rec, withProv) {
+  return rec.map(r => `<div class="case recent"><div class="row" style="gap:6px"><div class="cn" style="flex:1;min-width:200px">${esc(r.n)}</div>${r.st === 'decision' ? '<span class="chip ok" title="Docket and date checked against the decision or an official/library listing">verified: decision</span>' : '<span class="chip warn" title="From a Supreme Court release or a news report of the ruling — read the full text before citing">verified: SC release / news</span>'}</div>
+    <div class="cc">${esc([r.g, r.d, r.ct].filter(Boolean).join(' · '))}</div>
+    <div class="dg"><div><b>Ruling</b>${esc(r.h)}</div>${r.rel ? `<div><b>Why it matters here</b>${esc(r.rel)}</div>` : ''}${withProv ? withProv(r) : ''}</div>
+    <div class="tiny muted" style="margin-top:6px">Source: ${r.src.map(x => x.u ? `<a href="${esc(x.u)}" target="_blank" rel="noopener">${esc(x.t)}</a>` : esc(x.t)).join(' · ')}</div></div>`).join('');
+}
+function sylHTML(syl) {
+  const by = {};
+  syl.forEach(c => (by[c.k] = by[c.k] || []).push(c));
+  return Object.entries(by).map(([k, arr]) => `<div class="card flat" style="margin-bottom:10px"><div class="row"><b>${esc(COURSE[k] || k)}</b><span class="spacer"></span><a class="tiny" href="#/syllabus/${k}">open the syllabus</a></div>
+    <ul style="margin:8px 0 0;padding-left:1.1em">${arr.map(c => `<li><span style="font-family:var(--serif)">${esc(c.n)}</span>${c.c ? `, <span class="muted">${esc(c.c)}</span>` : ''}${c.note ? ` <span class="small muted">— ${esc(c.note)}</span>` : ''}${c.topic ? `<div class="tiny muted">${esc(c.topic)}${c.d ? ' · filed by the outline section' : ''}</div>` : ''}</li>`).join('')}</ul></div>`).join('');
+}
+function casesHTML(cid, pid, n, cases, syl = [], rec = []) {
   let h = '<div class="panel">';
+  if (rec.length) h += `<h3>Recent rulings (2023–2026)</h3><p class="small muted">Added after a check of recent Supreme Court decisions (last checked ${esc(REC.checked || '')}). Holdings are summarised in our own words.</p>` + recentHTML(rec);
+  if (syl.length) h += `<h3 style="margin-top:14px">In your syllabus</h3><p class="small muted">Cases your professors assigned under this provision.</p>` + sylHTML(syl);
   const dg = (n && n.d) || [];
   if (dg.length) {
-    h += `<h3>Case digests</h3>` + dg.map(c => `<div class="case"><div class="cn">${esc(c.n)}</div><div class="cc">${esc(c.c || '')}</div><div class="dg">${c.f ? `<div><b>Facts</b>${esc(c.f)}</div>` : ''}${c.i ? `<div><b>Issue</b>${esc(c.i)}</div>` : ''}${c.h ? `<div><b>Ruling & doctrine</b>${esc(c.h)}</div>` : ''}${c.r ? `<div><b>Why it matters here</b>${esc(c.r)}</div>` : ''}</div></div>`).join('');
+    h += `<h3 style="margin-top:14px">Case digests</h3>` + dg.map(c => `<div class="case"><div class="cn">${esc(c.n)}</div><div class="cc">${esc(c.c || '')}</div><div class="dg">${c.f ? `<div><b>Facts</b>${esc(c.f)}</div>` : ''}${c.i ? `<div><b>Issue</b>${esc(c.i)}</div>` : ''}${c.h ? `<div><b>Ruling & doctrine</b>${esc(c.h)}</div>` : ''}${c.r ? `<div><b>Why it matters here</b>${esc(c.r)}</div>` : ''}</div></div>`).join('');
   }
   if (cases.length) {
     const byBook = {};
@@ -443,7 +493,7 @@ function casesHTML(cid, pid, n, cases) {
       h += `<div class="card flat" style="margin-bottom:10px"><div class="row"><b>${esc(b)}</b><span class="spacer"></span><span class="tiny muted">${arr.length} citation${arr.length === 1 ? '' : 's'}</span></div><ul style="margin:8px 0 0;padding-left:1.1em">${arr.map(c => `<li><span style="font-family:var(--serif)">${esc(c.n)}</span>${c.c ? `, <span class="muted">${esc(c.c)}</span>` : ''} <span class="chip">p. ${esc(c.pg)}</span></li>`).join('')}</ul></div>`;
     }
   }
-  if (!dg.length && !cases.length) h += `<div class="empty">No cases indexed for this provision yet.</div>`;
+  if (!dg.length && !cases.length && !syl.length && !rec.length) h += `<div class="empty">No cases indexed for this provision yet.</div>`;
   return h + '</div>';
 }
 async function wireTutor(d, p, cid, cases) {
@@ -457,7 +507,7 @@ async function wireTutor(d, p, cid, cases) {
     <div class="row" style="margin-top:8px"><button class="btn sm" id="texp">Explain simply</button><input id="tq" placeholder="Ask about this provision…" style="flex:1;min-width:160px;padding:6px 10px;border-radius:8px;border:1px solid var(--line2);background:var(--card)"><button class="btn sm" id="task">Ask</button></div>`;
   const go = async (mode, question) => {
     let pass = S.settings.passcode;
-    if (!pass) { pass = prompt('Tutor passcode (set by the site owner in Cloudflare):') || ''; S.settings.passcode = pass; save(); }
+    if (!pass) { pass = ((await askText('Tutor passcode (set by the site owner in Cloudflare)')) || '').trim(); if (!pass) return; S.settings.passcode = pass; save(); }
     $('#tout').innerHTML = '<p class="muted small">Thinking…</p>';
     try {
       const r = await fetch('api/tutor', { method: 'POST', headers: { 'content-type': 'application/json', 'x-tutor-pass': pass }, body: JSON.stringify({ mode, question, code: { title: d.title, citation: d.citation }, provision: { label: p.l, caption: p.c || '', text: provText(p) }, cases: cases.slice(0, 25).map(c => c.n + (c.c ? ', ' + c.c : '')) }) });
@@ -693,10 +743,26 @@ async function searchView(q) {
     hits.sort((a, b) => b.score - a.score);
     const mark = s => { let h = esc(s); for (const w of terms.concat(phrases)) if (w.length > 2) h = h.replace(new RegExp('(' + w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi'), '<mark>$1</mark>'); return h; };
     const snip = p => { const t2 = provText(p); const low = t2.toLowerCase(); const w = (phrases[0] || terms[0] || ''); const k = w ? low.indexOf(w) : 0; const a = Math.max(0, k - 90); return (a ? '…' : '') + t2.slice(a, a + 260) + (t2.length > a + 260 ? '…' : ''); };
-    sr.innerHTML = `<p class="small muted">${hits.length.toLocaleString()} provision${hits.length === 1 ? '' : 's'}${hits.length > 150 ? ' · showing 150' : ''}</p><ol class="results" style="padding-left:1.2em">${hits.slice(0, 150).map(h => `<li><a href="#/p/${h.cid}/${h.p.i}"><b>${esc(meta(h.cid).short)} · ${esc(h.p.l)}</b>${h.p.c ? ' — ' + mark(h.p.c) : ''}</a><div class="small" style="font-family:var(--serif)">${mark(snip(h.p))}</div></li>`).join('')}</ol>`;
+    const ch = await caseHits(terms.concat(phrases), only);
+    sr.innerHTML = (ch.length ? `<div class="card flat" style="margin-bottom:12px"><h3 style="margin:0 0 6px">Cases named “${esc(t)}” (${ch.length})</h3><ul class="small" style="margin:0;padding-left:1.1em">${ch.slice(0, 60).map(x => `<li><span style="font-family:var(--serif)">${mark(x.n)}</span>${x.c ? `, <span class="muted">${esc(x.c)}</span>` : ''} <span class="tiny muted">${esc(x.src)}</span> → ${x.ks.slice(0, 6).map(k => { const [c, p] = k.split('|'); const pr = CODES[c] && CODES[c].byId[p]; return `<a class="chip blue" href="#/p/${c}/${p}">${esc((meta(c) || {}).short || c)} ${esc(pr ? pr.l : p)}</a>`; }).join(' ')}</li>`).join('')}</ul></div>` : '') + `<p class="small muted">${hits.length.toLocaleString()} provision${hits.length === 1 ? '' : 's'}${hits.length > 150 ? ' · showing 150' : ''}</p><ol class="results" style="padding-left:1.2em">${hits.slice(0, 150).map(h => `<li><a href="#/p/${h.cid}/${h.p.i}"><b>${esc(meta(h.cid).short)} · ${esc(h.p.l)}</b>${h.p.c ? ' — ' + mark(h.p.c) : ''}</a><div class="small" style="font-family:var(--serif)">${mark(snip(h.p))}</div></li>`).join('')}</ol>`;
   };
   $('#sf').onsubmit = e => { e.preventDefault(); run(); return false; };
   if (term) run();
+}
+
+async function caseHits(ws, only) {
+  ws = ws.filter(w => w.length > 2 && !/^(the|and|people|of|vs?)$/.test(w));
+  if (!ws.length) return [];
+  await Promise.all([loadSylIndex(), loadRecent(), ...CAT.codes.filter(c => (c.cases || c.notes) && (!only || c.id === only)).map(c => loadExtras(c.id).catch(() => 0))]);
+  const out = new Map();
+  const put = (k, n, c, src) => { if (only && !k.startsWith(only + '|')) return; const low = n.toLowerCase(); if (!ws.every(w => low.includes(w))) return; const id = low.replace(/\W+/g, '') + '|' + String(c || '').replace(/\D+/g, '').slice(0, 6); if (!out.has(id)) out.set(id, { n, c, src, ks: [] }); const o = out.get(id); if (!o.ks.includes(k)) o.ks.push(k); if (!o.src.includes(src)) o.src += ' · ' + src; };
+  for (const [k, arr] of Object.entries(SYX)) arr.forEach(x => put(k, x.n, x.c, 'syllabus'));
+  for (const [k, arr] of Object.entries(REC.by)) arr.forEach(x => put(k, x.n, [x.g, x.d].filter(Boolean).join(', '), 'recent'));
+  for (const [cid, idx] of Object.entries(CASES)) for (const [pid, arr] of Object.entries(idx || {})) (arr || []).forEach(x => put(cid + '|' + pid, x.n, x.c, 'textbook'));
+  for (const [cid, idx] of Object.entries(NOTES)) for (const [pid, g] of Object.entries(idx || {})) ((g || {}).d || []).forEach(x => put(cid + '|' + pid, x.n, x.c, 'digest'));
+  const need = [...new Set([...out.values()].flatMap(o => o.ks.map(k => k.split('|')[0])))];
+  await Promise.all(need.map(c => loadCode(c).catch(() => 0)));
+  return [...out.values()].sort((a, b) => b.ks.length - a.ks.length);
 }
 
 /* ---- progress */
@@ -712,16 +778,21 @@ function progressView() {
   <div class="card" style="margin-top:14px;overflow-x:auto"><table class="table"><tr><th>Code</th><th>Opened</th><th>Learning</th><th>Mastered</th><th style="width:30%">Coverage</th></tr>${rows.map(r => `<tr><td><a href="#/code/${r.c.id}">${esc(r.c.short)}</a></td><td>${r.k.touched}/${r.k.total}</td><td>${r.k.l}</td><td>${r.k.m}</td><td>${bar(r.k)}</td></tr>`).join('')}</table></div>
   <div class="card" style="margin-top:14px"><h3>Settings</h3><div class="row"><label class="small">New provisions per day in Review <input id="npd" type="number" min="0" max="200" value="${S.settings.newPerDay}" style="width:70px;padding:5px;border-radius:8px;border:1px solid var(--line2);background:var(--card)"></label></div></div>
   <div class="card" style="margin-top:14px"><h3>Back up & move</h3><p class="small muted">Progress lives in this browser only. GitHub Pages and Cloudflare are different addresses, so each keeps its own progress — back up here, restore there.</p>
-    <div class="row"><button class="btn" id="exp">Back up my work</button><label class="btn">Restore from a backup<input type="file" id="imp" accept="application/json" hidden></label><button class="btn ghost" id="off">Make every code available offline</button><button class="btn ghost" id="rst" style="color:var(--bad)">Reset</button></div><p id="offmsg" class="small muted"></p></div>
+    <div class="row"><button class="btn" id="exp">Back up my work</button><label class="btn">Restore from a file<input type="file" id="imp" accept="application/json" hidden></label><button class="btn" id="paste">Restore by pasting</button><button class="btn ghost" id="off">Make every code available offline</button><button class="btn ghost" id="rst" style="color:var(--bad)">Reset</button></div><p id="offmsg" class="small muted"></p></div>
   ${flags.length ? `<div class="card" style="margin-top:14px"><h3>Text errors you reported (${flags.length})</h3><ul class="small">${flags.map(([k, f]) => { const [c, p] = k.split('|'); return `<li><a href="#/p/${c}/${p}">${esc(f.l)}</a>: ${esc(f.t)}</li>`; }).join('')}</ul><button class="btn sm" id="expf">Download the error report</button></div>` : ''}`;
   $('#npd').onchange = e => { S.settings.newPerDay = Math.max(0, +e.target.value || 0); save(); };
   $('#exp').onclick = () => dl(`sinag-backup-${today()}.json`, JSON.stringify({ app: 'sinag-codal', v: 1, at: new Date().toISOString(), data: S }));
   $('#imp').onchange = async e => {
     const f = e.target.files[0]; if (!f) return;
-    try { const j = JSON.parse(await f.text()); if (j.app !== 'sinag-codal') throw new Error('Not a Sinag Codal backup.'); if (!confirm('Merge this backup into the progress on this device? Newer card reviews win.')) return; merge(j.data); save(); toast('Backup restored.'); progressView(); }
+    try { const j = JSON.parse(await f.text()); if (j.app !== 'sinag-codal') throw new Error('Not a Sinag Codal backup.'); if (!(await askYes('Merge this backup into the progress on this device? Newer card reviews win.', 'Merge'))) return; merge(j.data); save(); toast('Backup restored.'); progressView(); }
     catch (err) { toast(String(err.message || err)); }
   };
-  $('#rst').onclick = () => { if (confirm('Erase all progress, notes and bookmarks on this device?') && confirm('Really erase? This cannot be undone without a backup.')) { S = structuredClone(DEFAULTS); save(); progressView(); } };
+  $('#rst').onclick = async () => { if (await askYes('Erase all progress, notes and bookmarks on this device?', 'Erase') && await askYes('Really erase? This cannot be undone without a backup.', 'Erase everything')) { S = structuredClone(DEFAULTS); save(); progressView(); } };
+  $('#paste').onclick = async () => {
+    const t = await askText('Paste a backup', '', 'Paste the backup text you copied earlier');
+    if (!t) return;
+    try { const j = JSON.parse(t); if (j.app !== 'sinag-codal') throw new Error('Not a Sinag Codal backup.'); merge(j.data); save(); toast('Backup restored.'); progressView(); } catch (err) { toast(String(err.message || err)); }
+  };
   $('#off').onclick = async () => { let n = 0; for (const c of CAT.codes) { await loadCode(c.id).catch(() => 0); await loadExtras(c.id).catch(() => 0); $('#offmsg').textContent = `Saved ${++n}/${CAT.codes.length}…`; } $('#offmsg').textContent = 'Every code is stored for offline use.'; };
   const ef = $('#expf'); if (ef) ef.onclick = () => dl(`sinag-text-errors-${today()}.json`, JSON.stringify(flags.map(([k, f]) => ({ provision: f.l, key: k, report: f.t, at: new Date(f.at).toISOString() })), null, 1));
 }
@@ -730,7 +801,61 @@ function merge(o) {
   for (const f of ['notes', 'marks', 'flags', 'tutor']) Object.assign(S[f], o[f] || {});
   for (const [d, v] of Object.entries(o.days || {})) { const a = S.days[d] || { r: 0, n: 0 }; S.days[d] = { r: Math.max(a.r, v.r), n: Math.max(a.n, v.n) }; }
 }
-function dl(name, text) { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([text], { type: 'application/json' })); a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000); }
+function dl(name, text) {
+  const m = modal(`<h3>${esc(name)}</h3><p class="small muted">Copy this text and keep it somewhere safe (a note, an email to yourself). To restore, use <b>Restore by pasting</b>. Or try the file download.</p><textarea id="mtxt" rows="8" readonly>${esc(text)}</textarea><div class="row" style="margin-top:10px;justify-content:flex-end"><button class="btn" id="mdl">Download file</button><button class="btn primary" id="mcp">Copy</button><button class="btn" id="mno">Close</button></div>`);
+  $('#mno', m.el).onclick = m.close;
+  $('#mcp', m.el).onclick = async () => { const t = $('#mtxt', m.el); try { await navigator.clipboard.writeText(text); toast('Copied.'); } catch (e) { t.focus(); t.select(); try { document.execCommand('copy'); toast('Copied.'); } catch (e2) { toast('Select the text and copy it.'); } } };
+  $('#mdl', m.el).onclick = () => { try { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([text], { type: 'application/json' })); a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000); } catch (e) { toast('Downloads are blocked here — use Copy.'); } };
+}
+
+/* ---- syllabus */
+async function syllabusView(id, q) {
+  setNav('syllabus');
+  const [sy, rc] = await Promise.all([loadSyllabus(), loadRecent()]);
+  if (!id) {
+    const nrec = new Set(Object.values(rc.by).flat().map(r => r.n + r.g)).size;
+    main.innerHTML = `<h1>Syllabus</h1><p class="muted">Your law-school syllabi, with every case filed under the provision it is taught with. Open a provision’s <b>Cases</b> tab to see them beside the text.</p>
+    <div class="grid g3">${sy.courses.map(c => { const cs = c.items.filter(i => i.t === 'c'); const f = cs.filter(i => (i.links || []).some(l => l.i)).length; return `<a class="card codecard" href="#/syllabus/${c.id}"><span class="t">${esc(c.title)}</span>${c.teacher ? `<span class="c">${esc(c.teacher)}</span>` : ''}<span class="small muted">${cs.length} cases · ${f} filed under a provision</span></a>`; }).join('')}
+    <a class="card codecard" href="#/syllabus/recent"><span class="t">Recent jurisprudence, 2023–2026</span><span class="c">checked ${esc(rc.checked || '')}</span><span class="small muted">${nrec} rulings filed under the provisions they apply</span></a></div>`;
+    return;
+  }
+  if (id === 'recent') {
+    const rows = [];
+    for (const [k, arr] of Object.entries(rc.by)) for (const r of arr) rows.push([k, r]);
+    const seen = new Map();
+    rows.forEach(([k, r]) => { const key = r.n + '|' + r.g; if (!seen.has(key)) seen.set(key, { r, ks: [] }); seen.get(key).ks.push(k); });
+    const items = [...seen.values()];
+    await Promise.all([...new Set(items.flatMap(x => x.ks.map(k => k.split('|')[0])))].map(c => loadCode(c).catch(() => 0)));
+    const lab = k => { const [c, p] = k.split('|'); const d = CODES[c]; const pr = d && d.byId[p]; return `<a class="chip blue" href="#/p/${c}/${p}">${esc((meta(c) || {}).short || c)} ${esc(pr ? pr.l : p)}</a>`; };
+    const bySubj = {};
+    items.forEach(x => { const s = (meta(x.ks[0].split('|')[0]) || {}).subject || 'oth'; (bySubj[s] = bySubj[s] || []).push(x); });
+    main.innerHTML = `<p class="small"><a href="#/syllabus">← Syllabus</a></p><h1>Recent jurisprudence, 2023–2026</h1>
+    <p class="muted">Each ruling is filed under every provision it applies; tap a provision to study it with the text. <span class="chip ok">verified: decision</span> means the docket number and date were checked against the decision or an official listing. <span class="chip warn">verified: SC release / news</span> means the ruling was confirmed from a Supreme Court release or a news report — read the full text before you cite it.</p>
+    ${CAT.subjects.filter(s => bySubj[s.id]).map(s => `<div class="subject"><h2>${esc(s.name)}</h2></div>${recentHTML(bySubj[s.id].map(x => x.r).map((r, i) => Object.assign({}, r, { _ks: bySubj[s.id][i].ks })), r => `<div><b>Filed under</b>${r._ks.map(lab).join(' ')}</div>`)}`).join('')}
+    ${(rc.general || []).length ? `<div class="subject"><h2>Rules of conduct (not in the codal library)</h2></div><ul class="explain">${rc.general.map(g => `<li>${esc(g.x)}${g.u ? ` <a class="small" href="${esc(g.u)}" target="_blank" rel="noopener">text</a>` : ''}</li>`).join('')}</ul>` : ''}`;
+    return;
+  }
+  const c = sy.courses.find(x => x.id === id);
+  if (!c) { main.innerHTML = '<div class="empty">That syllabus is not here. <a href="#/syllabus">All syllabi</a></div>'; return; }
+  const need = [...new Set(c.items.flatMap(i => (i.links || []).map(l => l.c)))];
+  await Promise.all(need.map(x => loadCode(x).catch(() => 0)));
+  const lab = l => { const d = CODES[l.c]; const pr = d && l.i && d.byId[l.i]; return l.i ? `<a class="chip blue" href="#/p/${l.c}/${l.i}">${esc((meta(l.c) || {}).short || l.c)} ${esc(pr ? pr.l : (l.l || ''))}</a>` : ''; };
+  const only = q.get('only') === 'cases';
+  const term = (q.get('q') || '').trim().toLowerCase();
+  const upd = id === 'ethics' && (rc.general || []).length ? `<div class="note blue" style="margin:10px 0"><b>Updates since this syllabus was written</b><ul style="margin:6px 0 0;padding-left:1.2em">${rc.general.filter(g => g.k === 'ethics').map(g => `<li>${esc(g.x)}${g.u ? ` <a href="${esc(g.u)}" target="_blank" rel="noopener">text</a>` : ''}</li>`).join('')}</ul></div>` : '';
+  let n = 0;
+  const body = c.items.map(it => {
+    if (term && !(((it.n || '') + ' ' + (it.c || '') + ' ' + (it.x || '') + ' ' + (it.topic || '')).toLowerCase().includes(term))) return '';
+    if (it.t === 'h') return only ? '' : `<div class="sy-h l${it.lvl || 0}">${esc(it.x)}${(it.links || []).length ? ' ' + it.links.map(lab).join(' ') : ''}${it.q ? `<div class="sy-q">${esc(it.q)}</div>` : ''}</div>`;
+    if (it.t === 'c') { n++; return `<div class="sy-c"><span class="cn">${esc(it.n)}</span>${it.c ? `<span class="muted small">, ${esc(it.c)}</span>` : ''}${it.note ? ` <span class="small muted">— ${esc(it.note)}</span>` : ''}<div>${(it.links || []).map(lab).join(' ') || '<span class="tiny muted">not tied to a provision in the library</span>'}</div></div>`; }
+    return only ? '' : `<div class="sy-n small">${esc(it.x)} ${(it.links || []).map(lab).join(' ')}</div>`;
+  }).join('');
+  main.innerHTML = `<p class="small"><a href="#/syllabus">← Syllabus</a></p><h1>${esc(c.title)}</h1>${c.teacher ? `<p class="muted">${esc(c.teacher)}</p>` : ''}${upd}
+  <form id="syf" class="row" style="margin:10px 0"><input id="syq" value="${esc(q.get('q') || '')}" placeholder="Find a case or topic in this syllabus" style="flex:1;min-width:180px;padding:9px 12px;border-radius:10px;border:1px solid var(--line2);background:var(--card)"><label class="small"><input type="checkbox" id="syo" ${only ? 'checked' : ''}> cases only</label><button class="btn">Find</button></form>
+  <p class="tiny muted">${n} case${n === 1 ? '' : 's'} shown. Blue chips open the provision the case is filed under. Cases filed only by their outline section (no codal reference in the syllabus line) say so on the provision page.</p>
+  <div class="sy">${body || '<div class="empty">Nothing matches.</div>'}</div>`;
+  $('#syf').onsubmit = e => { e.preventDefault(); const p = new URLSearchParams(); if ($('#syq').value.trim()) p.set('q', $('#syq').value.trim()); if ($('#syo').checked) p.set('only', 'cases'); location.hash = `#/syllabus/${id}` + (p.toString() ? '?' + p : ''); };
+}
 
 /* ---- about */
 async function aboutView() {
@@ -744,20 +869,22 @@ async function aboutView() {
   <li><b>Recall</b> it with the text hidden — cloze, first letters, or write it out — <i>before</i> rating yourself. Retrieval, not re-reading, is what builds memory.</li>
   <li><b>Rate</b> it. Review brings it back just before you would forget it; intervals grow as you keep recalling it.</li>
   <li><b>Interleave</b> in Drill: mixed provisions across chapters and codes, and “name that provision” to fix citations.</li>
-  <li><b>Connect</b> it to cases: the Cases tab lists every case your textbooks discuss under that provision, with the page.</li></ol>
+  <li><b>Connect</b> it to cases: the Cases tab shows recent rulings, the cases your syllabus assigns, and every case your textbooks discuss under that provision, with the page.</li></ol>
   <h2>Sources</h2>
   <ul class="explain small"><li>Most statutes: The LawPhil Project (Arellano Law Foundation), as mirrored by LawCodex. LawPhil is a free, unofficial library.</li>
   <li>Labor Code: DOLE, <i>The Labor Code of the Philippines, Renumbered</i> (2022). Footnotes are DOLE’s.</li>
   <li>Family Code: your PDF of Executive Order No. 209 (text layer decoded and checked against OCR).</li>
   <li>Administrative Code of 1987: OCR of your scanned copy.</li>
-  <li>Case indexes: the textbooks you supplied (case names, citations and pages only — the authors’ text is not reproduced).</li></ul>
+  <li>Case indexes: the textbooks you supplied (case names, citations and pages only — the authors’ text is not reproduced).</li>
+  <li>Syllabus: your Con Law 2, Crim 1, Crim 2 (Modules 1–9), Legal & Judicial Ethics and Public International Law syllabi. Each case is filed under the provision cited in the same outline line or section; where the syllabus cites none, under the provision the case actually construes, and the provision page says how it was filed.</li>
+  <li>Recent rulings (2023–2026): checked against the decisions on LawPhil, the SC E-Library and Supreme Court releases, or reputable news reports of them. Each ruling is marked by how it was verified; holdings are written in our own words.</li></ul>
   <div class="note">Statutes, decrees and executive issuances are works of the Government and carry no copyright (RA 8293, Sec. 176.1). None of these sources is the official text. Before you cite a provision in a pleading, check the Official Gazette or the certified copy.</div>
   <h2 style="margin-top:20px">Proofreading</h2>
-  <p class="small">Every text went through: (1) removal of LawPhil anti-copying watermarks and markup; (2) numbering checks for gaps, duplicates and merged provisions; (3) automatic flags for repeated words, unbalanced parentheses and broken hyphenation; (4) for Civil Code Arts. 1157–1439, a word-by-word comparison with the codal text printed in De Leon; (5) restoration of provisions the source dropped. Each correction is shown on the provision it touches with its basis. Typography (dashes, spacing) is normalised; words are never silently changed.</p>
+  <p class="small">Every text went through: (1) removal of LawPhil anti-copying watermarks and markup; (2) numbering checks for gaps, duplicates and merged provisions; (3) automatic flags for repeated words, unbalanced parentheses and broken hyphenation; (4) for Civil Code Arts. 1157–1439, a word-by-word comparison with the codal text printed in De Leon; (5) separation of provisions the source had run into the preceding one (e.g. Civil Code Arts. 213, 437, 1602, 2075) — using the source’s own words. Each correction is shown on the provision it touches with its basis. Typography (dashes, spacing) is normalised; words are never silently changed.</p>
   ${pr ? `<div class="card flat small" style="overflow-x:auto"><b>Correction log (${pr.errata.length})</b><table class="table">${pr.errata.map(e => `<tr><td>${esc(e.code)}</td><td>${esc(e.n)}</td><td>${esc(e.note)}</td><td>${e.applied ? '✓' : '—'}</td></tr>`).join('')}</table>
     <b>Open numbering notes</b><ul>${Object.entries(pr.numbering).filter(([, v]) => v.length).map(([k, v]) => `<li>${esc(meta(k)?.short || k)}: ${esc(v.join('; '))}</li>`).join('')}</ul></div>` : ''}
   <h2 style="margin-top:20px">Your data</h2><p class="small">Progress, notes and bookmarks stay in this browser. Nothing is sent anywhere unless you use the optional AI tutor, which sends only the provision you are viewing and your question.</p>
-  <p class="small muted">Built ${esc(CAT.built)} · ${CAT.total.toLocaleString()} provisions · <a href="legacy/">Open the previous Sinag Learning Studio</a></p></div>`;
+  <p class="small muted">Built ${esc(CAT.built)} · ${CAT.total.toLocaleString()} provisions ${/claude|anthropic/.test(location.hostname) ? '' : '· <a href="legacy/">Open the previous Sinag Learning Studio</a>'}</p></div>`;
 }
 
 /* ------------------------------------------------------------------ router */
@@ -777,6 +904,7 @@ async function route() {
     else if (parts[0] === 'drill') await drillView(q);
     else if (parts[0] === 'search') await searchView(q);
     else if (parts[0] === 'progress') progressView();
+    else if (parts[0] === 'syllabus') await syllabusView(parts[1], q);
     else if (parts[0] === 'about') await aboutView();
     else await home();
     if (!['search'].includes(parts[0])) window.scrollTo(0, 0);
@@ -790,5 +918,5 @@ window.addEventListener('hashchange', route);
 $('.topsearch').addEventListener('submit', e => { e.preventDefault(); location.hash = '#/search?q=' + encodeURIComponent($('#q').value); });
 $('#q').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); location.hash = '#/search?q=' + encodeURIComponent(e.target.value); } });
 route();
-if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
+try { if ('serviceWorker' in navigator && location.protocol === 'https:' && !/claude|anthropic|claudeusercontent/.test(location.hostname)) navigator.serviceWorker.register('sw.js').catch(() => {}); } catch (e) { /* not available in this host */ }
 })();

@@ -12,7 +12,7 @@ Philippine law, studied one provision at a time. The verbatim codal text is the 
 
 ## What's inside
 
-`data/catalog.json` lists 114 instruments (about 12,400 provisions), grouped by Bar subject. Each code is a file in `data/codes/`. Case indexes are in `data/cases/`, and study guides are in `data/notes/`. `data/proofreading.json` is the correction log.
+`data/catalog.json` lists 114 instruments (about 12,441 provisions), grouped by Bar subject. Each code is a file in `data/codes/`. Case indexes are in `data/cases/`, and study guides are in `data/notes/`. `data/proofreading.json` is the correction log.
 
 | Source | Used for |
 |---|---|
@@ -30,7 +30,7 @@ None of these is the official text. Before citing a provision, check the Officia
 - The numbering was checked for gaps, duplicates and merged provisions.
 - Automatic flags catch repeated words, unbalanced parentheses and words split by a stray space.
 - Civil Code Arts. 1157–1439 were compared word by word with the codal text printed in De Leon.
-- Ten Civil Code articles that the online text dropped or merged were restored: 213, 298, 437, 548, 578, 1602, 1622, 1634, 2075 and 2120.
+- Ten Civil Code articles that the online text had run into the preceding article were separated out again, using the source's own words: 213, 298, 437, 548, 578, 1602, 1622, 1634, 2075 and 2120. The same was done for run-ons in the CMTA and RA 9485, and for 19 Administrative Code sections lost in OCR.
 - RPC Arts. 2 and 3 were corrected, and Arts. 266-A to 266-D (RA 8353) were added.
 
 Every change appears on the provision it touches, with its basis. Use **Report a text error** on any provision. Your reports are collected under Progress.

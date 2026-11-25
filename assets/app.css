@@ -165,7 +165,7 @@ textarea{width:100%;min-height:150px;padding:12px;border-radius:10px;border:1px 
 .field select,.field input{padding:8px 10px;border-radius:9px;border:1px solid var(--line2);background:var(--card)}
 .noscript{padding:2rem}
 @media (max-width:900px){
-  .pv{grid-template-columns:1fr}.pv aside{position:static}
+  .pv{grid-template-columns:minmax(0,1fr)}.pv aside{position:static}
   .hero{grid-template-columns:1fr}
 }
 @media (max-width:760px){
@@ -174,7 +174,7 @@ textarea{width:100%;min-height:150px;padding:12px;border-radius:10px;border:1px 
   .topnav{display:none}
   .topsearch{order:3;flex-basis:100%;max-width:none}
   .brand b{font-size:1.15rem}
-  .bottomnav{display:grid;grid-template-columns:repeat(5,1fr);position:fixed;bottom:0;left:0;right:0;z-index:30;background:color-mix(in srgb,var(--card) 94%,transparent);backdrop-filter:blur(12px);border-top:1px solid var(--line);padding:4px 4px calc(4px + env(safe-area-inset-bottom))}
+  .bottomnav{display:grid;grid-template-columns:repeat(6,1fr);position:fixed;bottom:0;left:0;right:0;z-index:30;background:color-mix(in srgb,var(--card) 94%,transparent);backdrop-filter:blur(12px);border-top:1px solid var(--line);padding:4px 4px calc(4px + env(safe-area-inset-bottom))}
   .bottomnav a{display:flex;flex-direction:column;align-items:center;font-size:.7rem;color:var(--ink3);padding:4px 0;text-decoration:none!important}
   .bottomnav a i{font-style:normal;font-size:1.2rem;line-height:1.2}
   .bottomnav a.on{color:var(--brand)}
@@ -186,3 +186,23 @@ textarea{width:100%;min-height:150px;padding:12px;border-radius:10px;border:1px 
   h1{font-size:1.45rem}
 }
 @media print{.top,.bottomnav,.pv aside,.tabs,.rate{display:none!important}body{padding:0}.law{box-shadow:none;border:0}}
+
+/* dialogs (in-page; hosts may block alert/confirm/prompt) */
+.modal{position:fixed;inset:0;background:rgba(10,14,20,.45);display:flex;align-items:center;justify-content:center;z-index:80;padding:16px}
+.mbox{background:var(--card);color:var(--ink);border:1px solid var(--line2);border-radius:14px;padding:16px;width:min(560px,100%);max-height:86vh;overflow:auto;box-shadow:0 18px 50px rgba(0,0,0,.25)}
+.mbox h3{margin:0 0 8px}
+.mbox textarea{width:100%;box-sizing:border-box;padding:10px;border-radius:10px;border:1px solid var(--line2);background:var(--bg);color:var(--ink);font:inherit;font-size:.9rem}
+/* syllabus outline */
+.sy{display:grid;gap:4px}
+.sy-h{font-weight:600;margin-top:10px;line-height:1.4}
+.sy-h.l0{font:700 1.12rem/1.35 var(--serif);margin-top:20px;padding-top:10px;border-top:1px solid var(--line)}
+.sy-h.l1{font:600 1rem/1.35 var(--serif);margin-top:14px}
+.sy-h.l2,.sy-h.l3,.sy-h.l4{font-size:.92rem;color:var(--ink2)}
+.sy-q{font:400 .9rem/1.5 var(--serif);color:var(--ink2);margin-top:4px;border-left:3px solid var(--line2);padding-left:10px}
+.sy-c{padding:6px 0 6px 14px;border-left:2px solid var(--brand-soft)}
+.sy-c .cn{font-family:var(--serif)}
+.sy-c .chip,.sy-h .chip,.sy-n .chip{margin:2px 4px 0 0;text-decoration:none}
+.sy-n{color:var(--ink2);padding-left:8px}
+.case.recent{border-left:3px solid var(--ok)}
+.newdot{display:inline-block;font-size:.62rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;background:var(--ok-soft);color:var(--ok);border-radius:6px;padding:1px 5px;vertical-align:middle;margin-left:3px}
+.bottomnav a{min-width:0}

@@ -70,6 +70,42 @@ def split_embedded_headings(divisions, provisions):
     return closing
 
 
+INLINE = re.compile(r'(?:(?<=[.;:)\]"”])\s+|^)(?:ARTICLE|Article|ART\.|Art\.|SECTION|Section|SEC\.|Sec\.)\s+(\d{1,4}(?:-[A-Z])?)\.?\s+(?=[A-Z“"(])')
+
+
+def split_runons(provisions, log, cid):
+    """The source sometimes runs the next article into the text of the previous one
+    ("… (n) ARTICLE 437. The owner of a parcel …"). Split them back out, keeping the source's own words."""
+    out = []
+    for p in provisions:
+        queue = [p]
+        while queue:
+            cur = queue.pop(0)
+            out.append(cur)
+            m_n = re.match(r'^(\d+)$', str(cur.get('n') or ''))
+            if not m_n or cur['kind'] not in ('article', 'section'):
+                continue
+            nxt = str(int(m_n.group(1)) + 1)
+            done = False
+            for j, para in enumerate(cur['paras']):
+                if not isinstance(para, str):
+                    continue
+                for m in INLINE.finditer(para):
+                    if m.group(1) != nxt or (j == 0 and m.start() == 0):
+                        continue
+                    before, after = para[:m.start()].rstrip(), para[m.end():]
+                    new = {'kind': cur['kind'], 'n': nxt, 'div': cur['div'], 'paras': [after] + cur['paras'][j + 1:],
+                           'e': [{'t': f'The source ran {cur["kind"].title()} {nxt} into the end of {cur["kind"].title()} {cur["n"]}; it has been separated. The words are the source’s own.', 'b': 'Structural check (numbering gap)'}]}
+                    cur['paras'] = cur['paras'][:j] + ([before] if before else [])
+                    log.append({'code': cid, 'n': nxt, 'op': 'split', 'applied': True, 'note': f'Separated from {cur["kind"]} {cur["n"]}'})
+                    queue.insert(0, new)
+                    done = True
+                    break
+                if done:
+                    break
+    return out
+
+
 def caption_split(p):
     if p.get('cap') is not None or not p['paras'] or not isinstance(p['paras'][0], str):
         return
@@ -82,8 +118,12 @@ def caption_split(p):
 KIND_LABEL = {'article': 'Article', 'section': 'Section', 'rule': 'Rule'}
 
 
-def load_md(src):
+SPLITLOG = []
+
+
+def load_md(src, cid=''):
     meta, title, pre, divisions, provisions = P.parse(resolve(src), 'x')
+    provisions = split_runons(provisions, SPLITLOG, cid)
     closing = split_embedded_headings(divisions, provisions)
     for p in provisions:
         caption_split(p)
@@ -292,7 +332,9 @@ def assemble(cid, doc, code_cfg):
         if p.get('old'): rec['o'] = p['old']
         if p.get('fn'): rec['f'] = p['fn']
         if p.get('v'): rec['v'] = p['v']
+        if p.get('unk'): rec['u'] = p['unk']
         if p.get('page'): rec['pg'] = p['page']
+        if p.get('e'): rec['e'] = list(p['e'])
         out.append(rec)
     return out
 
@@ -411,7 +453,7 @@ def main():
     raw = {}
     for (cid, short, title, cit, subj, src, core, note) in CODES:
         if src.startswith('md:'):
-            raw[cid] = load_md(src[3:])
+            raw[cid] = load_md(src[3:], cid)
         elif src == 'labor':
             raw[cid] = load_labor()
         elif src in ('family', 'admin'):
@@ -422,7 +464,7 @@ def main():
         elif src == 'ins10607':
             raw[cid] = load_ins10607()
     catalog = {'built': datetime.date.today().isoformat(), 'subjects': [{'id': s, 'name': n} for s, n in SUBJECTS], 'codes': [], 'missing': []}
-    report = {'errata': [], 'numbering': {}, 'anomalies': {}}
+    report = {'errata': list(SPLITLOG), 'numbering': {}, 'anomalies': {}}
     total = 0
     assembled = {}
     for (cid, short, title, cit, subj, src, core, note) in CODES:
@@ -464,7 +506,19 @@ def main():
                         paras = list(it['p'])
                         m0 = re.match(r'^(?:Art\.|Article|ARTICLE)\s+' + re.escape(n.replace('-', '-?\\s*')) + r'\.?\s*', paras[0]) if paras else None
                         first = re.sub(r'^(?:Art\.|Article|ARTICLE|ART\.)\s+\d+\s*-\s*[A-Z]\.?\s*', '', paras[0]) if paras else ''
-                        rec = {'i': 'article-' + n.lower(), 'l': 'Article ' + n, 'n': n, 'd': provs[after[-1]]['d'], 'p': [first] + paras[1:],
+                        dvi = provs[after[-1]]['d']
+                        if target == 'rpc' and amender == 'ra8353' and base == '266':
+                            # RA 8353, Sec. 2: rape becomes a crime against persons, as a new Chapter Three of Title Eight
+                            divs = doc['divisions']
+                            want = 'CHAPTER THREE — RAPE'
+                            hit = [k for k, v in enumerate(divs) if v['t'] == want]
+                            if hit:
+                                dvi = hit[0]
+                            else:
+                                par = divs[dvi]['parent'] if dvi is not None else None
+                                divs.append({'t': want, 'lvl': divs[dvi]['lvl'] if dvi is not None else 2, 'parent': par})
+                                dvi = len(divs) - 1
+                        rec = {'i': 'article-' + n.lower(), 'l': 'Article ' + n, 'n': n, 'd': dvi, 'p': [first] + paras[1:],
                                'e': [{'t': f'Article {n} was added by {label} (Sec. {it["sec"]}). Its text here is taken verbatim from that law.', 'b': label}]}
                         cap, rest = P.split_caption(rec['p'][0])
                         if cap and rest: rec['c'] = cap.strip(' _'); rec['p'][0] = rest
@@ -528,6 +582,9 @@ def main():
              'flags': {k: len(v) for k, v in report['anomalies'].items() if v},
              'crosscheck': {'civil_vs_deleon': {'articles': 274, 'with_differences': len(xc)}}}
     json.dump(proof, open(f'{OUT}/proofreading.json', 'w'), ensure_ascii=False, separators=(',', ':'))
+    for key, fn in (('shash', 'syllabus_index.json'), ('rhash', 'recent.json')):
+        if os.path.exists(f'{OUT}/{fn}'):
+            catalog[key] = hashlib.md5(open(f'{OUT}/{fn}', 'rb').read() + (open(f'{OUT}/syllabus.json', 'rb').read() if key == 'shash' and os.path.exists(f'{OUT}/syllabus.json') else b'')).hexdigest()[:10]
     json.dump(catalog, open(f'{OUT}/catalog.json', 'w'), ensure_ascii=False, separators=(',', ':'))
     json.dump(report, open(f'{WORK}/proofread_report.json', 'w'), ensure_ascii=False, indent=1)
     print('codes', len(catalog['codes']), 'provisions', total)

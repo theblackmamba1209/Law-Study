@@ -15,7 +15,7 @@ for f in sorted(glob.glob(OCR + '/p*.txt')):
 
 # ---- vocabulary: hunspell list + statute corpus from the other codes
 vocab = collections.Counter()
-for f in glob.glob('/home/claude/site/data/codes/*.json'):
+for f in [x for x in glob.glob('/home/claude/site/data/codes/*.json') if not x.endswith('admincode.json')]:
     d = json.load(open(f))
     for p in d['provisions']:
         for x in p['p']:
@@ -190,6 +190,27 @@ for l in out:
         else:
             cur['paras'].append(l2)
 
+RUNON = re.compile(r'(?:^|\s)[^\w\s]{0,2}\d?,?\s*(?:S[eEgcm][ecCo][.,:°]?|Sc[.,]|Sgc[.,]|SEC[.,]?)\s*°?\s*(\d{1,3})\s*[.,:]\s*(?=[A-Z])')
+def split_runons(provs):
+    out = []
+    for p0 in provs:
+        q = [p0]
+        while q:
+            cur = q.pop(0); out.append(cur)
+            if not str(cur['n']).isdigit(): continue
+            nxt = str(int(cur['n']) + 1)
+            done = False
+            for j, para in enumerate(cur['paras']):
+                for m in RUNON.finditer(para):
+                    if m.group(1) != nxt or (j == 0 and m.start() < 3): continue
+                    new = {'kind': 'section', 'n': nxt, 'div': cur['div'], 'paras': [para[m.end():]] + cur['paras'][j + 1:]}
+                    cur['paras'] = cur['paras'][:j] + [para[:m.start()].rstrip(' _-~é;:,')]
+                    q.insert(0, new); done = True; break
+                if done: break
+    return out
+before = len(provisions)
+provisions = split_runons(provisions)
+print('runon splits', len(provisions) - before)
 flagged = 0
 for p in provisions:
     ps = []
