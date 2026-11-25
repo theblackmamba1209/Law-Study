@@ -47,86 +47,129 @@ async function loadSylIndex() { if (!SYX) SYX = await getJSON('data/syllabus_ind
 async function loadRecent() { if (!REC) REC = await getJSON('data/recent.json?v=' + (CAT.rhash || CAT.built)).catch(() => ({ by: {}, general: [] })); return REC; }
 let CUR = null;
 async function loadCur() {
-  if (!CUR) { [CUR, FIGD] = await Promise.all([getJSON('data/curriculum.json?v=' + (CAT.chash || CAT.built)), getJSON('data/figure.json?v=' + (CAT.fhash || CAT.built))]); CUR.byId = Object.fromEntries(CUR.fields.map(f => [f.id, f])); }
+  if (!CUR) { CUR = await getJSON('data/curriculum.json?v=' + (CAT.chash || CAT.built)); CUR.byId = Object.fromEntries(CUR.fields.map(f => [f.id, f])); }
   return CUR;
 }
 const fieldOf = cid => CUR.byId[CUR.homes[cid]];
 const focusIds = () => (S.settings.focus && S.settings.focus.length ? S.settings.focus : CUR.focus);
-const figName = () => (S.settings.figure || '').trim() || 'the Advocate';
+const figName = () => 'the House of Law';
 const fieldCodes = f => f.tracks.flatMap(t => t.items.filter(i => i.t === 'code' && !i.x).map(i => i.id));
 function fieldCount(f) { let total = 0, touched = 0, m = 0; for (const id of fieldCodes(f)) { const k = counts(id); total += k.total; touched += k.touched; m += k.m; } return { total, touched, m, pct: total ? touched / total * 100 : 0 }; }
 const rich = t => esc(t).replace(/⟦([^|⟧]+)\|([^|⟧]+)\|([^⟧]+)⟧/g, (m, c, i, l) => `<a class="pref" href="#/p/${c}/${i}">${l}</a>`);
 /* The memory figure: one standing figure, read head to toe. Each field of law has a fixed place on it. */
-/* The memory figure. Anatomy: react-native-body-highlighter (MIT), front view; see data/figure-LICENSE.txt. Coordinates are its own (724 x 1448). */
-let FIGD = null;
+/* The House of Law: the memory palace. Eight places, read from the roof down to the steps. */
 const FIGKEY = 'sinag.figure.img';
 const figImg = () => { try { return localStorage.getItem(FIGKEY) || ''; } catch (e) { return ''; } };
-// where each numbered pin sits, and the exact spot it points to
-const FIG_PIN = { pol: [478, 112], craft: [232, 188], lab: [588, 268], eth: [421, 378], civ: [364, 582], crim: [100, 892], com: [628, 892], intl: [168, 1296] };
-const FIG_AT = { pol: [398, 122], craft: [334, 179], lab: [506, 322], eth: [421, 378], civ: [364, 582], crim: [100, 814], com: [628, 814], intl: [250, 1312] };
-const figPos = id => (figImg() && S.settings.figPos && S.settings.figPos[id]) || null;
+const figPos = id => (figImg() && S.settings.housePos && S.settings.housePos[id]) || null;
 let figSeq = 0;
-function manSVG(u, active) {
-  const F = FIGD; const sk = '#cf9c72', skd = '#a9744b', hair = '#1b1716';
-  const hl = active && F.hl[active] && !['pol', 'craft'].includes(active) ? `<path class="hl f-${active}" d="${F.hl[active]}"/>` : '';
-  return `<path d="${F.outline}" fill="${skd}"/>
-    <path d="${F.muscles} ${F.hands} ${F.feet}" fill="${sk}"/>
-    <g clip-path="url(#${u}c)"><rect x="236" y="596" width="252" height="206" fill="#232d45"/><rect x="236" y="560" width="252" height="40" fill="${active === 'civ' ? 'var(--f-civ)' : '#151b2b'}"/><path d="M364,600 V700" stroke="#151b2b" stroke-width="3"/><path d="M262,790 Q300,804 352,796 M376,796 Q428,804 466,790" fill="none" stroke="#151b2b" stroke-width="4" opacity=".7"/>
-      <rect x="40" y="80" width="648" height="1290" fill="url(#${u}s)"/></g>
-    <rect x="348" y="566" width="32" height="30" rx="5" fill="none" stroke="#d2a84b" stroke-width="4.5"/>
-    ${hl}
-    <path d="${F.head}" fill="${sk}"/>
-    <g clip-path="url(#${u}h)"><path d="M296,190 C318,214 340,204 364,205 C388,204 410,214 432,190 L432,262 L296,262 Z" fill="${hair}" opacity=".94"/><rect x="296" y="120" width="136" height="140" fill="url(#${u}s)" opacity=".8"/></g>
-    <path d="M349,224 Q364,218 379,224 Q364,236 349,224 Z" fill="#a4624f"/>
-    <path d="${F.hair}" fill="${hair}"/>
-    <g fill="none" stroke="${hair}" stroke-width="6.5" stroke-linecap="round"><path d="M322,165 Q338,155 354,163"/><path d="M374,163 Q390,155 406,165"/></g>
-    <path d="M325,179 Q338,170 351,179 Q338,186 325,179 Z M377,179 Q390,170 403,179 Q390,186 377,179 Z" fill="#f6f1ea"/>
-    <circle cx="338" cy="178.5" r="5.2" fill="#2b1a10"/><circle cx="390" cy="178.5" r="5.2" fill="#2b1a10"/>
-    <g fill="none" stroke="${hair}" stroke-width="2.6" stroke-linecap="round"><path d="M324,178.5 Q338,169 352,178.5"/><path d="M376,178.5 Q390,169 404,178.5"/></g>
-    <path d="M361,182 C359,194 354,200 357,204 Q364,208 371,204" fill="none" stroke="${skd}" stroke-width="2.8" stroke-linecap="round"/>
-    <path d="${F.outline}" fill="none" stroke="#3b2a1e" stroke-width="2" opacity=".45"/>
-    ${active === 'pol' ? '<circle class="ring f-pol" cx="364" cy="176" r="98"/>' : ''}${active === 'craft' ? '<rect class="ring f-craft" x="306" y="150" width="116" height="94" rx="26"/>' : ''}`;
+// The House of Law: a neoclassical courthouse facade. viewBox 0 0 600 520.
+// Places (top to bottom, left to right): pediment, inscription, four columns, great doors, steps.
+const HOUSE_COLS = [150, 226, 374, 450];
+function houseSVG(u, opt = {}) {
+  const act = opt.active || null, bg = opt.bg !== false;
+  const M = '#efe9dd', M2 = '#ddd4c3', M3 = '#c6bba7', MS = '#a99c85', G = '#d3ad5b';
+  const tint = (id, el) => act ? (act === id ? `<g class="lit f-${id}">${el}</g>` : '') : '';
+  const fl = x => `<g stroke="${M3}" stroke-width="1.1" opacity=".85"><path d="M${x - 9},262 V398"/><path d="M${x - 3},262 V398"/><path d="M${x + 3},262 V398"/><path d="M${x + 9},262 V398"/></g>`;
+  const col = (x, i) => `
+    <rect x="${x - 17}" y="255" width="34" height="146" fill="url(#${u}col)"/>${fl(x)}
+    <path d="M${x - 22},248 H${x + 22} L${x + 18},256 H${x - 18} Z" fill="${M2}"/><rect x="${x - 24}" y="242" width="48" height="7" fill="${M}"/>
+    <path d="M${x - 21},401 H${x + 21} L${x + 24},410 H${x - 24} Z" fill="${M2}"/>`;
+  const dent = []; for (let x = 104; x <= 492; x += 12) dent.push(`<rect x="${x}" y="186" width="7" height="7"/>`);
+  const studs = []; for (let r = 0; r < 4; r++) for (let c = 0; c < 2; c++) for (const s of [0, 1]) studs.push(`<circle cx="${262 + s * 48 + 7 + c * 16}" cy="${322 + r * 22}" r="1.6"/>`);
+  return `<defs>
+    <linearGradient id="${u}sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0b1424"/><stop offset=".62" stop-color="#16274a"/><stop offset=".86" stop-color="#2d3e60"/><stop offset="1" stop-color="#1a2640"/></linearGradient>
+    <radialGradient id="${u}glow" cx=".5" cy=".62" r=".55"><stop offset="0" stop-color="#f4d58d" stop-opacity=".30"/><stop offset=".55" stop-color="#f4d58d" stop-opacity=".07"/><stop offset="1" stop-color="#f4d58d" stop-opacity="0"/></radialGradient>
+    <linearGradient id="${u}col" x1="0" x2="1"><stop offset="0" stop-color="${M3}"/><stop offset=".35" stop-color="${M}"/><stop offset=".6" stop-color="#f8f4ec"/><stop offset="1" stop-color="${MS}"/></linearGradient>
+    <linearGradient id="${u}ped" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f6f1e7"/><stop offset="1" stop-color="${M2}"/></linearGradient>
+    <linearGradient id="${u}wall" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8f8470"/><stop offset="1" stop-color="#b3a78f"/></linearGradient>
+    <linearGradient id="${u}door" x1="0" x2="1"><stop offset="0" stop-color="#3b2a1a"/><stop offset=".5" stop-color="#5c4128"/><stop offset="1" stop-color="#3b2a1a"/></linearGradient>
+    <linearGradient id="${u}gold" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f0d791"/><stop offset="1" stop-color="#b8913f"/></linearGradient>
+    <linearGradient id="${u}step" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f3eee4"/><stop offset="1" stop-color="${M3}"/></linearGradient>
+  </defs>
+  ${bg ? `<rect width="600" height="520" rx="22" fill="url(#${u}sky)"/><rect width="600" height="520" rx="22" fill="url(#${u}glow)"/>
+  <g fill="#fff">${[[60, 52, .5], [118, 96, .35], [470, 60, .45], [540, 118, .3], [520, 34, .25], [84, 150, .25], [404, 40, .3], [190, 36, .3]].map(([x, y, o]) => `<circle cx="${x}" cy="${y}" r="1.2" opacity="${o}"/>`).join('')}</g>` : ''}
+  <ellipse cx="300" cy="474" rx="270" ry="18" fill="#000" opacity=".35"/>
+  <!-- flag -->
+  <path d="M300,34 V86" stroke="#e6c77a" stroke-width="2.6"/><circle cx="300" cy="33" r="2.6" fill="url(#${u}gold)"/>
+  <g transform="translate(301,38)"><rect width="34" height="10" fill="#0038a8"/><rect y="10" width="34" height="10" fill="#ce1126"/><path d="M0,0 L17.3,10 L0,20 Z" fill="#fff"/><circle cx="6" cy="10" r="2.6" fill="#fcd116"/><g fill="#fcd116"><circle cx="2" cy="2.6" r=".9"/><circle cx="2" cy="17.4" r=".9"/><circle cx="14.4" cy="10" r=".9"/></g></g>
+  <!-- back wall, lamps, doors -->
+  <rect x="120" y="252" width="360" height="152" fill="url(#${u}wall)"/>
+  <rect x="120" y="252" width="360" height="10" fill="#000" opacity=".18"/>
+  <rect x="246" y="296" width="108" height="112" fill="#e8e0d0"/><rect x="250" y="300" width="100" height="108" fill="#1c140d"/>
+  <rect x="254" y="304" width="45" height="104" fill="url(#${u}door)"/><rect x="301" y="304" width="45" height="104" fill="url(#${u}door)"/>
+  <g fill="none" stroke="#c9a24f" stroke-width="1.2" opacity=".85"><rect x="259" y="310" width="35" height="40"/><rect x="259" y="356" width="35" height="46"/><rect x="306" y="310" width="35" height="40"/><rect x="306" y="356" width="35" height="46"/></g>
+  <g fill="#e4c26e">${studs.join('')}</g>
+  <rect x="294" y="346" width="4" height="12" rx="1.5" fill="url(#${u}gold)"/><rect x="302" y="346" width="4" height="12" rx="1.5" fill="url(#${u}gold)"/>
+  <rect x="238" y="288" width="124" height="10" fill="${M}"/>
+  <path d="M300,268 L332,288 H268 Z" fill="${M2}"/>
+  ${[188, 412].map(x => `<g><rect x="${x - 1.5}" y="296" width="3" height="10" fill="#3a2a1a"/><path d="M${x - 8},306 H${x + 8} L${x + 6},328 H${x - 6} Z" fill="#2a1e14"/><path d="M${x - 5},309 H${x + 5} L${x + 4},325 H${x - 4} Z" fill="#ffd97a"/><circle cx="${x}" cy="317" r="26" fill="#ffd97a" opacity=".12"/></g>`).join('')}
+  ${tint('intl', `<rect x="250" y="300" width="100" height="108"/>`)}
+  <!-- columns -->
+  ${HOUSE_COLS.map(col).join('')}
+  ${act && ['lab', 'civ', 'com', 'crim'].includes(act) ? (() => { const x = HOUSE_COLS[['lab', 'civ', 'com', 'crim'].indexOf(act)]; return `<g class="lit f-${act}"><rect x="${x - 17}" y="255" width="34" height="146"/><rect x="${x - 24}" y="242" width="48" height="14"/></g>`; })() : ''}
+  <!-- entablature: architrave, frieze with inscription, cornice -->
+  <rect x="108" y="226" width="384" height="16" fill="${M2}"/><rect x="108" y="226" width="384" height="3" fill="#fff" opacity=".35"/>
+  <rect x="112" y="194" width="376" height="32" fill="url(#${u}ped)"/>
+  ${tint('craft', `<rect x="112" y="194" width="376" height="32"/>`)}
+  <text x="300" y="216" text-anchor="middle" font-family="Literata, Georgia, serif" font-size="14" font-weight="600" letter-spacing="3.2" fill="#6f5a35">SALUS POPULI SUPREMA LEX</text>
+  <rect x="98" y="180" width="404" height="8" fill="${M}"/>
+  <g fill="${M2}">${dent.join('')}</g>
+  <!-- pediment -->
+  <path d="M94,180 L300,86 L506,180 Z" fill="${M}"/>
+  <path d="M122,172 L300,96 L478,172 Z" fill="url(#${u}ped)"/>
+  <path d="M122,172 L300,96 L478,172" fill="none" stroke="${M3}" stroke-width="1.5"/>
+  ${tint('pol', `<path d="M122,172 L300,96 L478,172 Z"/>`)}
+  <circle cx="300" cy="146" r="19" fill="none" stroke="url(#${u}gold)" stroke-width="3"/>
+  <g fill="none" stroke="#b8913f" stroke-width="1.6" stroke-linecap="round"><path d="M300,134 V158 M290,140 H310 M286,140 L282,150 M314,140 L318,150 M278,150 Q282,156 286,150 M314,150 Q318,156 322,150 M294,158 H306"/></g>
+  <!-- steps -->
+  <rect x="104" y="408" width="392" height="12" fill="url(#${u}step)"/>
+  <rect x="90" y="420" width="420" height="13" fill="url(#${u}step)"/>
+  <rect x="76" y="433" width="448" height="14" fill="url(#${u}step)"/>
+  <rect x="62" y="447" width="476" height="15" fill="url(#${u}step)"/>
+  <g fill="#000" opacity=".16"><rect x="104" y="418" width="392" height="2"/><rect x="90" y="431" width="420" height="2"/><rect x="76" y="445" width="448" height="2"/><rect x="62" y="460" width="476" height="2"/></g>
+  ${tint('eth', `<path d="M104,408 H496 V420 H510 V433 H524 V447 H538 V462 H62 V447 H76 V433 H90 V420 H104 Z"/>`)}`;
 }
+// pin positions: where each number sits
+const HOUSE_PIN_ = { pol: [380, 150], craft: [128, 210], lab: [150, 330], civ: [226, 330], com: [374, 330], crim: [450, 330], intl: [300, 380], eth: [300, 440] };
+
+const HOUSE_PIN = Object.assign({}, HOUSE_PIN_, { craft: [134, 210] });
 function figure(active, plain) {
   const u = 'fg' + (++figSeq); const img = figImg();
-  const order = ['pol', 'craft', 'lab', 'eth', 'crim', 'com', 'civ', 'intl'];
-  const zone = id => { const f = CUR.byId[id]; const on = active === id; const cp = figPos(id);
-    const [px, py] = cp || FIG_PIN[id]; const [ax, ay] = cp || FIG_AT[id];
+  const order = ['pol', 'craft', 'lab', 'civ', 'com', 'crim', 'intl', 'eth'];
+  const zone = id => { const f = CUR.byId[id]; const on = active === id; const [px, py] = figPos(id) || HOUSE_PIN[id];
     if (plain && !on) return '';
-    return `<a class="zone f-${id}${on ? ' on' : ''}" data-id="${id}" href="#/field/${id}" aria-label="${f.n}. ${esc(f.name)}: ${esc(f.pname)}">${on ? `<circle class="halo" cx="${px}" cy="${py}" r="66"/>` : ''}${px !== ax || py !== ay ? `<path class="stem" d="M${ax},${ay} L${px},${py}"/><circle class="ldot" cx="${ax}" cy="${ay}" r="9"/>` : ''}<circle class="pinsh" cx="${px}" cy="${py + 6}" r="40"/><circle class="pin" cx="${px}" cy="${py}" r="40"/><text class="nt" x="${px}" y="${py + 1}">${f.n}</text></a>`; };
-  return `<svg class="fig${plain ? ' plain' : ''}${active && !plain ? ' dim' : ''}" viewBox="20 60 684 1320" role="img" aria-label="The body of law: eight fields of law placed on eight parts of one figure">
-    <defs><linearGradient id="${u}s" x1="0" x2="1" y1="0" y2="0"><stop offset="0" stop-color="#000" stop-opacity=".22"/><stop offset=".36" stop-color="#000" stop-opacity="0"/><stop offset=".6" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".26"/></linearGradient>
-      <clipPath id="${u}c"><path d="${FIGD.outline}"/></clipPath><clipPath id="${u}h"><path d="${FIGD.head}"/></clipPath><clipPath id="${u}r"><rect x="62" y="76" width="600" height="1290" rx="34"/></clipPath></defs>
-    ${img ? `<image href="${img}" x="62" y="76" width="600" height="1290" preserveAspectRatio="xMidYMid slice" clip-path="url(#${u}r)"/>` : `<ellipse class="ground" cx="364" cy="1346" rx="170" ry="12"/>${manSVG(u, active)}`}
+    return `<a class="zone f-${id}${on ? ' on' : ''}" data-id="${id}" href="#/field/${id}" aria-label="${f.n}. ${esc(f.name)}: ${esc(f.pname)}">${on ? `<circle class="halo" cx="${px}" cy="${py}" r="30"/>` : ''}<circle class="pinsh" cx="${px}" cy="${py + 2.5}" r="17"/><circle class="pin" cx="${px}" cy="${py}" r="17"/><text class="nt" x="${px}" y="${py + 0.5}">${f.n}</text></a>`; };
+  return `<svg class="fig${plain ? ' plain' : ''}${active && !plain ? ' dim' : ''}" viewBox="0 0 600 520" role="img" aria-label="The House of Law: eight fields of law placed in eight parts of one building">
+    ${img ? `<defs><clipPath id="${u}r"><rect width="600" height="520" rx="22"/></clipPath></defs><rect width="600" height="520" rx="22" fill="#0b1424"/><image href="${img}" width="600" height="520" preserveAspectRatio="xMidYMid slice" clip-path="url(#${u}r)"/>` : houseSVG(u, { active: plain ? active : null })}
     ${order.map(zone).join('')}</svg>`;
 }
 async function figurePicture(done) {
-  const m = modal(`<h3>Your own figure</h3><p class="small muted">Use any full-length picture you like: a photograph, a drawing, a character. It is stored on this device only. A figure you chose yourself is easier to remember.</p>
-    <div class="row"><label class="btn primary">Choose a picture<input type="file" id="fgf" accept="image/*" hidden></label><button class="btn" id="fga">Move the markers</button><button class="btn ghost" id="fgr">Use the drawn figure</button></div>
+  const m = modal(`<h3>Use a place you know</h3><p class="small muted">The method works best with a place you know well: your law school, a courthouse you pass, your own home. Choose a photo of it, then place the eight numbers on it in the order you would walk through. The photo stays on this device only.</p>
+    <div class="row"><label class="btn primary">Choose a picture<input type="file" id="fgf" accept="image/*" hidden></label><button class="btn" id="fga">Move the markers</button><button class="btn ghost" id="fgr">Use the House of Law</button></div>
     <div id="fgbox" style="margin-top:10px;max-width:420px"></div><div class="row" style="justify-content:flex-end;margin-top:10px"><button class="btn" id="mok">Done</button></div>`);
   const box = $('#fgbox', m.el); let sel = null;
   const draw = () => {
     $('#fga', m.el).hidden = $('#fgr', m.el).hidden = !figImg();
     if (!figImg()) { box.innerHTML = ''; return; }
-    box.innerHTML = `<p class="small"><b>${sel ? `Now tap where the ${esc(CUR.byId[sel].pname.toLowerCase())} is on your picture.` : 'To move a number, tap it, then tap its place on the picture.'}</b></p>` + figure(sel || undefined);
+    box.innerHTML = `<p class="small"><b>${sel ? `Now tap the place on your photo for ${CUR.byId[sel].n}, ${esc(CUR.byId[sel].name)}.` : 'To move a number, tap it, then tap its place on the photo.'}</b></p>` + figure(sel || undefined);
     const svg = $('svg', box);
     svg.addEventListener('click', e => {
       e.preventDefault(); const z = e.target.closest('.zone');
       if (z && !sel) { sel = z.dataset.id; return draw(); }
       if (!sel) return;
       const pt = svg.createSVGPoint(); pt.x = e.clientX; pt.y = e.clientY; const q = pt.matrixTransform(svg.getScreenCTM().inverse());
-      S.settings.figPos = S.settings.figPos || {}; S.settings.figPos[sel] = [Math.round(q.x), Math.round(q.y)]; save(); sel = null; draw();
+      S.settings.housePos = S.settings.housePos || {}; S.settings.housePos[sel] = [Math.round(q.x), Math.round(q.y)]; save(); sel = null; draw();
     });
   };
   $('#fga', m.el).onclick = draw;
-  $('#fgr', m.el).onclick = () => { try { localStorage.removeItem(FIGKEY); } catch (e) {} S.settings.figPos = {}; save(); sel = null; draw(); toast('Back to the drawn figure.'); };
+  $('#fgr', m.el).onclick = () => { try { localStorage.removeItem(FIGKEY); } catch (e) {} S.settings.housePos = {}; save(); sel = null; draw(); toast('Back to the House of Law.'); };
   $('#fgf', m.el).onchange = e => {
     const f = e.target.files[0]; if (!f) return;
     const r = new FileReader();
     r.onload = () => { const im = new Image(); im.onload = () => {
       const sc = Math.min(1, 1100 / im.height, 800 / im.width); const c = document.createElement('canvas'); c.width = Math.round(im.width * sc); c.height = Math.round(im.height * sc);
       const g = c.getContext('2d'); g.fillStyle = '#fcfdff'; g.fillRect(0, 0, c.width, c.height); g.drawImage(im, 0, 0, c.width, c.height);
-      try { localStorage.setItem(FIGKEY, c.toDataURL('image/jpeg', 0.85)); S.settings.figPos = {}; save(); toast('Picture saved on this device.'); sel = null; draw(); } catch (err) { toast('That picture is too large to keep. Try a smaller one.'); }
+      try { localStorage.setItem(FIGKEY, c.toDataURL('image/jpeg', 0.85)); S.settings.housePos = {}; save(); toast('Picture saved on this device.'); sel = null; draw(); } catch (err) { toast('That picture is too large to keep. Try a smaller one.'); }
     }; im.onerror = () => toast('That file could not be read as a picture.'); im.src = r.result; };
     r.readAsDataURL(f);
   };
@@ -136,10 +179,6 @@ async function figurePicture(done) {
 function partsList() {
   const foc = focusIds();
   return `<ol class="parts">${CUR.fields.map(f => `<li class="f-${f.id}${foc.includes(f.id) ? '' : ' off'}"><a href="#/field/${f.id}"><span class="n">${f.n}</span><span class="tx"><span class="t">${esc(f.name)}</span><span class="p">${esc(f.pname)}</span><span class="hk">${esc(f.hook)}</span></span></a></li>`).join('')}</ol>`;
-}
-async function nameFigure() {
-  const t = await askText('Name your figure', S.settings.figure || '', 'A name you will remember. Picture him or her as vividly as you can.');
-  if (t === null) return false; S.settings.figure = t.trim().slice(0, 40); save(); return true;
 }
 async function chooseFocus() {
   const foc = focusIds();
@@ -377,12 +416,11 @@ async function home() {
   <section class="next"><span class="eyebrow">Your next step</span><h1>${head}</h1><p class="muted" style="margin:0">${sub}</p>
     <div class="row">${btn}${second}</div>
     <div class="meters"><span><b>${due}</b> due</span><span><b>${nt}</b> of ${S.settings.newPerDay} new today</span><span><b>${st}</b> day streak</span><a href="#/progress">Progress</a></div></section>
-  <div class="sect"><h2>The body of law</h2><span class="spacer"></span><button class="btn sm ghost" id="foc">This semester</button><button class="btn sm ghost" id="nm">Name the figure</button><button class="btn sm ghost" id="pic">Use my own picture</button></div>
-  <p class="small muted" style="margin:-4px 0 12px;max-width:65ch">Eight fields, eight places on ${esc(figName())}, read from head to toe. A fixed place is a fixed cue: when you forget, walk down the body.</p>
-  <div class="plate bodymap"><div class="pfig">${figure()}</div>${partsList()}<p class="cap">Read from head to toe. Faded fields are outside this semester.</p></div>
+  <div class="sect"><h2>The House of Law</h2><span class="spacer"></span><button class="btn sm ghost" id="foc">This semester</button><button class="btn sm ghost" id="pic">Use a place you know</button></div>
+  <p class="small muted" style="margin:-4px 0 12px;max-width:65ch">Eight fields, eight places in one building, read from the roof down to the steps. A fixed place is a fixed cue: when you forget, walk through the building again.</p>
+  <div class="plate bodymap"><div class="pfig">${figure()}</div>${partsList()}<p class="cap">Read from the roof down to the steps. Faded fields are outside this semester.</p></div>
   <div class="more"><a href="#/syllabus">Syllabus cases</a><a href="#/syllabus/recent">Recent rulings</a><a href="#/drill">Drill</a><a href="#/search">Find a case</a><a href="#/about">How this works</a></div>`;
   $('#foc').onclick = async () => { if (await chooseFocus()) home(); };
-  $('#nm').onclick = async () => { if (await nameFigure()) home(); };
   $('#pic').onclick = () => figurePicture(home);
 }
 
@@ -447,7 +485,7 @@ function setView(id) {
   const first = st.items.find(x => !S.cards[ck(x.c, x.i)]) || st.items[0];
   main.innerHTML = `<div class="f-${f.id}" style="max-width:760px"><div class="crumbs"><a href="#/learn">Learn</a><span class="sep">›</span><a href="#/field/${f.id}">${esc(f.name)}</a><span class="sep">›</span><span>${esc(at.t.name)}</span></div>
   <span class="eyebrow" style="color:var(--ok)">A walk · ${st.items.length} provisions</span><h1>${esc(st.title)}</h1><p class="lead">${esc(st.blurb)}</p>
-  <div class="tryit small" style="margin:12px 0"><b>How to use the walk.</b> Start at the crown of ${esc(figName())} and move down. At each place, see the provision’s key idea happening on that part of the body, the stranger the better. To recall the list later, walk down the body again and say what you find at each place.</div>
+  <div class="tryit small" style="margin:12px 0"><b>How to use the walk.</b> Start at the flag on the roof of the House of Law and move down to the steps. At each place, see the provision’s key idea happening there, the stranger the better. To recall the list later, walk through the building again and say what you find at each place.</div>
   <ol class="walk">${st.items.map(x => `<li><a href="#/p/${x.c}/${x.i}?set=${id}"><span class="loc">${esc(x.loc)}</span><span><span class="wl">${esc(x.l)}</span>${x.cap ? ` <span class="muted small">${esc(x.cap)}</span>` : ''}<br><span class="ww">${esc(x.why)}</span>${S.hooks[ck(x.c, x.i)] ? `<br><span class="tiny" style="color:var(--warn)">Your picture: ${esc(S.hooks[ck(x.c, x.i)])}</span>` : ''}</span><i class="dot ${status(ck(x.c, x.i))}"></i></a></li>`).join('')}</ol>
   <div class="pn"><a class="btn" href="#/field/${f.id}">Back to ${esc(f.name)}</a><a class="btn primary" href="#/p/${first.c}/${first.i}?set=${id}">Start the walk →</a></div></div>`;
 }
@@ -613,8 +651,8 @@ function guideHTML(d, p, cid, n, loc) {
   const fld = fieldOf(cid); const key = ck(cid, p.i);
   let h = '<div class="panel">';
   h += `<div class="card flat hook" style="margin-bottom:12px"><div class="row"><h3 style="margin:0">Make it a picture</h3><span class="spacer"></span>${loc ? `<span class="chip ok">${esc(loc)}</span>` : fld ? `<span class="chip f-${fld.id}" style="background:color-mix(in srgb,var(--f) 14%,transparent);color:var(--f)">${esc(fld.pname)}</span>` : ''}</div>
-    <p class="small muted" style="margin:0">${loc ? `This provision sits at the <b>${esc(loc.toLowerCase())}</b> of ${esc(figName())}.` : fld ? `${esc(fld.name)} lives at the ${esc(fld.pname.toLowerCase())} of ${esc(figName())}.` : ''} In a few words, what do you see happening there that stands for this rule? Odd pictures last longest.</p>
-    <input id="hookin" maxlength="200" value="${esc(S.hooks[key] || '')}" placeholder="e.g. a stopwatch strapped to the wrist: three months to decide" aria-label="Your picture for this provision"></div>`;
+    <p class="small muted" style="margin:0">${loc ? `In this walk, the provision’s place is the <b>${esc(loc.toLowerCase())}</b>.` : fld ? `${esc(fld.name)} lives at the ${esc(fld.pname.toLowerCase())} of the House of Law.` : ''} In a few words, what do you see happening there that stands for this rule? Odd pictures last longest.</p>
+    <input id="hookin" maxlength="200" value="${esc(S.hooks[key] || '')}" placeholder="e.g. a stopwatch hanging on the column: three months to decide" aria-label="Your picture for this provision"></div>`;
   if (n && (n.x || n.k)) {
     h += `<div class="card flat" style="margin-bottom:12px"><div class="row"><h3 style="margin:0">In plain language</h3><span class="spacer"></span><span class="chip ok">Written for this provision</span></div>
       <div class="explain" style="margin-top:8px">${(n.x || '').split('\n\n').map(x => `<p>${esc(x)}</p>`).join('')}</div>
@@ -1039,21 +1077,20 @@ async function aboutView() {
   <p>The codal provision is the backbone. Everything else — explanations, cases, drills — hangs on the verbatim text.</p>
   <h2>How this is designed</h2>
   <ol class="explain"><li><b>One next step.</b> Today shows a single thing to do. New provisions are capped at a small number a day; you can change it under Progress.</li>
-  <li><b>Eight fields on one figure.</b> Each field of law has a fixed place on the body, head to toe, and each topic inside a field is one object at that place. Fixed places give you somewhere to look when you forget.</li>
+  <li><b>Eight fields in one building.</b> The House of Law is a memory palace: each field has a fixed place in it, from the pediment down to the steps, and each topic inside a field is one object at that place. Fixed places give you somewhere to look when you forget.</li>
   <li><b>A short path in each field.</b> Start here, then the core, then deeper only when you need it. A code page offers five provisions at a time.</li>
   <li><b>Four steps on each provision.</b> Read the verbatim text. Understand it by taking it apart and making your own picture. Recall it with the text hidden. Connect it to cases. Then rate yourself, and Review brings it back just before you would forget it.</li></ol>
   <h2>The memory research behind it</h2>
-  <ul class="explain small"><li><b>Places and pictures.</b> Tying items to fixed locations (the method of loci; a body is one such set of places) reliably improves recall, including in people with no prior training (Dresler and others, <i>Neuron</i>, 2017). Pictures are remembered better than words alone, and words paired with an image are stored twice (Paivio’s dual coding; Shepard, 1967; Standing, 1973).</li>
+  <ul class="explain small"><li><b>Places and pictures.</b> Tying items to fixed locations in an imagined building (the method of loci, the memory palace) reliably improves recall, including in people with no prior training (Dresler and others, <i>Neuron</i>, 2017). Pictures are remembered better than words alone, and words paired with an image are stored twice (Paivio’s dual coding; Shepard, 1967; Standing, 1973).</li>
   <li><b>Small groups.</b> Working memory holds only a few chunks at a time (Miller, 1956, written at Harvard; Cowan, 2001, puts it near four), which is why fields, paths and sittings are kept short.</li>
   <li><b>Make it yourself.</b> Material you generate is remembered better than material you only read (Slamecka and Graf, 1978), so the app asks for your own picture and your own words.</li>
   <li><b>Recall, spaced and mixed.</b> Retrieving from memory beats re-reading (Roediger and Karpicke, 2006); spacing reviews over days beats cramming (Cepeda and others, 2006); mixing topics in practice beats blocking them (Rohrer and Taylor, 2007).</li></ul>
-  <p class="small muted">These are general findings about memory, not studies of this app. The pictures suggested for each topic are our own inventions; replace any that do not stick with your own.</p>
+  <p class="small muted">These are general findings about memory, not studies of this app. The pictures suggested for each topic are our own inventions; replace any that do not stick with your own. A place you know well works even better: use “Use a place you know” on the Today screen.</p>
   <h2>Sources</h2>
   <ul class="explain small"><li>Most statutes: The LawPhil Project (Arellano Law Foundation), as mirrored by LawCodex. LawPhil is a free, unofficial library.</li>
   <li>Labor Code: DOLE, <i>The Labor Code of the Philippines, Renumbered</i> (2022). Footnotes are DOLE’s.</li>
   <li>Family Code: your PDF of Executive Order No. 209 (text layer decoded and checked against OCR).</li>
   <li>Administrative Code of 1987: OCR of your scanned copy.</li>
-  <li>The figure’s anatomy is adapted from react-native-body-highlighter by Hicham Elabbassi (MIT licence; <a href="data/figure-LICENSE.txt" target="_blank" rel="noopener">licence text</a>).</li>
   <li>Case indexes: the textbooks you supplied (case names, citations and pages only — the authors’ text is not reproduced).</li>
   <li>Syllabus: your Con Law 2, Crim 1, Crim 2 (Modules 1–9), Legal & Judicial Ethics and Public International Law syllabi. Each case is filed under the provision cited in the same outline line or section; where the syllabus cites none, under the provision the case actually construes, and the provision page says how it was filed.</li>
   <li>Recent rulings (2023–2026): checked against the decisions on LawPhil, the SC E-Library and Supreme Court releases, or reputable news reports of them. Each ruling is marked by how it was verified; holdings are written in our own words.</li></ul>

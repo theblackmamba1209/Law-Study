@@ -582,7 +582,7 @@ def main():
              'flags': {k: len(v) for k, v in report['anomalies'].items() if v},
              'crosscheck': {'civil_vs_deleon': {'articles': 274, 'with_differences': len(xc)}}}
     json.dump(proof, open(f'{OUT}/proofreading.json', 'w'), ensure_ascii=False, separators=(',', ':'))
-    for key, fn in (('shash', 'syllabus_index.json'), ('rhash', 'recent.json'), ('chash', 'curriculum.json'), ('fhash', 'figure.json')):
+    for key, fn in (('shash', 'syllabus_index.json'), ('rhash', 'recent.json'), ('chash', 'curriculum.json')):
         if os.path.exists(f'{OUT}/{fn}'):
             catalog[key] = hashlib.md5(open(f'{OUT}/{fn}', 'rb').read() + (open(f'{OUT}/syllabus.json', 'rb').read() if key == 'shash' and os.path.exists(f'{OUT}/syllabus.json') else b'')).hexdigest()[:10]
     json.dump(catalog, open(f'{OUT}/catalog.json', 'w'), ensure_ascii=False, separators=(',', ':'))

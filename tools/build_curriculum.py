@@ -388,33 +388,36 @@ LESSONS = {
   'try': ['List the norms of conduct in RA 6713, Sec. 4 from memory, then check.']},
 }
 
-# --------------------------------------------------------------------------- the memory figure
-# One standing figure, read from head to toe. Each field of law lives on one body part (a fixed place makes a
-# fixed cue), and each track inside a field is one object at that body part.
+# --------------------------------------------------------------------------- the House of Law (memory palace)
+# One building, read from the roof down to the steps. Each field of law has one place in it (a fixed place is a
+# fixed cue), and each track inside a field is one object at that place.
 PARTS = {
- 'pol':   (1, 'head', 'Head', 'The head governs the body, as the Constitution governs the State.'),
- 'craft': (2, 'eyes', 'Eyes and mouth', 'The eyes read the statute; the mouth makes the argument.'),
- 'lab':   (3, 'shoulders', 'Shoulders', 'The shoulders carry the load of work.'),
- 'eth':   (4, 'heart', 'Heart', 'The heart keeps the oath: conscience and fidelity.'),
- 'crim':  (5, 'rhand', 'Right hand', 'The right hand acts, and it is the hand the State restrains.'),
- 'com':   (6, 'lhand', 'Left hand', 'The left hand shakes on the deal and holds the money.'),
- 'civ':   (7, 'waist', 'Belt and pockets', 'At the waist: family at your side, what you own, what you owe.'),
- 'intl':  (8, 'feet', 'Feet', 'The feet cross borders.'),
+ 'pol':   (1, 'pediment', 'Pediment', 'The pediment crowns the house, as the Constitution crowns the State.'),
+ 'craft': (2, 'inscription', 'Inscription', 'The words carved over the door. Read them closely before you argue from them.'),
+ 'lab':   (3, 'col1', 'First column', 'The first pillar: work, and the welfare of people in need.'),
+ 'civ':   (4, 'col2', 'Second column', 'The second pillar: persons, family, property and obligations.'),
+ 'com':   (5, 'col3', 'Third column', 'The third pillar: business, money and tax.'),
+ 'crim':  (6, 'col4', 'Fourth column', 'The fourth pillar: what the State may punish, and how much.'),
+ 'intl':  (7, 'doors', 'Great doors', 'The doors open onto the world.'),
+ 'eth':   (8, 'steps', 'Steps', 'Every lawyer climbs these steps, and the whole house stands on them.'),
 }
 PICS = {
- 'pol': ['A crown. Nothing sits above it.', 'A three-cornered hat: three branches.', 'A ballot tucked in the hatband.', 'His face on a passport photo.',
-         'A spotlight on the forehead.', 'Hair like a forest on a mountain.', 'A firefighter’s helmet.'],
- 'craft': ['Reading glasses.', 'A magnifying glass over one eye.', 'The mouth, mid-argument.', 'A pen behind the ear.', 'A summons held between the teeth.'],
- 'lab': ['A yoke across both shoulders: the work itself.', 'A pay envelope on the right shoulder.', 'A shawl over the shoulders: extra protection.', 'A safety net slung over one shoulder.'],
- 'eth': ['A hand over the heart: the oath.', 'A lawyer’s pin over the heart.', 'A judge’s robe closed over the chest.', 'A badge on the chest: office held in trust.'],
- 'crim': ['A closed fist: the act.', 'A wristwatch: counting the time to serve.', 'An open palm raised: stop.', 'A small hand held in his.', 'A sachet and a pistol in the grip.',
-          'A bribe slipped into the palm.', 'A rope around the wrist.', 'Fingers in someone else’s pocket.', 'A phone in the hand.'],
- 'com': ['A company seal ring on the finger.', 'A cheque between two fingers.', 'Coins counted into the palm.', 'A bank passbook.', 'A lightbulb held up.'],
- 'civ': ['The belt that holds everything together.', 'Family photos in the wallet.', 'A land title folded in the back pocket.', 'House keys on the belt loop.', 'A phone in the hip pocket.'],
- 'intl': ['Two feet at a doorway: two ways in.', 'Boots: the law of war.', 'Sandals and a boarding pass.', 'Footprints across a map.'],
+ 'pol': ['The gold seal at the centre of the pediment.', 'Three carved figures in the pediment: Congress, the President, the Court.', 'A ballot slipped into a crack in the stone.',
+         'The flag on the roof.', 'A watchman standing on the cornice.', 'Rice terraces carved along the slopes of the pediment.', 'A lightning rod and a fire bell on the roof.'],
+ 'craft': ['Each carved letter, read one word at a time.', 'A chisel correcting a doubtful letter.', 'A row of case numbers carved under the words.',
+           'An open book carved at the end of the band.', 'Court seals pressed along the cornice.'],
+ 'lab': ['A hard hat resting on the capital.', 'A pay envelope tucked into the fluting.', 'An apron and a passport hanging from a nail.', 'A safety net wrapped round the base.'],
+ 'civ': ['A thick red Civil Code resting on the capital.', 'A family portrait hung on the shaft.', 'A land title rolled inside the fluting.', 'House keys hanging on a hook.', 'A phone glowing on the column, signing a contract.'],
+ 'com': ['A company seal pressed into the capital.', 'A cheque, a policy and a share certificate pinned to the shaft.', 'A tax stamp the size of a door, pasted on the column.',
+         'A vault door set into the base.', 'A lightbulb glowing at the top.'],
+ 'crim': ['Handcuffs hanging from the capital.', 'A clock carved into the shaft, counting the sentence.', 'A raised palm painted on the column: stop.', 'A small handprint at a child’s height.',
+          'A sachet and a pistol locked in an iron cage at the base.', 'A bribe envelope slipped into the fluting.', 'A rope coiled tight round the column.', 'A forged cheque nailed to the shaft.',
+          'A security camera bolted near the top.'],
+ 'intl': ['The two door leaves: incorporation and transformation.', 'A dove carved over the lintel.', 'A passport stamp on the brass handle.', 'Treaties nailed to the door.'],
+ 'eth': ['The bottom step, where the oath is taken.', 'The second step: a lawyer’s pin set into the stone.', 'The third step: a gavel resting on it.', 'The top step: a badge of public office.'],
 }
-# places for an ordered list, top to toe
-LOCI = ['Crown', 'Forehead', 'Eyes', 'Ears', 'Mouth', 'Neck', 'Shoulders', 'Chest', 'Elbows', 'Hands', 'Belly', 'Hips', 'Knees', 'Feet']
+# places for an ordered list (a walk), from the roof down, left to right
+LOCI = ['Flag', 'Roof peak', 'Gold seal', 'Cornice', 'Inscription', 'First column', 'Left lamp', 'Second column', 'Great doors', 'Third column', 'Right lamp', 'Fourth column', 'Top step', 'Bottom step']
 
 LINK = re.compile(r'\{([a-z0-9]+):([a-z0-9-]+)\}')
 

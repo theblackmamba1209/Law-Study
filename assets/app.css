@@ -420,3 +420,19 @@ main:focus,main:focus-visible{outline:none}
   .plate .parts .t{font-size:.94rem}
   .plate .parts .p{font-size:.64rem}
 }
+
+/* ---------- the House of Law plate ---------- */
+.fig .lit{fill:var(--f);opacity:.5}
+.fig .zone .pin{stroke-width:3}
+.fig .zone .nt{font:700 17px var(--sans)}
+.fig .zone .halo{opacity:.35}
+.plate.bodymap{grid-template-columns:minmax(0,1.25fr) minmax(0,1fr)!important;gap:10px 26px;padding:16px;max-width:1040px;align-items:center}
+.plate .pfig .fig{max-width:none;width:100%;border-radius:16px;box-shadow:0 18px 40px -22px rgba(11,20,36,.7)}
+.fhead{grid-template-columns:minmax(0,1fr) 220px}
+.fhead .fig.plain{max-height:none;width:100%;border-radius:12px}
+@media (max-width:900px){.plate.bodymap{grid-template-columns:minmax(0,1fr)!important}}
+@media (max-width:760px){
+  .plate.bodymap{padding:10px 10px 8px;gap:12px}
+  .plate .pfig .fig{border-radius:12px}
+  .fhead{grid-template-columns:minmax(0,1fr) 128px}
+}
