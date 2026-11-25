@@ -673,7 +673,8 @@ function divCap(d, p) {
   if (!d || p.d == null || !d.divisions[p.d]) return null;
   const t = d.divisions[p.d].t; const m = /^(.*?)\s*[—–-]\s+(.+)$/.exec(t);
   const tc = x => x === x.toUpperCase() ? x.toLowerCase().replace(/(^|[\s(])([a-z])/g, (a, b, c) => b + c.toUpperCase()).replace(/\b(Of|And|The|In|On|To|For|By|A|An|Or|With|Under)\b/g, w => w.toLowerCase()).replace(/^./, c => c.toUpperCase()) : x;
-  return m ? [tc(m[1]), tc(m[2])] : ['', tc(t)];
+  const fix = x => x.replace(/^([A-Z]\.) the\b/, '$1 The');
+  return m ? [tc(m[1]), fix(tc(m[2]))] : ['', fix(tc(t))];
 }
 function lawHTML(d, p, cid, on) {
   const fn = p.f || [];
@@ -684,7 +685,7 @@ function lawHTML(d, p, cid, on) {
     ${fn.length ? `<div class="fnlist">${fn.map(f => `<p id="fn${f.n}"><sup>${f.n}</sup> ${esc(f.t)}</p>`).join('')}<p class="tiny muted">Footnotes are the publisher’s (DOLE), not part of the law.</p></div>` : ''}
     <div class="verify">${verifyChips(cid, p)}</div>
     ${(p.e || []).map(e => `<div class="note ${/missing|omitted|restored|absent/i.test(e.t) ? 'blue' : ''}" style="margin-top:10px"><b>Proofreading note.</b> ${esc(e.t)}${e.b ? ` <span class="muted">Basis: ${esc(e.b)}</span>` : ''}</div>`).join('')}
-    ${(p.a || []).map(a => `<section class="amend"><div class="row"><span class="ak">Amended text</span><span class="chip ok">${esc(a.by)} · Sec. ${esc(a.sec)}</span><span class="spacer"></span><a class="small" href="#/code/${a.ref}">open ${esc(a.by)}</a></div><p class="tiny muted" style="margin:4px 0 10px">Verbatim from the amending law. Where two amendments are shown, the later law controls.</p><div class="text">${lawBody(a.p, on, null, cid)}</div></section>`).join('')}
+    ${(p.a || []).map(a => `<section class="amend"><div class="row"><span class="ak">Amended text</span><span class="chip ok">${esc(a.by)} · Sec. ${esc(a.sec)}</span><span class="spacer"></span>${a.ref ? `<a class="small" href="#/code/${a.ref}">open ${esc(a.by)}</a>` : ''}</div><p class="tiny muted" style="margin:4px 0 10px">Verbatim from the amending law. Where two amendments are shown, the later law controls.</p><div class="text">${lawBody(a.p, on, null, cid)}</div></section>`).join('')}
   </article>`;
 }
 function verifyChips(cid, p) {
