@@ -728,3 +728,4 @@ a.pref{padding:0 6px;border-radius:6px;font-size:.84em;line-height:1.5;box-decor
 .t-enact{--c:var(--ink2)}.t-src{--c:var(--ink3)}.t-amend{--c:var(--ok)}.t-issu{--c:var(--brand)}.t-case{--c:var(--violet)}.t-now{--c:var(--f,var(--brand))}
 .tl .t-now::before{background:var(--c)}
 @media (max-width:760px){.tl li{grid-template-columns:42px minmax(0,1fr);gap:8px}.tl li::before{left:47px}.tl li::after{left:51px}.tl li>div{padding-left:18px}}
+.lcap,.law .text,.explain,.case .cn{overflow-wrap:anywhere}
