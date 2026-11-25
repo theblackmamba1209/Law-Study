@@ -40,6 +40,16 @@ async function loadCode(id) {
   d.provisions.forEach(p => (p.d == null ? d.loose : d.divProv[p.d]).push(p));
   d.byNum = {};
   d.provisions.forEach(p => { if (p.n != null && !(p.n in d.byNum)) d.byNum[p.n] = p; });
+  /* a provision whose id changed when its heading was corrected keeps its old links and your progress */
+  if (d.alias) {
+    let moved = 0;
+    for (const [o, n] of Object.entries(d.alias)) {
+      if (d.byId[n]) d.byId[o] = d.byId[n];
+      for (const f of ['cards', 'notes', 'marks', 'hooks', 'tutor']) { const ok = ck(id, o), nk = ck(id, n); if (S[f] && S[f][ok] !== undefined) { if (S[f][nk] === undefined) S[f][nk] = S[f][ok]; delete S[f][ok]; moved++; } }
+      if (S.last && S.last.c === id && S.last.p === o) S.last.p = n;
+    }
+    if (moved) save();
+  }
   CODES[id] = d;
   return d;
 }
@@ -235,8 +245,38 @@ async function loadExtras(id) {
   if (m.notes && !NOTES[id]) NOTES[id] = await getJSON(`data/notes/${id}.json?v=${m.nhash || m.hash}`).catch(() => ({}));
 }
 
-/* ------------------------------------------------------------------ spaced repetition (SM-2 family) */
+/* ------------------------------------------------------------------ memory model (FSRS-5)
+   Each provision you rate carries a stability S (the days until your chance of recalling it falls to 90%) and a
+   difficulty D (1–10). Recall decays on a power curve, R(t) = (1 + 19/81 · t/S)^−0.5. A review is scheduled for the
+   day R would fall to your target (90% by default), so each review comes just before you would forget. A successful
+   recall at low R raises S the most: effortful retrieval is what makes memory last. Weights: FSRS-5 defaults
+   (open-spaced-repetition), fitted on hundreds of millions of reviews. */
 const ck = (cid, pid) => cid + '|' + pid;
+const FW = [0.40255, 1.18385, 3.173, 15.69105, 7.1949, 0.5345, 1.4604, 0.0046, 1.54575, 0.1192, 1.01925, 1.9395, 0.11, 0.29605, 2.2698, 0.2315, 2.9898, 0.51655, 0.6621];
+const DECAY = -0.5, FACTOR = 19 / 81;
+const clampD = d => Math.min(10, Math.max(1, d));
+const goal = () => S.settings.retention || 0.9;
+const retr = (t, s) => Math.pow(1 + FACTOR * t / s, DECAY);
+const ivlFor = s => Math.max(1, Math.min(36500, Math.round(s / FACTOR * (Math.pow(goal(), 1 / DECAY) - 1))));
+const d0 = g => clampD(FW[4] - Math.exp(FW[5] * (g - 1)) + 1);
+/* cards rated under the earlier SM-2 scheduler keep their history: interval ≈ stability, ease → difficulty */
+function upgrade(c) { if (c && c.s == null && c.last && c.ivl != null) { c.s = Math.max(0.5, c.ivl || 0.5); c.d = clampD(10 - ((c.ease || 2.5) - 1.3) * 3.5); } return c; }
+function recallNow(c, now = Date.now()) { if (!c || c.s == null || !c.last) return null; return retr(Math.max(0, (now - c.last) / DAY), c.s); }
+function nextState(c0, g, now) {
+  const c = upgrade(Object.assign({}, c0 || {}));
+  const el = c.last ? Math.max(0, (now - c.last) / DAY) : 0;
+  let s, d;
+  if (c.s == null) { s = FW[g - 1]; d = d0(g); }
+  else {
+    const R = retr(el, c.s);
+    d = clampD(FW[7] * d0(4) + (1 - FW[7]) * (c.d + (-FW[6] * (g - 3)) * (10 - c.d) / 9));
+    if (el < 1) s = c.s * Math.exp(FW[17] * (g - 3 + FW[18]));
+    else if (g === 1) s = Math.min(c.s, FW[11] * Math.pow(c.d, -FW[12]) * (Math.pow(c.s + 1, FW[13]) - 1) * Math.exp(FW[14] * (1 - R)));
+    else s = c.s * (1 + Math.exp(FW[8]) * (11 - c.d) * Math.pow(c.s, -FW[9]) * (Math.exp(FW[10] * (1 - R)) - 1) * (g === 2 ? FW[15] : 1) * (g === 4 ? FW[16] : 1));
+  }
+  s = Math.max(0.1, s);
+  return { s, d, ivl: g === 1 ? 0 : ivlFor(s) };
+}
 function status(key) {
   const c = S.cards[key];
   if (!c) return '';
@@ -244,37 +284,38 @@ function status(key) {
   if (c.ivl >= 21) return 'm';
   return 'l';
 }
+const LEECH = 4;
 function rate(key, g) {
   const now = Date.now();
-  const c = S.cards[key] || { ease: 2.5, ivl: 0, reps: 0, lapses: 0, seen: now };
-  const first = !c.reps;
-  if (g === 1) { c.lapses += c.reps ? 1 : 0; c.reps = 0; c.ivl = 0; c.ease = Math.max(1.3, c.ease - 0.2); c.due = now + 10 * 60000; }
-  else {
-    if (c.reps === 0) c.ivl = g === 2 ? 1 : g === 3 ? 1 : 4;
-    else if (c.reps === 1) c.ivl = g === 2 ? 3 : g === 3 ? 6 : 9;
-    else c.ivl = Math.round(c.ivl * (g === 2 ? 1.2 : g === 3 ? c.ease : c.ease * 1.35));
-    c.ease = Math.max(1.3, c.ease + (g === 2 ? -0.15 : g === 4 ? 0.15 : 0));
-    c.reps += 1;
-    c.due = now + c.ivl * DAY - 3600000;
-  }
+  const c = upgrade(S.cards[key] || { reps: 0, lapses: 0, seen: now });
+  const first = !c.reps && !c.last;
+  const ns = nextState(c, g, now);
+  if (g === 1 && !first && (c.ivl || 0) >= 1) c.lapses = (c.lapses || 0) + 1;
+  c.s = ns.s; c.d = ns.d; c.ivl = ns.ivl; c.reps = (c.reps || 0) + 1;
+  c.due = g === 1 ? now + 10 * 60000 : now + c.ivl * DAY - 3600000;
   c.last = now; c.hist = (c.hist || []).slice(-19).concat([[now, g]]);
+  delete c.ease;
   S.cards[key] = c;
   bumpDay(first ? 'n' : 'r');
+  if (g === 1 && c.lapses >= LEECH && c.lapses % 2 === 0) setTimeout(() => toast(`Forgotten ${c.lapses} times. Give it a picture hook: it is the fastest fix for a stubborn provision.`), 300);
   save();
   return c;
 }
-function dueKeys() { const now = Date.now(); return Object.entries(S.cards).filter(([, c]) => c.reps !== undefined && c.due && c.due <= now).sort((a, b) => a[1].due - b[1].due).map(([k]) => k); }
+function dueKeys() { const now = Date.now(); return Object.entries(S.cards).filter(([, c]) => (c.reps || c.last) && c.due && c.due <= now).sort((a, b) => a[1].due - b[1].due).map(([k]) => k); }
 function newToday() { return (S.days[today()] || {}).n || 0; }
 function streak() { let n = 0, d = new Date(); for (;;) { const k = new Date(d - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10); const v = S.days[k]; if (v && (v.r + v.n) > 0) { n++; d = new Date(d - DAY); } else break; } return n; }
-function fmtIvl(d) { if (d < 1) return '10m'; if (d < 30) return d + 'd'; if (d < 365) return Math.round(d / 30) + 'mo'; return (d / 365).toFixed(1) + 'y'; }
-function preview(key) {
-  const c = S.cards[key] || { ease: 2.5, ivl: 0, reps: 0 };
-  return [1, 2, 3, 4].map(g => {
-    if (g === 1) return '10m';
-    if (c.reps === 0) return fmtIvl(g === 4 ? 4 : 1);
-    if (c.reps === 1) return fmtIvl(g === 2 ? 3 : g === 3 ? 6 : 9);
-    return fmtIvl(Math.round(c.ivl * (g === 2 ? 1.2 : g === 3 ? c.ease : c.ease * 1.35)));
-  });
+function fmtIvl(d) { if (d < 1) return '10m'; if (d < 30) return Math.round(d) + 'd'; if (d < 365) return Math.round(d / 30) + 'mo'; return (d / 365).toFixed(1) + 'y'; }
+function preview(key) { const now = Date.now(); return [1, 2, 3, 4].map(g => g === 1 ? '10m' : fmtIvl(nextState(S.cards[key], g, now).ivl)); }
+/* the whole memory at a glance: average recall now, what is slipping, what falls due, what keeps being forgotten */
+function memoryStats() {
+  const now = Date.now(); let n = 0, sum = 0, risk = 0; const fc = Array(14).fill(0); const leeches = [];
+  for (const [k, c0] of Object.entries(S.cards)) {
+    const c = upgrade(c0); if (c.s == null || !c.last) continue;
+    const r = recallNow(c, now); n++; sum += r; if (r < goal()) risk++;
+    const dd = Math.floor((c.due - now) / DAY); if (dd < 14) fc[Math.max(0, dd)]++;
+    if ((c.lapses || 0) >= LEECH) leeches.push(k);
+  }
+  return { n, avg: n ? sum / n : 0, risk, fc, leeches };
 }
 
 /* ------------------------------------------------------------------ text helpers */
@@ -285,8 +326,8 @@ const plain = s => typeof s === 'string' ? s.replace(FN, '') : '';
    back to the enacted text, flagged as partly amended. */
 const letters = s => (s || '').toLowerCase().replace(/[^a-z]/g, '');
 function stripHead(ps, cap) {
-  const out = ps.filter(x => typeof x === 'string').slice(); if (!out.length) return { ps: out, cap: '' };
-  let s = out[0]; let newCap = '';
+  const out = ps.slice(); const fi = out.findIndex(x => typeof x === 'string'); if (fi < 0) return { ps: out, cap: '' };   // tables are kept in place
+  let s = out[fi]; let newCap = '';
   const art = /^\s*(?:Art(?:icle)?\.?|ART(?:ICLE)?\.?|Sec(?:tion)?\.?|SEC(?:TION)?\.?)\s*\d+(?:-[A-Za-z])?\.?\s*/.exec(s);
   if (art) s = s.slice(art[0].length);
   // where the provision's own caption ends, if the amended text starts with it
@@ -299,21 +340,21 @@ function stripHead(ps, cap) {
     else if (capEnd >= 0) { newCap = s.slice(0, capEnd); s = s.slice(capEnd).replace(/^[\s.;:,–—-]+/, ''); }
   } else {
     // a caption without an article number: "Qualified theft. – The crime…", "Graduated scales.—In…"
-    const m = /^([A-Z][^.—–]{3,150}?)(?:\.\s*[—–-]+|\s+[—–]|[—–])\s*(?=["“(]?[A-Z])/.exec(s);
+    const m = /^([A-Z][^.—–]{3,230}?)(?:\.\s*[—–-]+|\s+[—–]|[—–])\s*(?=["“(]?[A-Z])/.exec(s);
     if (m) {
       newCap = m[1]; s = s.slice(m[0].length);
       const m2 = /^([A-Z][^.—–]{3,60}?)\.\s*[—–-]+\s*(?=["“(]?[A-Z])/.exec(s);   // a two-part caption: "… — Who shall be deemed as such. –"
       if (m2) { newCap += ' — ' + m2[1]; s = s.slice(m2[0].length); }
     }
   }
-  if (s.trim()) out[0] = s; else out.shift();
+  if (s.trim()) out[fi] = s; else out.splice(fi, 1);
   return { ps: out, cap: newCap.replace(/[\s.;:—–-]+$/, '').trim() };
 }
 function inForce(p) {
   const a = (p.a || []).at(-1);
   if (!a) return { ps: p.p, a: null, partial: false, cap: p.c || '' };
   const src = a.cons || a.p;
-  if (!a.cons && /\bx\s*x\s*x\b/i.test(src.join(' '))) return { ps: p.p, a, partial: true, cap: p.c || '' };
+  if (!a.cons && /\bx\s*x\s*x\b/i.test(src.filter(x => typeof x === 'string').join(' '))) return { ps: p.p, a, partial: true, cap: p.c || '' };
   const h = stripHead(src, p.c);
   return { ps: h.ps, a, partial: false, cap: h.cap || p.c || '' };
 }
@@ -551,17 +592,18 @@ async function home() {
   const due = dueKeys().length, nt = newToday(), st = streak();
   const last = S.last;
   let head, sub, btn, second = '';
-  if (due) { head = `${due} provision${due === 1 ? ' is' : 's are'} due for review`; sub = `About ${Math.max(1, Math.ceil(due * 0.75))} minutes. Recall each one before you look.`; btn = `<a class="btn primary" href="#/review">Review now</a>`; if (last) second = `<a class="btn" href="#/p/${last.c}/${last.p}">Continue ${esc(last.l)}</a>`; }
-  else if (last) { head = `Continue where you stopped`; sub = esc(last.l); btn = `<a class="btn primary" href="#/p/${last.c}/${last.p}">Continue</a>`; second = `<a class="btn" href="#/learn">Choose a field</a>`; }
+  const ms = memoryStats(); const mins = S.settings.sprint || 5;
+  if (due) { head = `${due} provision${due === 1 ? ' is' : 's are'} slipping`; sub = `A ${mins}-minute sprint brings back the ones you are closest to forgetting, one at a time.`; btn = `<a class="btn primary" href="#/sprint">Start a ${mins}-minute sprint</a>`; second = `<a class="btn" href="#/review">Review all ${due}</a>`; }
+  else if (last) { head = `Continue where you stopped`; sub = esc(last.l); btn = `<a class="btn primary" href="#/p/${last.c}/${last.p}">Continue</a>`; second = `<a class="btn" href="#/sprint">${mins}-minute sprint</a>`; }
   else { head = 'Start with ten minutes'; sub = 'One short lesson on how to read any provision. It makes everything after it easier.'; btn = `<a class="btn primary" href="#/lesson/read-provision">Read the first lesson</a>`; second = `<a class="btn" href="#/learn">Choose a field</a>`; }
   main.innerHTML = `
   <section class="next"><span class="eyebrow">Your next step</span><h1>${head}</h1><p class="muted" style="margin:0">${sub}</p>
     <div class="row">${btn}${second}</div>
-    <div class="meters"><span><b>${due}</b> due</span><span><b>${nt}</b> of ${S.settings.newPerDay} new today</span><span><b>${st}</b> day streak</span><a href="#/progress">Progress</a></div></section>
+    <div class="meters">${ms.n ? `<span title="Average chance you would recall a provision you are keeping, if asked right now"><b>${Math.round(ms.avg * 100)}%</b> recall</span>` : ''}<span><b>${due}</b> due</span><span><b>${nt}</b> of ${S.settings.newPerDay} new today</span><span><b>${st}</b> day streak</span><a href="#/progress">Memory</a></div></section>
   <div class="sect"><h2>The House of Law</h2><span class="spacer"></span><button class="btn sm ghost" id="foc">This semester</button><button class="btn sm ghost" id="pic">Use a place you know</button></div>
   <p class="small muted" style="margin:-4px 0 12px;max-width:65ch">Eight fields, eight places in one building drawn after the Supreme Court on Padre Faura, read from the roof down to the seven steps. A fixed place is a fixed cue: when you forget, walk through the building again.</p>
   <div class="plate bodymap"><div class="pfig">${figure()}</div>${partsList()}<p class="cap">Read from the roof down to the steps. Faded fields are outside this semester.</p></div>
-  <div class="more"><a href="#/syllabus">Syllabus cases</a><a href="#/syllabus/recent">Recent rulings</a><a href="#/drill">Drill</a><a href="#/search">Find a case</a><a href="#/about">How this works</a></div>`;
+  <div class="more"><a href="#/sprint">Sprint</a><a href="#/syllabus">Syllabus cases</a><a href="#/syllabus/recent">Recent rulings</a><a href="#/drill">Drill</a><a href="#/search">Find a case</a><a href="#/about">How this works</a></div>`;
   $('#foc').onclick = async () => { if (await chooseFocus()) home(); };
   $('#pic').onclick = () => figurePicture(home);
 }
@@ -660,8 +702,9 @@ async function codeView(cid, q) {
   setNav('library');
   const d = await loadCode(cid); const m = meta(cid);
   const k = counts(cid);
-  const next = d.provisions.find(p => !S.cards[ck(cid, p.i)]);
-  const sitting = next ? d.provisions.slice(next.ix).filter(p => !S.cards[ck(cid, p.i)]).slice(0, 5) : [];
+  // repealed or superseded provisions are not offered as new material
+  const next = d.provisions.find(p => !p.st && !S.cards[ck(cid, p.i)]);
+  const sitting = next ? d.provisions.slice(next.ix).filter(p => !p.st && !S.cards[ck(cid, p.i)]).slice(0, 5) : [];
   const openDiv = q.get('div') != null ? +q.get('div') : null;
   main.innerHTML = `${crumbs(d, null, cid)}
   <div class="codehead"><h1>${esc(d.title)}</h1><div class="muted">${esc(d.citation)}</div></div>
@@ -755,7 +798,7 @@ async function provView(cid, pid, q) {
   const p = d.byId[pid];
   if (!p) { main.innerHTML = `<div class="empty">That provision is not in this code. <a href="#/code/${cid}">Back to ${esc(d.short)}</a></div>`; return; }
   const key = ck(cid, pid);
-  if (!S.cards[key]) { S.cards[key] = { ease: 2.5, ivl: 0, reps: 0, lapses: 0, seen: Date.now() }; }
+  if (!S.cards[key]) { S.cards[key] = { reps: 0, lapses: 0, seen: Date.now() }; }
   S.last = { c: cid, p: pid, l: `${d.short} · ${p.l}` };
   const fld = fieldOf(cid); if (fld) S.lastBy[fld.id] = { c: cid, p: pid, l: `${d.short} · ${p.l}` };
   save();
@@ -810,7 +853,7 @@ async function provView(cid, pid, q) {
   };
   main.onclick = e => { const s = e.target.closest('sup.fn'); if (s) { const f = $('#fn' + s.dataset.fn); f && f.scrollIntoView({ behavior: 'smooth', block: 'center' }); } };
 }
-function cardLine(key) { const c = S.cards[key]; if (!c || !c.reps) return 'Not yet rated.'; return `Interval ${fmtIvl(c.ivl)} · ease ${c.ease.toFixed(2)} · ${c.lapses} lapse${c.lapses === 1 ? '' : 's'} · due ${new Date(c.due).toLocaleDateString()}`; }
+function cardLine(key) { const c = upgrade(S.cards[key]); if (!c || !c.reps || c.s == null) return 'Not yet rated.'; const r = recallNow(c); return `Recall today ≈ ${Math.round(r * 100)}% · holds ${fmtIvl(c.s)} at 90% · difficulty ${c.d.toFixed(1)}/10 · ${c.lapses || 0} lapse${c.lapses === 1 ? '' : 's'} · next ${c.due <= Date.now() ? 'now' : new Date(c.due).toLocaleDateString()}`; }
 function sibling(d, p, cid) {
   const arr = p.d == null ? d.loose : d.divProv[p.d];
   if (!arr || arr.length < 2) return '';
@@ -1172,6 +1215,138 @@ async function reviewView() {
   step();
 }
 
+/* ---- sprint: a few minutes, one provision at a time
+   Built for a short attention span. A hard time box; one item on screen; the provisions you are closest to forgetting
+   come first; new material is read once, then tested at once (reading alone fades fast); an item you miss comes back
+   three cards later in the same sprint until you get it (successive relearning); the sprint ends with a break. */
+const fmtClock = ms => { const t = Math.ceil(ms / 1000); return Math.floor(t / 60) + ':' + String(t % 60).padStart(2, '0'); };
+async function sprintPool(maxNew) {
+  const now = Date.now();
+  const due = dueKeys().map(k => [k, recallNow(upgrade(S.cards[k]), now) ?? 0]).sort((a, b) => a[1] - b[1]).map(x => x[0]);
+  const fresh = Object.entries(S.cards).filter(([, c]) => !c.reps && !c.last && !c.due).sort((a, b) => (a[1].seen || 0) - (b[1].seen || 0)).map(([k]) => k).slice(0, maxNew);
+  if (fresh.length < maxNew && S.last && meta(S.last.c)) {
+    const d = await loadCode(S.last.c); const at = d.byId[S.last.p];
+    if (at) for (const p of d.provisions.slice(at.ix + 1)) {
+      if (fresh.length >= maxNew) break;
+      const k = ck(S.last.c, p.i);
+      if (S.cards[k] || p.st || words(provText(p)).length < 4) continue;
+      fresh.push(k);
+    }
+  }
+  return { due, fresh };
+}
+async function sprintView() {
+  setNav('review');
+  const mins = S.settings.sprint || 5;
+  const room = Math.max(0, S.settings.newPerDay - newToday());
+  const { due, fresh } = await sprintPool(Math.min(2, room));
+  const queue = due.slice(0, 8);
+  fresh.forEach((k, j) => queue.splice(Math.min(queue.length, j === 0 ? 1 : 4), 0, k));
+  if (!queue.length) {
+    main.innerHTML = `<div class="reviewcard card"><span class="eyebrow">Sprint</span><h1>Nothing to do right now.</h1><p class="muted">Nothing is due and you have no new provision waiting. Open one under Learn; it joins your sprints from then on.</p><div class="row"><a class="btn primary" href="#/learn">Learn something new</a><a class="btn" href="#/drill">Drill anyway</a></div></div>`;
+    return;
+  }
+  document.body.classList.add('focus');
+  const before = memoryStats();
+  let i = 0, elapsed = 0, tick = Date.now(), over = false, shown = 0;
+  const done = [], missed = {};
+  const left = () => Math.max(0, mins * 60000 - elapsed);
+  const timer = setInterval(() => {
+    if (!location.hash.startsWith('#/sprint')) { clearInterval(timer); document.body.classList.remove('focus'); return; }
+    const now = Date.now();
+    if (!document.hidden) elapsed += now - tick;   // time away from the tab does not count
+    tick = now;
+    const bar = $('#spbar'); if (bar) bar.style.width = Math.min(100, elapsed / (mins * 600)) + '%';
+    const tl = $('#sptime'); if (tl) tl.textContent = fmtClock(left());
+    if (!left() && !over) { over = true; const n = $('#spover'); if (n) n.hidden = false; }
+  }, 500);
+  const finish = () => {
+    clearInterval(timer); document.body.classList.remove('focus'); document.onkeydown = null;
+    const after = memoryStats();
+    const ok = done.filter(x => x[1] > 1).length;
+    const nd = Object.values(S.cards).filter(c => c.due && (c.reps || c.last)).map(c => c.due).sort((a, b) => a - b)[0];
+    const pc = x => Math.round(x * 100) + '%';
+    main.innerHTML = `<div class="reviewcard card sprintdone"><span class="eyebrow">Sprint done · ${fmtClock(elapsed)}</span><h1>${ok} of ${done.length} recalled</h1>
+      ${after.n ? `<p>Across the ${after.n.toLocaleString()} provision${after.n === 1 ? '' : 's'} you are keeping, average recall now is <b>${pc(after.avg)}</b>${before.n ? ` (it was ${pc(before.avg)} when you started)` : ''}. ${after.risk ? `${after.risk} ${after.risk === 1 ? 'is' : 'are'} below ${pc(goal())} and will come up next.` : 'None is below your target.'}</p>` : ''}
+      ${Object.keys(missed).length ? `<p class="small">Missed at least once: ${Object.keys(missed).map(k => { const [c, p] = k.split('|'); const pr = CODES[c] && CODES[c].byId[p]; return `<a href="#/p/${c}/${p}">${esc(meta(c).short)} ${esc(pr ? pr.l : p)}</a>`; }).join(' · ')}. Each comes back in ten minutes, then tomorrow.</p>` : ''}
+      <div class="tryit small"><b>Now rest for five minutes.</b> Stand up, look at something far away, have some water, and do not pick up your phone. A few minutes of quiet rest right after learning helps the brain keep what it just took in (Dewar and others, 2012).</div>
+      <p class="small muted">${nd ? `Next provision due ${nd <= Date.now() ? 'now' : new Date(nd).toLocaleString([], { weekday: 'short', hour: 'numeric', minute: '2-digit' })}.` : ''} Two or three short sprints spread over the day beat one long sitting.</p>
+      <div class="row"><button class="btn primary" id="spagain">Another sprint</button><a class="btn" href="#/">Home</a></div></div>`;
+    $('#spagain').onclick = () => sprintView();
+  };
+  const step = async () => {
+    if (i >= queue.length || (over && shown > 0 && i >= shown)) return finish();
+    const key = queue[i]; const [cid, pid] = key.split('|');
+    if (!meta(cid)) { i++; return step(); }
+    const d = await loadCode(cid); const p = d.byId[pid];
+    if (!p) { i++; return step(); }
+    shown = i + 1;
+    const c0 = S.cards[key];
+    const isNew = !(c0 && (c0.reps || c0.last));
+    const r = recallNow(upgrade(c0));
+    const F = inForce(p); const cap = F.cap || p.c;
+    const hook = S.hooks[key];
+    const ps = F.ps.filter(x => typeof x === 'string');
+    const first = plain(ps[0] || '').split(/(?<=[.;:])\s/)[0];
+    const hint = first.split(/\s+/).map(w => w.replace(/^([“"(‘'\[]*)([A-Za-z0-9])[^\s]*/, '$1$2…')).join(' ');
+    main.innerHTML = `<div class="sprint">
+      <div class="sphead"><span id="sptime" class="sptime">${fmtClock(left())}</span><div class="spbar"><i id="spbar" style="width:${Math.min(100, elapsed / (mins * 600))}%"></i></div><span class="small muted">${queue.length - i} left</span><button class="btn sm ghost" id="spend">End</button></div>
+      <p id="spover" class="small spover" ${over ? '' : 'hidden'}>Time is up. Finish this one, then rest.</p>
+      <div class="card spcard">
+        <div class="small muted">${esc(d.short)}${isNew ? ' · <b class="newtag">New</b>' : r != null ? ` · your recall now ≈ ${Math.round(r * 100)}%` : ''}${c0 && (c0.lapses || 0) >= LEECH ? ' · <b style="color:var(--warn)">stubborn</b>' : ''}</div>
+        <div class="prompt">${esc(p.l)}${cap ? ' — ' + esc(cap) : ''}</div>
+        <div id="spbody"></div>
+      </div></div>`;
+    $('#spend').onclick = finish;
+    const body = $('#spbody');
+    const rateRow = note => `<p class="small" style="margin:12px 0 0">${note || 'How well did you recall it?'}</p><div class="rate">${['Again', 'Hard', 'Good', 'Easy'].map((n, k) => `<button class="r${k + 1}" data-rate="${k + 1}">${n}<small>${preview(key)[k]}</small></button>`).join('')}</div>`;
+    const go = g => {
+      rate(key, g); done.push([key, g]);
+      if (g === 1) { missed[key] = (missed[key] || 0) + 1; if (missed[key] <= 2) queue.splice(Math.min(queue.length, i + 3), 0, key); }
+      i++; step();
+    };
+    const wireRate = () => $$('[data-rate]', body).forEach(b => b.onclick = () => go(+b.dataset.rate));
+    let canRate = false;
+    if (isNew) {
+      body.innerHTML = `<p class="small muted">Read it once, slowly. See it happen: who does what, and what follows.</p><div class="law sp" id="law"><div class="text">${lawBody(F.ps, S.settings.hl, d, cid)}</div></div>
+        <div class="row" style="margin-top:12px"><button class="btn primary" id="sptest">Hide it and test me</button></div><div id="sprv"></div>`;
+      $('#sptest').onclick = () => {
+        $('#sptest').remove();
+        recallPanel($('#sprv'), d, p, cid, pct => {
+          const tip = pct >= 90 ? 'Strong for a first try. <b>Good</b> brings it back in a few days.' : pct >= 60 ? 'Partly there. <b>Hard</b> brings it back tomorrow.' : 'Not yet, and that is normal on a first pass. <b>Again</b> brings it back within this sprint.';
+          $('#sprv').insertAdjacentHTML('beforeend', rateRow(tip)); wireRate(); canRate = true;
+        });
+        const w = words(provText(p)).length; const b = $(`#sprv [data-m="${w <= 40 ? 'fr' : 'c1'}"]`); b && b.click();
+      };
+    } else {
+      body.innerHTML = `<p class="small muted">Say it from memory, aloud or in your head, before you look. Getting it back is the workout, even when it is slow.</p>
+        <div class="row"><button class="btn primary" id="spshow">Show the text <span class="kbd">space</span></button><button class="btn sm" id="sphint">Hint</button>${hook ? '<button class="btn sm" id="sphook">My picture</button>' : ''}<button class="btn sm ghost" id="sptype">Type it instead</button></div>
+        <div id="spaux"></div><div id="spans"></div>`;
+      const show = () => {
+        if (canRate) return;
+        $('#spans').innerHTML = `<div class="law sp" style="margin-top:12px"><div class="text">${lawBody(F.ps, S.settings.hl, d, cid)}</div></div>${rateRow()}${!hook && c0 && (c0.lapses || 0) >= 2 ? `<p class="tiny muted" style="margin-top:8px">Missed before. <a href="#/p/${cid}/${pid}">Give it a picture hook</a> on the study page.</p>` : ''}`;
+        wireRate(); canRate = true; const sb = $('#spshow'); if (sb) sb.disabled = true;
+      };
+      $('#spshow').onclick = show;
+      $('#sphint').onclick = () => { $('#spaux').innerHTML = `<p class="small hint">${esc(hint)}</p>`; };
+      if (hook) $('#sphook').onclick = () => { $('#spaux').innerHTML = `<p class="small hint">Your picture: ${esc(hook)}</p>`; };
+      $('#sptype').onclick = () => {
+        $('#sptype').remove(); const box = document.createElement('div'); $('#spaux').replaceWith(box);
+        const fake = document.createElement('div'); fake.id = 'law'; fake.hidden = true; box.appendChild(fake);
+        recallPanel(box, d, p, cid, () => show());
+        const b = $('[data-m="fr"]', box); b && b.click();
+      };
+    }
+    document.onkeydown = e => {
+      if (!location.hash.startsWith('#/sprint') || /input|textarea/i.test(e.target.tagName)) return;
+      if (e.key === ' ' && !isNew) { e.preventDefault(); show2(); }
+      if (canRate && /^[1-4]$/.test(e.key)) go(+e.key);
+    };
+    const show2 = () => { const b = $('#spshow'); if (b && !b.disabled) b.click(); };
+  };
+  step();
+}
+
 /* ---- drill: interleaved practice across chosen codes */
 async function drillView(q) {
   setNav('drill');
@@ -1196,7 +1371,7 @@ async function drillView(q) {
       for (const p of d.provisions) {
         const key = ck(cid, p.i); const c = S.cards[key];
         if (scope === 'seen' && !c) continue;
-        if (scope === 'weak' && !(c && (c.lapses > 0 || c.ease < 2.3))) continue;
+        if (scope === 'weak' && !(c && (c.lapses > 0 || (upgrade(c).d || 0) > 6.5 || (recallNow(c) ?? 1) < goal()))) continue;
         if (scope === 'mark' && !S.marks[key]) continue;
         const t = provText(p);
         if (words(t).length < 6) continue;
@@ -1307,6 +1482,20 @@ async function caseHits(ws, only) {
 }
 
 /* ---- progress */
+function memoryCard() {
+  const m = memoryStats();
+  if (!m.n) return `<div class="card" style="margin-top:14px"><h3>Your memory</h3><p class="small muted">Rate a provision after you recall it and this card starts tracking how well you would remember each one today, what is slipping and what falls due.</p></div>`;
+  const mx = Math.max(1, ...m.fc);
+  const day = k => k === 0 ? 'today' : k === 1 ? 'tmrw' : new Date(Date.now() + k * DAY).toLocaleDateString([], { weekday: 'short' });
+  return `<div class="card" style="margin-top:14px"><h3>Your memory</h3>
+    <div class="grid g3"><div><div class="stat">${Math.round(m.avg * 100)}%</div><div class="small muted">average recall right now, across ${m.n.toLocaleString()} provision${m.n === 1 ? '' : 's'}</div></div>
+      <div><div class="stat">${m.risk}</div><div class="small muted">below your ${Math.round(goal() * 100)}% target</div></div>
+      <div><div class="stat">${m.leeches.length}</div><div class="small muted">stubborn (forgotten ${LEECH}+ times)</div></div></div>
+    <p class="small" style="margin:14px 0 6px"><b>Coming due, next 14 days</b></p>
+    <div class="fc" role="img" aria-label="Provisions falling due each day for the next 14 days">${m.fc.map((n, k) => `<div class="fcb" title="${day(k)}: ${n}"><span class="fcn">${n || ''}</span><i style="height:${Math.round(n / mx * 100)}%"></i><span class="fcd">${day(k)}</span></div>`).join('')}</div>
+    ${m.leeches.length ? `<p class="small" style="margin:14px 0 4px"><b>Stubborn provisions.</b> Rereading will not fix these. Give each one a vivid picture hook and take it apart again.</p><ul class="small">${m.leeches.slice(0, 20).map(k => { const [c, p] = k.split('|'); const cc = S.cards[k]; return `<li><a href="#/p/${c}/${p}">${esc((meta(c) || {}).short || c)} · ${esc(CODES[c] && CODES[c].byId[p] ? CODES[c].byId[p].l : p.replace(/-/g, ' '))}</a> <span class="muted">· forgotten ${cc.lapses}×${S.hooks[k] ? ' · has a picture' : ''}</span></li>`; }).join('')}</ul>` : ''}
+    <p class="tiny muted" style="margin:10px 0 0">Recall is estimated by the FSRS memory model from your own ratings. It is a forecast, not a grade: rate honestly and it gets better.</p></div>`;
+}
 function progressView() {
   setNav('progress');
   const rows = CAT.codes.map(c => ({ c, k: counts(c.id) })).filter(r => r.k.touched || r.c.core);
@@ -1315,14 +1504,20 @@ function progressView() {
   const flags = Object.entries(S.flags);
   main.innerHTML = `<h1>Progress</h1>
   <div class="grid g3"><div class="card"><div class="stat">${tot.t.toLocaleString()}</div><div class="small muted">provisions opened of ${CAT.total.toLocaleString()}</div></div><div class="card"><div class="stat">${tot.m.toLocaleString()}</div><div class="small muted">mastered (interval ≥ 21 days)</div></div><div class="card"><div class="stat">${dueKeys().length}</div><div class="small muted">due now</div></div></div>
+  ${memoryCard()}
   <div class="card" style="margin-top:14px"><h3>Last 12 weeks</h3><div class="heat">${days.join('')}</div></div>
   ${calibration()}
   <div class="card" style="margin-top:14px;overflow-x:auto"><table class="table"><tr><th>Code</th><th>Opened</th><th>Learning</th><th>Mastered</th><th style="width:30%">Coverage</th></tr>${rows.map(r => `<tr><td><a href="#/code/${r.c.id}">${esc(r.c.short)}</a></td><td>${r.k.touched}/${r.k.total}</td><td>${r.k.l}</td><td>${r.k.m}</td><td>${bar(r.k)}</td></tr>`).join('')}</table></div>
-  <div class="card" style="margin-top:14px"><h3>Settings</h3><div class="row"><label class="small">New provisions per day in Review <input id="npd" type="number" min="0" max="200" value="${S.settings.newPerDay}" style="width:70px;padding:5px;border-radius:8px;border:1px solid var(--line2);background:var(--card)"></label></div></div>
+  <div class="card" style="margin-top:14px"><h3>Settings</h3><div class="row" style="gap:18px"><label class="small">New provisions per day <input id="npd" type="number" min="0" max="200" value="${S.settings.newPerDay}" style="width:70px;padding:5px;border-radius:8px;border:1px solid var(--line2);background:var(--card)"></label>
+    <label class="small">Sprint length <select id="spl" style="padding:5px;border-radius:8px;border:1px solid var(--line2);background:var(--card)">${[3, 5, 10, 15].map(m => `<option value="${m}" ${(S.settings.sprint || 5) === m ? 'selected' : ''}>${m} minutes</option>`).join('')}</select></label>
+    <label class="small">Keep my recall at <select id="ret" style="padding:5px;border-radius:8px;border:1px solid var(--line2);background:var(--card)">${[[0.85, '85% · fewer reviews'], [0.9, '90% · recommended'], [0.95, '95% · exam is near']].map(([v, t]) => `<option value="${v}" ${goal() === v ? 'selected' : ''}>${t}</option>`).join('')}</select></label></div>
+    <p class="tiny muted" style="margin:8px 0 0">A higher target brings provisions back sooner: about twice as many reviews at 95% as at 90%. Changing it applies from each provision’s next review.</p></div>
   <div class="card" style="margin-top:14px"><h3>Back up & move</h3><p class="small muted">Progress lives in this browser only. GitHub Pages and Cloudflare are different addresses, so each keeps its own progress — back up here, restore there.</p>
     <div class="row"><button class="btn" id="exp">Back up my work</button><label class="btn">Restore from a file<input type="file" id="imp" accept="application/json" hidden></label><button class="btn" id="paste">Restore by pasting</button><button class="btn ghost" id="off">Make every code available offline</button><button class="btn ghost" id="rst" style="color:var(--bad)">Reset</button></div><p id="offmsg" class="small muted"></p></div>
   ${flags.length ? `<div class="card" style="margin-top:14px"><h3>Text errors you reported (${flags.length})</h3><ul class="small">${flags.map(([k, f]) => { const [c, p] = k.split('|'); return `<li><a href="#/p/${c}/${p}">${esc(f.l)}</a>: ${esc(f.t)}</li>`; }).join('')}</ul><button class="btn sm" id="expf">Download the error report</button></div>` : ''}`;
   $('#npd').onchange = e => { S.settings.newPerDay = Math.max(0, +e.target.value || 0); save(); };
+  $('#spl').onchange = e => { S.settings.sprint = +e.target.value; save(); };
+  $('#ret').onchange = e => { S.settings.retention = +e.target.value; save(); toast('Target saved. It applies from each provision’s next review.'); };
   $('#exp').onclick = () => dl(`sinag-backup-${today()}.json`, JSON.stringify({ app: 'sinag-codal', v: 1, at: new Date().toISOString(), data: S }));
   $('#imp').onchange = async e => {
     const f = e.target.files[0]; if (!f) return;
@@ -1477,6 +1672,8 @@ async function aboutView() {
   <p>The codal provision is the backbone. Everything else — explanations, cases, drills — hangs on the verbatim text.</p>
   <h2>How this is designed</h2>
   <ol class="explain"><li><b>One next step.</b> Today shows a single thing to do. New provisions are capped at a small number a day; you can change it under Progress.</li>
+  <li><b>Short sprints for a short attention span.</b> A sprint lasts five minutes (three to fifteen, your choice), shows one provision at a time and hides everything else on the screen. The provisions you are closest to forgetting come first. A new one is read once and tested at once. One you miss comes back three cards later, in the same sprint, until you get it. Time away from the tab does not count, and each sprint ends with a five-minute break.</li>
+  <li><b>A memory model, not a fixed timetable.</b> Every rating updates an estimate of how well you would recall that provision today (the FSRS model). Each provision comes back on the day your recall would fall to your target, 90% by default. Under Progress you can see your average recall, what is slipping, what falls due over the next two weeks, and which provisions keep slipping. Those need a new picture, not more rereading.</li>
   <li><b>Eight fields in one building.</b> The House of Law is a memory palace drawn after the Supreme Court’s building on Padre Faura, Manila: its four columns, three doors and seven marble steps, with the Court’s motto, <i>Batas at Bayan</i>, carved above. Each field has a fixed place in it, from the pediment down to the steps, and each topic inside a field is one object at that place. Fixed places give you somewhere to look when you forget.</li>
   <li><b>A short path in each field.</b> Start here, then the core, then deeper only when you need it. A code page offers five provisions at a time.</li>
   <li><b>Four steps on each provision.</b> Read the verbatim text. Understand it by taking it apart and making your own picture. Recall it with the text hidden. Connect it to cases. Then rate yourself, and Review brings it back just before you would forget it.</li>
@@ -1487,6 +1684,10 @@ async function aboutView() {
   <ul class="explain small"><li><b>Places and pictures.</b> Tying items to fixed locations in an imagined building (the method of loci, the memory palace) reliably improves recall, including in people with no prior training (Dresler and others, <i>Neuron</i>, 2017). Pictures are remembered better than words alone, and words paired with an image are stored twice (Paivio’s dual coding; Shepard, 1967; Standing, 1973).</li>
   <li><b>Small groups.</b> Working memory holds only a few chunks at a time (Miller, 1956, written at Harvard; Cowan, 2001, puts it near four), which is why fields, paths and sittings are kept short.</li>
   <li><b>Make it yourself.</b> Material you generate is remembered better than material you only read (Slamecka and Graf, 1978), so the app asks for your own picture and your own words.</li>
+  <li><b>Forgetting is predictable.</b> Memory for new material falls off steeply at first and then levels out (Ebbinghaus, 1885). Each successful recall makes the next fall slower. The scheduler is FSRS, a model of this curve fitted on a very large set of real reviews (Ye, Su and Cao, KDD 2022). It times each review for the point where recall would drop to your target, so effort goes where forgetting is about to happen.</li>
+  <li><b>Relearn until it sticks, then space it.</b> Recalling an item correctly within a session, then again across several sessions, gives large and lasting gains: successive relearning (Rawson, Dunlosky and Sciartelli, 2013).</li>
+  <li><b>Short segments, tested often.</b> Attention drifts in cycles, and the lapses come more often as a sitting goes on (Bunce and others, 2010). Short quizzes between short segments cut mind-wandering and improve learning (Szpunar, Khan and Schacter, <i>PNAS</i>, 2013). That is the shape of a sprint.</li>
+  <li><b>Rest after learning.</b> A few minutes of quiet rest right after learning, with no new input, improves later recall (Dewar and others, 2012). That is why a sprint ends with a break.</li>
   <li><b>Recall, spaced and mixed.</b> Retrieving from memory beats re-reading (Roediger and Karpicke, 2006); spacing reviews over days beats cramming (Cepeda and others, 2006); mixing topics in practice beats blocking them (Rohrer and Taylor, 2007).</li>
   <li><b>Text that shows its structure.</b> Signalling how material is organised, and breaking it into short segments, helps learners build a model of it (Mayer, <i>Multimedia Learning</i>, 2009: the signalling and segmenting principles). So in each provision, enumerations hang from a numbered margin and say how many items follow, each proviso starts on its own line, and a colour always means the same thing: red for penalties, gold for numbers, violet for exceptions and provisos, blue for conditions, green for definitions. Not a word of the law is changed.</li>
   <li><b>Few highlights.</b> Marking much of a text does little for learning (Dunlosky and others, 2013, rated highlighting low in usefulness), so only a few kinds of words are marked by default. Turn each kind on or off under Highlights.</li>
@@ -1499,7 +1700,7 @@ async function aboutView() {
   <ul class="explain small"><li>Most statutes: The LawPhil Project (Arellano Law Foundation), as mirrored by LawCodex. LawPhil is a free, unofficial library.</li>
   <li>Labor Code: DOLE, <i>The Labor Code of the Philippines, Renumbered</i> (2022). Footnotes are DOLE’s.</li>
   <li>Family Code: your PDF of Executive Order No. 209 (text layer decoded and checked against OCR).</li>
-  <li>Administrative Code of 1987: OCR of your scanned copy.</li>
+  <li>Administrative Code of 1987: your scanned copy, read three times by OCR (once from the whole page, once from each page alone at higher contrast) and compared word by word with the LawPhil text. Where two of the three readings agree with LawPhil, LawPhil’s words are used; where they agree with each other against LawPhil, your print’s words are kept. Disputed words, tables and sections the OCR could not read were checked against the scan itself. Where your print has an evident misprint (for example “office of agency” for “office or agency”), the text is corrected and the provision says so.</li>
   <li>Case indexes: the textbooks you supplied (case names, citations and pages only — the authors’ text is not reproduced).</li>
   <li>Syllabus: your Con Law 2, Crim 1, Crim 2 (Modules 1–9), Legal & Judicial Ethics and Public International Law syllabi. Each case is filed under the provision cited in the same outline line or section; where the syllabus cites none, under the provision the case actually construes, and the provision page says how it was filed.</li>
   <li>Recent rulings (2023–2026): checked against the decisions on LawPhil, the SC E-Library and Supreme Court releases, or reputable news reports of them. Each ruling is marked by how it was verified; holdings are written in our own words.</li></ul>
@@ -1518,7 +1719,7 @@ async function route() {
   const [path, qs] = h.split('?');
   const q = new URLSearchParams(qs || '');
   const parts = path.split('/').map(decodeURIComponent);
-  document.onkeydown = null; main.onclick = null;
+  document.onkeydown = null; main.onclick = null; document.body.classList.remove('focus');
   try {
     if (!CAT) CAT = await getJSON('data/catalog.json?v=' + Date.now().toString().slice(0, 7));
     if (!CUR) await loadCur();
@@ -1532,6 +1733,7 @@ async function route() {
     else if (parts[0] === 'code') await codeView(parts[1], q);
     else if (parts[0] === 'p') await provView(parts[1], parts.slice(2).join('/'), q);
     else if (parts[0] === 'review') await reviewView();
+    else if (parts[0] === 'sprint') await sprintView();
     else if (parts[0] === 'drill') await drillView(q);
     else if (parts[0] === 'search') await searchView(q);
     else if (parts[0] === 'progress') progressView();

@@ -745,3 +745,23 @@ details.hist .amend.orig .text{opacity:.85}
 .status .tiny{display:block;margin-top:6px;opacity:.75}
 .law.gone>.text{opacity:.6}
 .inforce .chip.ok,.inforce .chip.warn{background:transparent;border:1px solid currentColor}
+/* sprint: one item, a time box, nothing else on screen */
+body.focus .top,body.focus .bottomnav{display:none}
+.sprint{max-width:720px;margin:0 auto}
+.sphead{display:flex;align-items:center;gap:10px;position:sticky;top:0;background:var(--bg);padding:10px 0 8px;z-index:5}
+.sptime{font:600 1.05rem/1 var(--sans);font-variant-numeric:tabular-nums;min-width:3.2em}
+.spbar{flex:1;height:6px;border-radius:6px;background:var(--line);overflow:hidden}.spbar i{display:block;height:100%;background:var(--brand);transition:width .5s linear}
+.spover{color:var(--warn);margin:2px 0 8px}
+.spcard{margin-top:6px}
+.sprint .panel>.row{display:none}
+.law.sp{box-shadow:none;border:1px solid var(--line);padding:12px 16px;transition:filter .2s}
+.newtag{color:var(--ok)}
+.hint{background:var(--gold-soft);border-radius:10px;padding:8px 12px;margin:10px 0 0;font-family:var(--serif)}
+.sprintdone h1{margin-top:4px}
+/* memory forecast */
+.fc{display:grid;grid-template-columns:repeat(14,1fr);gap:4px;height:120px;align-items:end}
+.fcb{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;min-width:0}
+.fcb i{display:block;width:100%;max-width:26px;background:var(--brand);border-radius:4px 4px 0 0;min-height:2px}
+.fcn{font-size:.68rem;color:var(--ink3);font-variant-numeric:tabular-nums}
+.fcd{font-size:.62rem;color:var(--ink3);margin-top:3px;white-space:nowrap;overflow:hidden;max-width:100%}
+.tbl td:not(:first-child){min-width:6.5em}
