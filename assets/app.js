@@ -47,7 +47,7 @@ async function loadSylIndex() { if (!SYX) SYX = await getJSON('data/syllabus_ind
 async function loadRecent() { if (!REC) REC = await getJSON('data/recent.json?v=' + (CAT.rhash || CAT.built)).catch(() => ({ by: {}, general: [] })); return REC; }
 let CUR = null;
 async function loadCur() {
-  if (!CUR) { CUR = await getJSON('data/curriculum.json?v=' + (CAT.chash || CAT.built)); CUR.byId = Object.fromEntries(CUR.fields.map(f => [f.id, f])); }
+  if (!CUR) { [CUR, FIGD] = await Promise.all([getJSON('data/curriculum.json?v=' + (CAT.chash || CAT.built)), getJSON('data/figure.json?v=' + (CAT.fhash || CAT.built))]); CUR.byId = Object.fromEntries(CUR.fields.map(f => [f.id, f])); }
   return CUR;
 }
 const fieldOf = cid => CUR.byId[CUR.homes[cid]];
@@ -57,67 +57,48 @@ const fieldCodes = f => f.tracks.flatMap(t => t.items.filter(i => i.t === 'code'
 function fieldCount(f) { let total = 0, touched = 0, m = 0; for (const id of fieldCodes(f)) { const k = counts(id); total += k.total; touched += k.touched; m += k.m; } return { total, touched, m, pct: total ? touched / total * 100 : 0 }; }
 const rich = t => esc(t).replace(/⟦([^|⟧]+)\|([^|⟧]+)\|([^⟧]+)⟧/g, (m, c, i, l) => `<a class="pref" href="#/p/${c}/${i}">${l}</a>`);
 /* The memory figure: one standing figure, read head to toe. Each field of law has a fixed place on it. */
-const FIG_BODY = 'M0,30 C16,30 27,44 27,62 C27,74 24,84 19,92 C16,97 13,99 13,104 C13,109 13,112 14,115 C22,121 40,122 54,128 C64,132 70,142 71,154 C73,176 76,196 79,216 C82,236 88,262 92,290 C94,300 98,312 99,326 C100,340 96,356 91,366 C88,369 85,365 85,358 C86,346 86,334 83,322 C80,306 76,292 74,280 C70,256 64,236 61,220 C58,200 54,178 51,160 C49,182 46,206 44,228 C43,248 48,268 52,292 C55,316 56,340 55,366 C54,400 49,430 46,456 C45,470 48,484 49,500 C50,530 42,560 39,584 C39,592 46,598 53,602 C57,606 51,610 42,610 L20,610 C16,610 14,604 16,596 C18,590 18,584 17,578 C15,550 17,520 18,500 C19,486 16,470 15,458 C13,420 10,370 2,326 L0,324 Z';
-const FIG_EDGE = FIG_BODY.replace(/ L0,324 Z$/, ' L0,324');
-const FIG_HEAD = 'M0,30 C17,30 27,44 27,62 C27,82 14,102 0,102 C-14,102 -27,82 -27,62 C-27,44 -17,30 0,30 Z';
-const FIG_LABEL = { pol: 'Political', craft: 'Lawyer’s Craft', lab: 'Labor & Social', eth: 'Ethics', crim: 'Criminal', com: 'Commercial', civ: 'Civil', intl: 'International' };
-const FIG_SIDE = { pol: 1, craft: -1, lab: 1, eth: 1, civ: -1, crim: -1, com: 1, intl: -1 };
-const FIG_POS0 = { pol: [9, 31], craft: [-21, 64], lab: [58, 131], eth: [18, 172], civ: [-32, 296], crim: [-91, 346], com: [91, 346], intl: [-42, 600] };
+/* The memory figure. Anatomy: react-native-body-highlighter (MIT), front view; see data/figure-LICENSE.txt. Coordinates are its own (724 x 1448). */
+let FIGD = null;
 const FIGKEY = 'sinag.figure.img';
 const figImg = () => { try { return localStorage.getItem(FIGKEY) || ''; } catch (e) { return ''; } };
-const figPos = id => (figImg() && S.settings.figPos && S.settings.figPos[id]) || FIG_POS0[id];
+// where each numbered pin sits, and the exact spot it points to
+const FIG_PIN = { pol: [478, 112], craft: [232, 188], lab: [588, 268], eth: [421, 378], civ: [364, 582], crim: [100, 892], com: [628, 892], intl: [168, 1296] };
+const FIG_AT = { pol: [398, 122], craft: [334, 179], lab: [506, 322], eth: [421, 378], civ: [364, 582], crim: [100, 814], com: [628, 814], intl: [250, 1312] };
+const figPos = id => (figImg() && S.settings.figPos && S.settings.figPos[id]) || null;
 let figSeq = 0;
-/* The drawn figure: a man in a shirt, belt and trousers, so that every place on him is a real thing to hang a picture on. */
-function manSVG(u) {
-  const sk = '#c9966e', sk2 = '#a8744d', hair = '#1c1817', shirt = '#d5e0f1', shirt2 = '#b3c2da', tr = '#263149', tr2 = '#3b4864', belt = '#33241b', shoe = '#5b3a26';
-  const both = d => `<path d="${d}"/><path d="${d}" transform="scale(-1,1)"/>`;
-  return `<g clip-path="url(#${u}c)">
-      <rect x="-112" y="20" width="224" height="600" fill="${sk}"/>
-      <ellipse cx="0" cy="105" rx="14" ry="7" fill="${sk2}" opacity=".75"/>
-      <rect x="-112" y="109" width="224" height="187" fill="${shirt}"/>
-      <rect x="-112" y="296" width="50" height="23" fill="${shirt}"/><rect x="62" y="296" width="50" height="23" fill="${shirt}"/>
-      <rect x="-112" y="312" width="50" height="7" fill="${shirt2}"/><rect x="62" y="312" width="50" height="7" fill="${shirt2}"/>
-      <path d="M-7,109 L0,123 L7,109 Z" fill="${sk}"/>
-      <rect x="-60" y="296" width="120" height="296" fill="${tr}"/>
-      <rect x="-60" y="289" width="120" height="13" fill="${belt}"/>
-      <rect x="-64" y="582" width="128" height="32" fill="${shoe}"/>
-      <rect x="-64" y="606" width="128" height="8" fill="#2b1b12"/>
-      <rect x="-112" y="20" width="224" height="600" fill="url(#${u}s)"/>
-    </g>
-    <g fill="#f3f6fb" stroke="${shirt2}" stroke-width=".8" stroke-linejoin="round">${both('M3,110 L16,104 L19,117 L8,128 Z')}</g>
-    <g fill="none" stroke="${shirt2}" stroke-width="1" stroke-linecap="round"><path d="M0,124 V288"/>${both('M48,160 Q42,176 46,192')}${both('M30,262 Q40,270 50,266')}${both('M62,150 Q66,170 64,188')}</g>
-    <g fill="${shirt2}"><circle cx="0" cy="152" r="1.5"/><circle cx="0" cy="182" r="1.5"/><circle cx="0" cy="212" r="1.5"/><circle cx="0" cy="242" r="1.5"/><circle cx="0" cy="272" r="1.5"/></g>
-    <rect x="-7" y="288" width="14" height="15" rx="2" fill="none" stroke="#caa24a" stroke-width="1.8"/>
-    <g fill="none" stroke="${tr2}" stroke-width="1" stroke-linecap="round" opacity=".9"><path d="M0,303 V328"/>${both('M29,330 Q31,450 29,572')}${both('M40,306 Q46,312 52,310')}</g>
-    <g fill="none" stroke="#7a5238" stroke-width="1" opacity=".8">${both('M20,594 Q34,588 50,598')}</g>
-    ${both(`M27,60 C31,58 33,64 31,71 C30,76 28,78 26,76 Z`).replace(/<path /g, `<path fill="${sk2}" `)}
-    <path d="${FIG_HEAD}" fill="${sk}"/>
-    <path d="${FIG_HEAD}" fill="url(#${u}s)" opacity=".8"/>
-    <path d="M-27,61 C-27,82 -14,102 0,102 C14,102 27,82 27,61 C25,71 21,77 15,80 C11,75 5,73.5 0,75 C-5,73.5 -11,75 -15,80 C-21,77 -25,71 -27,61 Z" fill="${hair}" opacity=".93"/>
-    <path d="M-6.5,85.5 Q0,83.2 6.5,85.5 Q0,90 -6.5,85.5 Z" fill="#9a5f4e"/>
-    <g fill="none" stroke="${hair}" stroke-width="2.5" stroke-linecap="round">${both('M5,57.5 Q12,53.5 19,57')}</g>
-    <g>${both('M5.5,63.5 Q11.5,59.8 17.5,63.5 Q11.5,66.6 5.5,63.5 Z').replace(/<path /g, '<path fill="#f7f3ee" ')}<circle cx="11.5" cy="63.2" r="2.2" fill="#2a1a10"/><circle cx="-11.5" cy="63.2" r="2.2" fill="#2a1a10"/></g>
-    <g fill="none" stroke="${hair}" stroke-width="1.1" stroke-linecap="round">${both('M5,63.2 Q11.5,59.4 18,63.2')}</g>
-    <path d="M-1.5,64 C-2.5,70 -4.5,74 -3.5,76.5 Q0,78.6 3.5,76.5" fill="none" stroke="${sk2}" stroke-width="1.2" stroke-linecap="round"/>
-    <path d="M-28,63 C-32,40 -19,22 2,22.5 C21,22.5 32,38 28,63 C27,55 24,49 19,45.5 C9,46.5 -3,44 -12,39 C-18,44 -24,50 -26,56 C-27,58 -27.5,60 -28,63 Z" fill="${hair}"/>
-    <path d="M-12,39 C-4,32 8,30 18,34" fill="none" stroke="#3a322f" stroke-width="1" stroke-linecap="round" opacity=".7"/>
-    <g fill="none" stroke="#1a2233" stroke-width="1" stroke-linejoin="round" opacity=".38"><path d="${FIG_EDGE}"/><path d="${FIG_EDGE}" transform="scale(-1,1)"/></g>`;
+function manSVG(u, active) {
+  const F = FIGD; const sk = '#cf9c72', skd = '#a9744b', hair = '#1b1716';
+  const hl = active && F.hl[active] && !['pol', 'craft'].includes(active) ? `<path class="hl f-${active}" d="${F.hl[active]}"/>` : '';
+  return `<path d="${F.outline}" fill="${skd}"/>
+    <path d="${F.muscles} ${F.hands} ${F.feet}" fill="${sk}"/>
+    <g clip-path="url(#${u}c)"><rect x="236" y="596" width="252" height="206" fill="#232d45"/><rect x="236" y="560" width="252" height="40" fill="${active === 'civ' ? 'var(--f-civ)' : '#151b2b'}"/><path d="M364,600 V700" stroke="#151b2b" stroke-width="3"/><path d="M262,790 Q300,804 352,796 M376,796 Q428,804 466,790" fill="none" stroke="#151b2b" stroke-width="4" opacity=".7"/>
+      <rect x="40" y="80" width="648" height="1290" fill="url(#${u}s)"/></g>
+    <rect x="348" y="566" width="32" height="30" rx="5" fill="none" stroke="#d2a84b" stroke-width="4.5"/>
+    ${hl}
+    <path d="${F.head}" fill="${sk}"/>
+    <g clip-path="url(#${u}h)"><path d="M296,190 C318,214 340,204 364,205 C388,204 410,214 432,190 L432,262 L296,262 Z" fill="${hair}" opacity=".94"/><rect x="296" y="120" width="136" height="140" fill="url(#${u}s)" opacity=".8"/></g>
+    <path d="M349,224 Q364,218 379,224 Q364,236 349,224 Z" fill="#a4624f"/>
+    <path d="${F.hair}" fill="${hair}"/>
+    <g fill="none" stroke="${hair}" stroke-width="6.5" stroke-linecap="round"><path d="M322,165 Q338,155 354,163"/><path d="M374,163 Q390,155 406,165"/></g>
+    <path d="M325,179 Q338,170 351,179 Q338,186 325,179 Z M377,179 Q390,170 403,179 Q390,186 377,179 Z" fill="#f6f1ea"/>
+    <circle cx="338" cy="178.5" r="5.2" fill="#2b1a10"/><circle cx="390" cy="178.5" r="5.2" fill="#2b1a10"/>
+    <g fill="none" stroke="${hair}" stroke-width="2.6" stroke-linecap="round"><path d="M324,178.5 Q338,169 352,178.5"/><path d="M376,178.5 Q390,169 404,178.5"/></g>
+    <path d="M361,182 C359,194 354,200 357,204 Q364,208 371,204" fill="none" stroke="${skd}" stroke-width="2.8" stroke-linecap="round"/>
+    <path d="${F.outline}" fill="none" stroke="#3b2a1e" stroke-width="2" opacity=".45"/>
+    ${active === 'pol' ? '<circle class="ring f-pol" cx="364" cy="176" r="98"/>' : ''}${active === 'craft' ? '<rect class="ring f-craft" x="306" y="150" width="116" height="94" rx="26"/>' : ''}`;
 }
-// where each numbered pin sits, and the exact spot it points to (figure coordinates; x = 0 is the midline)
-const FIG_PIN = { pol: [45, 25], craft: [-58, 67], lab: [98, 111], eth: [19, 176], civ: [-31, 296], crim: [-124, 350], com: [124, 350], intl: [-86, 597] };
 function figure(active, plain) {
   const u = 'fg' + (++figSeq); const img = figImg();
   const order = ['pol', 'craft', 'lab', 'eth', 'crim', 'com', 'civ', 'intl'];
-  const zone = id => { const f = CUR.byId[id]; const [ax, ay] = figPos(id); const [px, py] = img ? figPos(id) : FIG_PIN[id]; const on = active === id;
+  const zone = id => { const f = CUR.byId[id]; const on = active === id; const cp = figPos(id);
+    const [px, py] = cp || FIG_PIN[id]; const [ax, ay] = cp || FIG_AT[id];
     if (plain && !on) return '';
-    return `<a class="zone f-${id}${on ? ' on' : ''}" data-id="${id}" href="#/field/${id}" aria-label="${f.n}. ${esc(f.name)}: ${esc(f.pname)}">${on ? `<circle class="halo" cx="${px}" cy="${py}" r="30"/>` : ''}${px !== ax || py !== ay ? `<path class="stem" d="M${ax},${ay} L${px},${py}"/><circle class="ldot" cx="${ax}" cy="${ay}" r="4"/>` : ''}<circle class="pinsh" cx="${px}" cy="${py + 2.5}" r="18"/><circle class="pin" cx="${px}" cy="${py}" r="18"/><text class="nt" x="${px}" y="${py + 0.5}">${f.n}</text></a>`; };
-  return `<svg class="fig${plain ? ' plain' : ''}${active && !plain ? ' dim' : ''}" viewBox="112 2 296 620" role="img" aria-label="The body of law: eight fields of law placed on eight parts of one figure">
-    <defs><linearGradient id="${u}s" x1="0" x2="1" y1="0" y2="0"><stop offset="0" stop-color="#000" stop-opacity=".2"/><stop offset=".32" stop-color="#000" stop-opacity="0"/><stop offset=".62" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".24"/></linearGradient>
-      <clipPath id="${u}c"><path d="${FIG_BODY}"/><path d="${FIG_BODY}" transform="scale(-1,1)"/></clipPath><clipPath id="${u}r"><rect x="-128" y="14" width="256" height="600" rx="16"/></clipPath></defs>
-    <g transform="translate(260,0)">
-      ${img ? `<image href="${img}" x="-128" y="14" width="256" height="600" preserveAspectRatio="xMidYMid slice" clip-path="url(#${u}r)"/>` : `<ellipse class="ground" cx="0" cy="612" rx="92" ry="6"/>${manSVG(u)}`}
-      ${order.map(zone).join('')}
-    </g></svg>`;
+    return `<a class="zone f-${id}${on ? ' on' : ''}" data-id="${id}" href="#/field/${id}" aria-label="${f.n}. ${esc(f.name)}: ${esc(f.pname)}">${on ? `<circle class="halo" cx="${px}" cy="${py}" r="66"/>` : ''}${px !== ax || py !== ay ? `<path class="stem" d="M${ax},${ay} L${px},${py}"/><circle class="ldot" cx="${ax}" cy="${ay}" r="9"/>` : ''}<circle class="pinsh" cx="${px}" cy="${py + 6}" r="40"/><circle class="pin" cx="${px}" cy="${py}" r="40"/><text class="nt" x="${px}" y="${py + 1}">${f.n}</text></a>`; };
+  return `<svg class="fig${plain ? ' plain' : ''}${active && !plain ? ' dim' : ''}" viewBox="20 60 684 1320" role="img" aria-label="The body of law: eight fields of law placed on eight parts of one figure">
+    <defs><linearGradient id="${u}s" x1="0" x2="1" y1="0" y2="0"><stop offset="0" stop-color="#000" stop-opacity=".22"/><stop offset=".36" stop-color="#000" stop-opacity="0"/><stop offset=".6" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".26"/></linearGradient>
+      <clipPath id="${u}c"><path d="${FIGD.outline}"/></clipPath><clipPath id="${u}h"><path d="${FIGD.head}"/></clipPath><clipPath id="${u}r"><rect x="62" y="76" width="600" height="1290" rx="34"/></clipPath></defs>
+    ${img ? `<image href="${img}" x="62" y="76" width="600" height="1290" preserveAspectRatio="xMidYMid slice" clip-path="url(#${u}r)"/>` : `<ellipse class="ground" cx="364" cy="1346" rx="170" ry="12"/>${manSVG(u, active)}`}
+    ${order.map(zone).join('')}</svg>`;
 }
 async function figurePicture(done) {
   const m = modal(`<h3>Your own figure</h3><p class="small muted">Use any full-length picture you like: a photograph, a drawing, a character. It is stored on this device only. A figure you chose yourself is easier to remember.</p>
@@ -131,10 +112,10 @@ async function figurePicture(done) {
     const svg = $('svg', box);
     svg.addEventListener('click', e => {
       e.preventDefault(); const z = e.target.closest('.zone');
-      if (z) { sel = z.dataset.id; return draw(); }
+      if (z && !sel) { sel = z.dataset.id; return draw(); }
       if (!sel) return;
       const pt = svg.createSVGPoint(); pt.x = e.clientX; pt.y = e.clientY; const q = pt.matrixTransform(svg.getScreenCTM().inverse());
-      S.settings.figPos = S.settings.figPos || {}; S.settings.figPos[sel] = [Math.round(q.x - 260), Math.round(q.y)]; save(); sel = null; draw();
+      S.settings.figPos = S.settings.figPos || {}; S.settings.figPos[sel] = [Math.round(q.x), Math.round(q.y)]; save(); sel = null; draw();
     });
   };
   $('#fga', m.el).onclick = draw;
@@ -1072,6 +1053,7 @@ async function aboutView() {
   <li>Labor Code: DOLE, <i>The Labor Code of the Philippines, Renumbered</i> (2022). Footnotes are DOLE’s.</li>
   <li>Family Code: your PDF of Executive Order No. 209 (text layer decoded and checked against OCR).</li>
   <li>Administrative Code of 1987: OCR of your scanned copy.</li>
+  <li>The figure’s anatomy is adapted from react-native-body-highlighter by Hicham Elabbassi (MIT licence; <a href="data/figure-LICENSE.txt" target="_blank" rel="noopener">licence text</a>).</li>
   <li>Case indexes: the textbooks you supplied (case names, citations and pages only — the authors’ text is not reproduced).</li>
   <li>Syllabus: your Con Law 2, Crim 1, Crim 2 (Modules 1–9), Legal & Judicial Ethics and Public International Law syllabi. Each case is filed under the provision cited in the same outline line or section; where the syllabus cites none, under the provision the case actually construes, and the provision page says how it was filed.</li>
   <li>Recent rulings (2023–2026): checked against the decisions on LawPhil, the SC E-Library and Supreme Court releases, or reputable news reports of them. Each ruling is marked by how it was verified; holdings are written in our own words.</li></ul>

@@ -398,3 +398,25 @@ main:focus,main:focus-visible{outline:none}
   .plate .parts .t{white-space:normal;overflow:visible;font-size:.98rem;line-height:1.18;text-wrap:balance}
   .plate .parts a{padding:7px 4px}
 }
+
+/* anatomical figure (724-unit coordinates) */
+.fig .zone .pin{stroke-width:7}
+.fig .zone .nt{font:700 46px var(--sans)}
+.fig .zone .stem{stroke-width:5}
+.fig .zone .ldot{stroke-width:5.5}
+.fig .zone:hover .pin{stroke-width:5}
+.fig .hl{fill:var(--f);opacity:.82}
+.fig .ring{fill:var(--f);fill-opacity:.14;stroke:var(--f);stroke-width:8}
+.fig .ground{fill:#000;opacity:.1}
+.plate .pfig .fig{max-width:330px}
+.fhead .fig.plain{max-height:250px}
+@media (max-width:760px){
+  .plate.bodymap{grid-template-columns:minmax(0,1fr)!important;gap:10px;padding:16px 12px 10px}
+  .plate .pfig .fig{max-width:250px}
+  .plate .parts{grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-rows:repeat(4,auto);grid-auto-flow:column;gap:0 12px;align-content:start}
+  .plate .parts li:nth-child(5){border-top:0}
+  .plate .parts a{grid-template-columns:28px minmax(0,1fr);gap:9px;padding:8px 2px;align-items:start}
+  .plate .parts .n{width:26px;height:26px;font-size:.8rem;margin-top:1px}
+  .plate .parts .t{font-size:.94rem}
+  .plate .parts .p{font-size:.64rem}
+}
