@@ -118,7 +118,7 @@ FIELDS = [
     'items': [C('ra9851'), C('ra9208', 1), C('ra11479', 1)]},
    {'tier': 'core', 'name': 'People across borders', 'why': '', 'items': [C('ca613', 1), C('ra9225', 1), C('ca63', 1), C('ra8042', 1)]},
    {'tier': 'deep', 'name': 'Treaty texts', 'why': '',
-    'items': [M('UN Charter, Vienna Convention on the Law of Treaties, UNCLOS, Rome Statute', 'Treaties', 'Treaty texts are not in this library yet. Your syllabus lists the cases; send the texts you are assigned and they will be added verbatim.')]},
+    'items': [M('UN Charter, Vienna Convention on the Law of Treaties, UNCLOS, Rome Statute', 'Treaties', 'The registry above covers 32 treaties and how each binds the Philippines, with links to the official texts at their depositaries. The verbatim texts are not reproduced here; send the ones you are assigned and they can be added.')]},
  ]},
  {'id': 'craft', 'name': 'The Lawyer’s Craft', 'q': 'How do you read a statute, digest a case, and write an argument?', 'tracks': [
    {'tier': 'start', 'name': 'Read a provision', 'why': 'Ten minutes here makes every other field easier.',
@@ -462,6 +462,11 @@ def weave(FIELDS):
         'why': 'A judgment is paper until it is paid. Nine stages, from attachment to the ten-year clock.',
         'pic': 'A sheriff’s padlock hanging from the last carved letter.',
         'items': [{'t': 'enforce', 'id': 'playbook'}, {'t': 'enforce', 'id': 'drills'}]})
+    intl = byid['intl']
+    intl['tracks'][0]['items'].insert(1, {'t': 'treaties', 'id': 'registry'})
+    craft['tracks'][0]['items'].insert(2, {'t': 'history', 'id': 'eras'})
+    rt = next(t for t in craft['tracks'] if t['name'] == 'Research and thesis writing')
+    rt['items'].insert(0, {'t': 'laws', 'id': 'all'})
     shifts = json.load(open(f'{SITE}/shifts.json'))['shifts']
     year = lambda s: max(int(t['y']) for t in s['timeline'] if t['y'].isdigit())
     placed = 0

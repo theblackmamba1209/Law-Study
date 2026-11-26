@@ -11,7 +11,7 @@ const today = () => new Date(Date.now() - new Date().getTimezoneOffset() * 60000
 
 /* ------------------------------------------------------------------ storage */
 const KEY = 'sinag.codal.v1';
-const DEFAULTS = { cards: {}, notes: {}, marks: {}, flags: {}, days: {}, last: null, tutor: {}, hooks: {}, lessons: {}, lastBy: {}, b2: {}, cal: [], shift: {}, enf: { day1: {}, best: null },
+const DEFAULTS = { cards: {}, notes: {}, marks: {}, flags: {}, days: {}, last: null, tutor: {}, hooks: {}, lessons: {}, lastBy: {}, b2: {}, cal: [], shift: {}, enf: { day1: {}, best: null }, seen: {},
   settings: { newPerDay: 10, focus: null, figure: '', hl: { op: false, cond: true, exc: true, num: true, pen: true, def: true }, hlv: 2, passcode: '' } };
 let S;
 try { S = Object.assign(structuredClone(DEFAULTS), JSON.parse(localStorage.getItem(KEY) || '{}')); }
@@ -640,6 +640,9 @@ function itemRow(it, f) {
   if (it.t === 'shift') { const sh = SHF && SHF.byId[it.id]; if (!sh) return ''; return `<li><a href="#/shifts/${it.id}"><span class="kind k-shift">Change</span><span><span class="it">${esc(sh.title)}</span><br><span class="im">${esc(shiftSpan(sh))} · how the doctrine changed, and why</span></span><span class="st">${qChip('shift:' + it.id)}</span></a></li>`; }
   if (it.t === 'enforce') { const pb = it.id === 'playbook'; const n = ENF ? (pb ? ENF.moves.length : ENF.drills.length) : 0; const inMem = ENF ? ENF.drills.filter(d => lockState(QK('enf:' + d.id)) !== 'n').length : 0;
     return `<li><a href="${pb ? '#/enforce' : '#/enforce/drills'}"><span class="kind k-enf">${pb ? 'Playbook' : 'Cases'}</span><span><span class="it">${pb ? 'Enforcing a judgment' : 'Case files: enforcing a judgment'}</span><br><span class="im">${pb ? `${n} moves in nine stages, each tied to its rule` : `${n} problems; each joins your reviews once answered`}</span></span><span class="st">${pb ? (S.enf.seen ? '<span class="done">Opened</span>' : '') : (inMem ? `${inMem}/${n}` : '')}</span></a></li>`; }
+  if (it.t === 'treaties') return `<li><a href="#/treaties"><span class="kind k-intl">Treaties</span><span><span class="it">Treaties binding the Philippines</span><br><span class="im">How international law enters Philippine law; the treaties, the laws that carry them out, the cases</span></span><span class="st">${(S.seen || {}).treaties ? '<span class="done">Opened</span>' : ''}</span></a></li>`;
+  if (it.t === 'history') return `<li><a href="#/history"><span class="kind k-hist">History</span><span><span class="it">How Philippine law evolved</span><br><span class="im">From custom and the Spanish codes to the 1987 Constitution, and the history of each code</span></span><span class="st">${(S.seen || {}).history ? '<span class="done">Read</span>' : ''}</span></a></li>`;
+  if (it.t === 'laws') return `<li><a href="#/laws"><span class="kind k-law">Library</span><span><span class="it">Every Philippine statute</span><br><span class="im">${Object.values(CAT.laws || {}).reduce((a, b) => a + b, 0).toLocaleString()} national laws as enacted, each with the later laws that changed it</span></span><span class="st"></span></a></li>`;
   if (it.t === 'syl') return `<li><a href="#/syllabus/${it.id}"><span class="kind k-syl">Cases</span><span><span class="it">${esc(it.title)}</span><br><span class="im">Every assigned case, filed under its provision</span></span><span class="st"></span></a></li>`;
   return `<li><div class="miss"><span class="kind k-miss">Not yet</span><span><span class="it">${esc(it.title)}</span><br><span class="im">${esc(it.citation)}. ${esc(it.why)}${it.url ? ` <a href="${esc(it.url)}" target="_blank" rel="noopener">Official text</a>` : ''}</span></span></div></li>`;
 }
@@ -1308,7 +1311,7 @@ async function mapView(parts) {
           ${nx ? `<div class="mapnext"><span class="eyebrow">Next to lock in</span><a class="btn primary" href="#/map/${nx.f.id}">${esc(nx.f.name)} →</a><span class="small muted">${nx.t.x ? `${nx.t.x} provision${nx.t.x === 1 ? ' is' : 's are'} slipping here.` : 'The least locked-in field you are taking this semester.'}</span></div>` : ''}</div></div>
       <div class="mapgrid">${rows.map(({ f, t, mine }) => `<a class="mtile f-${f.id}${mine ? '' : ' dim'}" href="#/map/${f.id}"><span class="mth"><span><span class="p">${f.n} · ${esc(f.pname)}</span><span class="t">${esc(f.name)}</span></span>${ringHTML(t, 52)}</span>${waffle(t)}<span class="ml">${lockLine(t)}</span></a>`).join('')}</div>
       ${LEGEND}<p class="tiny muted">Each square in a tile is 1% of that field. Faded fields are outside this semester. <a href="#/learn">Change your fields</a> · <a href="#/about">What “locked in” means</a></p>
-      <div class="mapextra"><a class="card codecard" href="#/shifts"><span class="eyebrow">Across the fields</span><span class="t">How the doctrine changed</span><span class="small muted">Where the Court abandoned its own rule: old rule, new rule, the reasons, the dissents.</span></a><a class="card codecard" href="#/enforce"><span class="eyebrow">After you win</span><span class="t">Enforcing a judgment</span><span class="small muted">Nine stages from attachment to the ten-year clock, with case files to practise on.</span></a></div></div>`;
+      <div class="mapextra"><a class="card codecard" href="#/laws"><span class="eyebrow">The whole statute book</span><span class="t">Every Philippine statute</span><span class="small muted">${Object.values(CAT.laws || {}).reduce((a, b) => a + b, 0).toLocaleString()} laws from 1900 to today, as enacted, each with the later laws that changed it.</span></a><a class="card codecard" href="#/history"><span class="eyebrow">Legal history</span><span class="t">How Philippine law evolved</span><span class="small muted">The eras, from custom and the Spanish codes to 1987, and each code’s own history.</span></a><a class="card codecard" href="#/treaties"><span class="eyebrow">International law</span><span class="t">Treaties binding the Philippines</span><span class="small muted">The treaties, how they enter Philippine law, the laws that carry them out.</span></a><a class="card codecard" href="#/shifts"><span class="eyebrow">Across the fields</span><span class="t">How the doctrine changed</span><span class="small muted">Where the Court abandoned its own rule: old rule, new rule, the reasons, the dissents.</span></a><a class="card codecard" href="#/enforce"><span class="eyebrow">After you win</span><span class="t">Enforcing a judgment</span><span class="small muted">Nine stages from attachment to the ten-year clock, with case files to practise on.</span></a></div></div>`;
   } else if (!cid) {
     // level 1: one field — its whole path in the order it is best learned: lessons, walks, codes, changes of course, case files
     const f = CUR.byId[fid]; if (!f) return mapView([]);
@@ -1341,6 +1344,8 @@ async function mapView(parts) {
     // level 2+: a code, or a division inside it
     const f = CUR.byId[fid] || fieldOf(cid); const d = await loadCode(cid); const m = meta(cid); await loadShifts();
     const at = dv != null && dv !== '' ? +dv : null;
+    const hist = at == null ? (await loadHistory()).codes[cid] : null; if (hist && hist.m.some(x => x[2])) await loadLaws().catch(() => 0);
+    const lawId = (CAT.lawmap || {})[cid];
     const chain = []; let v = at; while (v != null) { chain.unshift(v); v = d.divisions[v].p; }
     const kids = at == null ? d.roots : d.kids[at];
     const direct = (at == null ? d.loose : d.divProv[at]).filter(p => !p.st);
@@ -1358,6 +1363,7 @@ async function mapView(parts) {
       <span class="eyebrow">${at == null ? esc(m.citation) : esc(m.short)}</span><h1>${esc(title)}</h1>
       <div class="card mapsum"><div class="mhstat">${ringHTML(T, 76, 'locked in')}<div class="small">${lockLine(T)}<br><span class="muted">${T.total.toLocaleString()} provisions${T.total <= 15 ? ` · one sitting, about ${sittingMins(T.total - T.k)} minutes` : ''}</span></div></div>
         <div class="row" style="margin-top:10px">${T.k < T.total ? `<a class="btn primary" href="#/sprint?${scope}">${due ? `Bring back ${due} slipping` : T.k + T.g ? 'Lock in the next ones' : 'Start locking this in'}</a>` : '<span class="chip ok">Every provision here is locked in</span>'}<a class="btn" href="#/code/${cid}${at != null ? '?div=' + at : ''}">Read it in order</a></div></div>
+      ${at == null && (hist || lawId) ? (hist ? historyCard(hist, { law: lawId }) : `<p class="small"><a href="#/law/${lawId}">The law as enacted, and every later law that amended it →</a></p>`) : ''}
       ${nx && kidRows.length > 1 ? `<div class="mapnext"><span class="eyebrow">Next to lock in</span><a class="btn" href="#/map/${fid}/${cid}/${nx.i}">${esc(shortDiv(d.divisions[nx.i].t))} →</a></div>` : ''}
       ${kidRows.length ? `<div class="mblocks">${kidRows.map(r => `<a class="mblock${r.t.k === r.t.total ? ' done' : ''}" href="#/map/${fid}/${cid}/${r.i}"><span class="mbh">${ringHTML(r.t, 44)}<span class="mt"><b>${esc(d.divisions[r.i].t)}</b><span class="tiny muted">${r.keys.length} provision${r.keys.length === 1 ? '' : 's'}${r.keys.length <= 15 && r.t.k < r.t.total ? ` · one sitting` : ''}</span></span></span>${mosaic(r.keys, d, cid, false)}</a>`).join('')}</div>` : ''}
       ${direct.length ? `<div class="card flat mosdirect">${mosaic(direct.map(p => ck(cid, p.i)), d, cid, true)}<span class="tiny muted">One square per provision. Tap one to study it.</span></div><ul class="plist mapprov">${direct.map(p => { const st = lockState(ck(cid, p.i)); return `<li><a href="#/p/${cid}/${p.i}"><span class="ls ${st}" title="${{ k: 'Locked in', g: 'Learning', x: 'Slipping', o: 'Opened', n: 'Not started' }[st]}">${st === 'k' ? '🔒' : ''}</span><span class="pl">${esc(p.l)}</span><span class="pc">${esc(p.c || inForce(p).cap || firstWords(p))}${SHF.byLink[ck(cid, p.i)] ? ' <span class="shx" title="The Supreme Court changed course on this provision">⇄ doctrine changed</span>' : ''}</span></a></li>`; }).join('')}</ul>` : ''}
@@ -1636,8 +1642,9 @@ async function searchView(q) {
     const mark = s => { let h = esc(s); for (const w of terms.concat(phrases)) if (w.length > 2) h = h.replace(new RegExp('(' + w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi'), '<mark>$1</mark>'); return h; };
     const snip = p => { const t2 = provText(p); const low = t2.toLowerCase(); const w = (phrases[0] || terms[0] || ''); const k = w ? low.indexOf(w) : 0; const a = Math.max(0, k - 90); return (a ? '…' : '') + t2.slice(a, a + 260) + (t2.length > a + 260 ? '…' : ''); };
     const ch = await caseHits(terms.concat(phrases), only);
-    await Promise.all([loadShifts(), loadEnforce()]); const xh = only ? [] : extraHits(terms.concat(phrases));
-    sr.innerHTML = (xh.length ? `<div class="card flat" style="margin-bottom:12px"><h3 style="margin:0 0 6px">In the changes of course and the enforcement playbook (${xh.length})</h3><ul class="small" style="margin:0;padding-left:1.1em">${xh.map(([h, k, t2]) => `<li><span class="chip violet">${esc(k)}</span> <a href="${h}">${mark(t2)}</a></li>`).join('')}</ul></div>` : '') + (ch.length ? `<div class="card flat" style="margin-bottom:12px"><h3 style="margin:0 0 6px">Cases named “${esc(t)}” (${ch.length})</h3><ul class="small" style="margin:0;padding-left:1.1em">${ch.slice(0, 60).map(x => `<li><span style="font-family:var(--serif)">${mark(x.n)}</span>${x.c ? `, <span class="muted">${esc(x.c)}</span>` : ''} <span class="tiny muted">${esc(x.src)}</span> → ${x.ks.slice(0, 6).map(k => { const [c, p] = k.split('|'); const pr = CODES[c] && CODES[c].byId[p]; return `<a class="chip blue" href="#/p/${c}/${p}">${esc((meta(c) || {}).short || c)} ${esc(pr ? pr.l : p)}</a>`; }).join(' ')}</li>`).join('')}</ul></div>` : '') + `<p class="small muted">${hits.length.toLocaleString()} provision${hits.length === 1 ? '' : 's'}${hits.length > 150 ? ' · showing 150' : ''}</p><ol class="results" style="padding-left:1.2em">${hits.slice(0, 150).map(h => `<li><a href="#/p/${h.cid}/${h.p.i}"><b>${esc(meta(h.cid).short)} · ${esc(h.p.l)}</b>${h.p.c ? ' — ' + mark(h.p.c) : ''}</a><div class="small" style="font-family:var(--serif)">${mark(snip(h.p))}</div></li>`).join('')}</ol>`;
+    await Promise.all([loadShifts(), loadEnforce(), loadLaws().catch(() => null)]); const xh = only ? [] : extraHits(terms.concat(phrases));
+    const lh = only || !LAWS ? [] : lawSearch(t).slice(0, 12);
+    sr.innerHTML = (lh.length ? `<div class="card flat" style="margin-bottom:12px"><h3 style="margin:0 0 6px">Statutes (${lh.length}${lh.length >= 12 ? '+' : ''})</h3><ul class="items lawlist">${lh.map(lawRow).join('')}</ul><a class="small" href="#/laws?q=${encodeURIComponent(t)}">All matching statutes →</a></div>` : '') + (xh.length ? `<div class="card flat" style="margin-bottom:12px"><h3 style="margin:0 0 6px">In the changes of course and the enforcement playbook (${xh.length})</h3><ul class="small" style="margin:0;padding-left:1.1em">${xh.map(([h, k, t2]) => `<li><span class="chip violet">${esc(k)}</span> <a href="${h}">${mark(t2)}</a></li>`).join('')}</ul></div>` : '') + (ch.length ? `<div class="card flat" style="margin-bottom:12px"><h3 style="margin:0 0 6px">Cases named “${esc(t)}” (${ch.length})</h3><ul class="small" style="margin:0;padding-left:1.1em">${ch.slice(0, 60).map(x => `<li><span style="font-family:var(--serif)">${mark(x.n)}</span>${x.c ? `, <span class="muted">${esc(x.c)}</span>` : ''} <span class="tiny muted">${esc(x.src)}</span> → ${x.ks.slice(0, 6).map(k => { const [c, p] = k.split('|'); const pr = CODES[c] && CODES[c].byId[p]; return `<a class="chip blue" href="#/p/${c}/${p}">${esc((meta(c) || {}).short || c)} ${esc(pr ? pr.l : p)}</a>`; }).join(' ')}</li>`).join('')}</ul></div>` : '') + `<p class="small muted">${hits.length.toLocaleString()} provision${hits.length === 1 ? '' : 's'}${hits.length > 150 ? ' · showing 150' : ''}</p><ol class="results" style="padding-left:1.2em">${hits.slice(0, 150).map(h => `<li><a href="#/p/${h.cid}/${h.p.i}"><b>${esc(meta(h.cid).short)} · ${esc(h.p.l)}</b>${h.p.c ? ' — ' + mark(h.p.c) : ''}</a><div class="small" style="font-family:var(--serif)">${mark(snip(h.p))}</div></li>`).join('')}</ol>`;
   };
   $('#sf').onsubmit = e => { e.preventDefault(); run(); return false; };
   if (term) run();
@@ -1712,7 +1719,7 @@ function progressView() {
 }
 function merge(o) {
   for (const [k, c] of Object.entries(o.cards || {})) if (!S.cards[k] || (c.last || 0) > (S.cards[k].last || 0)) S.cards[k] = c;
-  for (const f of ['notes', 'marks', 'flags', 'tutor', 'hooks', 'lessons', 'lastBy', 'b2', 'shift']) Object.assign(S[f], o[f] || {});
+  for (const f of ['notes', 'marks', 'flags', 'tutor', 'hooks', 'lessons', 'lastBy', 'b2', 'shift', 'seen']) Object.assign(S[f] = S[f] || {}, o[f] || {});
   if (o.enf) { S.enf.day1 = Object.assign(S.enf.day1 || {}, o.enf.day1 || {}); S.enf.best = Math.max(S.enf.best || 0, o.enf.best || 0) || S.enf.best; S.enf.seen = S.enf.seen || o.enf.seen; }
   for (const [d, v] of Object.entries(o.days || {})) { const a = S.days[d] || { r: 0, n: 0 }; S.days[d] = { r: Math.max(a.r, v.r), n: Math.max(a.n, v.n) }; }
 }
@@ -1881,6 +1888,12 @@ async function aboutView() {
   <li><b>Write it the way you will be tested.</b> The Bar answer mode practises the Answer–Legal basis–Application–Conclusion form, graded against the provision’s own elements, conditions and exceptions: practising the retrieval you will need on the exam transfers best (transfer-appropriate processing; Morris, Bransford and Franks, 1977).</li>
   <li><b>A comfortable line.</b> Study text is kept to about 65 characters a line. On screen, moderate lines have been linked with better comprehension than very long ones (Dyson and Haselgrove, 2001).</li></ul>
   <p class="small muted">These are general findings about memory, not studies of this app. The pictures suggested for each topic are our own inventions; replace any that do not stick with your own. A place you know well works even better: use “Use a place you know” on the Today screen.</p>
+  <h2 id="coverage">What Philippine law is in Sinag</h2>
+  <ul class="explain small">
+    <li><b>Study library: ${CAT.codes.length} instruments</b>, ${CAT.total.toLocaleString()} provisions, taken apart for learning, with the text in force where amendments are consolidated. These are the codes and special laws on the bar syllabus.</li>
+    <li><b>Statute library: ${Object.values(CAT.laws || {}).reduce((a, b) => a + b, 0).toLocaleString()} national statutes</b> as enacted: the six constitutions, ${(CAT.laws || {}).act || 0} Acts (1900–1935), ${(CAT.laws || {}).ca || 0} Commonwealth Acts, ${((CAT.laws || {}).ra || 0).toLocaleString()} Republic Acts, ${((CAT.laws || {}).pd || 0).toLocaleString()} Presidential Decrees, ${(CAT.laws || {}).bp || 0} Batas Pambansa and ${((CAT.laws || {}).eo || 0).toLocaleString()} Executive Orders, each with the later laws that expressly amended or repealed it. Numbers the source lacks: ${['act', 'ra', 'pd', 'bp'].filter(k => (CAT.lawgaps || {})[k]).map(k => `${(CAT.lawgaps[k].missing)} ${({ act: 'Acts', ra: 'Republic Acts', pd: 'Presidential Decrees', bp: 'Batas Pambansa (including BP 1–83, so BP 22 and BP 68)' })[k]}`).join(', ')}.</li>
+    <li><b>Treaties:</b> a registry of the treaties that bind the Philippines, with how each enters Philippine law, the statutes that carry it out and the leading cases. The treaty texts themselves are linked at their depositaries, not reproduced.</li>
+    <li><b>Not here, and why.</b> Implementing rules and regulations and agency issuances (there are tens of thousands, published by each agency and the Office of the National Administrative Register, with no complete public source to draw from); Supreme Court rules and circulars, including the Rules of Court (the Court publishes them, but not in a source this build can use); and local ordinances (each of the country’s roughly 1,700 provinces, cities and municipalities keeps its own, with no national compilation). A few IRRs that the bar tests are in the study library (Labor Code, RA 9165, DO 174). Ask, and a specific issuance can be added from its official text.</li></ul>
   <h2>How complete are the cases?</h2>
   <p class="small">No study tool can attach every decision: the Supreme Court decides thousands of cases a year, and most provisions are never construed at all. This shows, for each core code, how many provisions in force have at least one case attached here (from your textbooks’ indexes, digests, your syllabi, the 2023–2026 rulings, the doctrinal shifts and the enforcement playbook). Where the bar is short, read the annotated textbook alongside.</p>
   ${CAT.cov ? `<div class="card flat small" style="overflow-x:auto"><table class="table covt">${Object.entries(CAT.cov).sort((x, y) => y[1][1] / y[1][0] - x[1][1] / x[1][0]).map(([c, [l, n]]) => `<tr><td>${esc((meta(c) || {}).short || c)}</td><td style="width:45%"><div class="thin"><i style="width:${(n / l * 100).toFixed(1)}%"></i></div></td><td class="tiny">${n.toLocaleString()} of ${l.toLocaleString()}</td></tr>`).join('')}</table></div>` : ''}
@@ -1952,6 +1965,9 @@ function itemLink(i, f) {
   if (i.t === 'syl') return [`#/syllabus/${i.id}`, i.title];
   if (i.t === 'shift') { const x = SHF && SHF.byId[i.id]; return [`#/shifts/${i.id}`, x ? x.title : 'How the doctrine changed']; }
   if (i.t === 'enforce') return i.id === 'drills' ? ['#/enforce/drills', 'Case files: enforcing a judgment'] : ['#/enforce', 'Enforcing a judgment'];
+  if (i.t === 'treaties') return ['#/treaties', 'Treaties binding the Philippines'];
+  if (i.t === 'history') return ['#/history', 'How Philippine law evolved'];
+  if (i.t === 'laws') return ['#/laws', 'Every Philippine statute'];
   return ['#/map/' + f.id, f.name];
 }
 function pathNext(type, id) {
@@ -1966,6 +1982,7 @@ function pathTodo(f) {
     if (i.t === 'set' && CUR.sets[i.id].items.some(x => !S.cards[ck(x.c, x.i)])) return itemLink(i, f);
     if (i.t === 'shift' && SHF && SHF.byId[i.id] && ['n', 'o'].includes(lockState(QK('shift:' + i.id)))) return itemLink(i, f);
     if (i.t === 'enforce' && ENF && (i.id === 'playbook' ? !S.enf.seen : ENF.drills.some(d => lockState(QK('enf:' + d.id)) === 'n'))) return itemLink(i, f);
+    if ((i.t === 'treaties' || i.t === 'history') && !(S.seen || {})[i.t]) return itemLink(i, f);
   }
   return null;
 }
@@ -2096,6 +2113,186 @@ function enforceDrills(q, base) {
   draw();
 }
 
+/* ------------------------------------------------------------------ every statute, its history, treaties, eras
+   The study library holds the codes taken apart for learning. Beneath it, the statute library holds every national
+   statute as enacted (LawPhil via LawCodex), each with the later laws that amended or repealed it, detected from those
+   laws' own titles and text and shown with the sentence that says so. Treaties and the eras of Philippine law complete
+   the picture. All of it hangs on the same map. */
+/* statute data is gzip, then base64, in .txt files (the host serves text, not archives): undo both */
+async function gzJSON(url) {
+  const r = await fetch(url); if (!r.ok) throw new Error(r.status + ' ' + url);
+  const t = (await r.text()).trim();
+  if (t[0] === '{' || t[0] === '[') return JSON.parse(t);
+  const bin = atob(t); const buf = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) buf[i] = bin.charCodeAt(i);
+  return JSON.parse(await new Response(new Blob([buf]).stream().pipeThrough(new DecompressionStream('gzip'))).text());
+}
+let LAWS = null, TRE = null, HIS = null; const LCH = {};
+async function loadLaws() {
+  if (!LAWS) { LAWS = await gzJSON('data/statutes/idx.txt?v=' + (CAT.lhash || CAT.built)); LAWS.byId = {}; LAWS.rows.forEach(r => { LAWS.byId[r[0]] = r; }); }
+  return LAWS;
+}
+async function lawRec(id) { const r = LAWS.byId[id]; if (!r) return null; const c = r[6]; if (!LCH[c]) LCH[c] = gzJSON(`data/statutes/c${String(c).padStart(3, '0')}.txt?v=${CAT.lhash || CAT.built}`); return (await LCH[c])[id]; }
+async function loadTreaties() { if (!TRE) { TRE = await getJSON('data/treaties.json?v=' + (CAT.thash || CAT.built)); TRE.byId = Object.fromEntries(TRE.treaties.map(t => [t.id, t])); } return TRE; }
+async function loadHistory() { if (!HIS) HIS = await getJSON('data/history.json?v=' + (CAT.hhash || CAT.built)); return HIS; }
+const SERIES = { const: ['Constitutions', '1899–1987'], act: ['Acts of the Philippine Commission and Legislature', '1900–1935'], ca: ['Commonwealth Acts', '1935–1946'], ra: ['Republic Acts', '1946–present'], pd: ['Presidential Decrees', '1972–1986'], bp: ['Batas Pambansa', '1979–1986'], eo: ['Executive Orders', '1901–present'] };
+const SERIES_NOTE = { const: 'The six charters, from Malolos to 1987.', act: 'Laws of the American period, from courts and land registration to the Revised Penal Code.', ca: 'Laws of the National Assembly and Congress under the 1935 Constitution.', ra: 'Every law passed by Congress since independence.', pd: 'Decrees issued under martial law, many still in force (the Labor Code, the Property Registration Decree).', bp: 'Laws of the Batasang Pambansa; BP 1–83 (including BP 22 and the old Corporation Code) are not in the source.', eo: 'Executive orders of every President. Only those issued by President Corazon Aquino in 1986–87 under the Freedom Constitution have the force of statute; the rest are administrative.' };
+function lawLabel(r) {
+  const [id, sr, n, y] = r;
+  return sr === 'const' ? `${n} Constitution` : sr === 'ra' ? `Republic Act No. ${n.toUpperCase()}` : sr === 'ca' ? `Commonwealth Act No. ${n}` : sr === 'pd' ? `Presidential Decree No. ${n.toUpperCase()}` : sr === 'bp' ? `Batas Pambansa Blg. ${n}` : sr === 'act' ? `Act No. ${n}` : `Executive Order No. ${n.toUpperCase()}${y ? ` (${y})` : ''}`;
+}
+const shortLab = r => r ? lawLabel(r).replace('Republic Act No. ', 'RA ').replace('Presidential Decree No. ', 'PD ').replace('Commonwealth Act No. ', 'CA ').replace('Batas Pambansa Blg. ', 'BP ').replace('Executive Order No. ', 'EO ') : '';
+const fmtDate = d => d ? new Date(d + 'T00:00:00').toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' }) : '';
+const KIND = { a: ['amended', 'blue'], r: ['repealed', 'bad'], rp: ['repealed in part', 'warn'] };
+const HOW = { title: 'its title', text: 'its text', note: 'a note on the LawPhil page' };
+function lawSearch(q) {
+  const t = q.trim(); if (!t) return [];
+  const m = t.match(/^\s*(?:(r\.?\s*a\.?|republic\s+act|ra|p\.?\s*d\.?|presidential\s+decree|pd|c\.?\s*a\.?|commonwealth\s+act|ca|b\.?\s*p\.?|batas\s+pambansa|bp|e\.?\s*o\.?|executive\s+order|eo|act)\s*(?:no\.?|blg\.?|bilang)?\s*)?(\d{1,5}(?:-[a-z])?)\s*$/i);
+  if (m) {
+    const k = (m[1] || '').toLowerCase().replace(/[\s.]/g, '');
+    const sr = /^(ra|republicact)$/.test(k) ? 'ra' : /^(pd|presidentialdecree)$/.test(k) ? 'pd' : /^(ca|commonwealthact)$/.test(k) ? 'ca' : /^(bp|bataspambansa)$/.test(k) ? 'bp' : /^(eo|executiveorder)$/.test(k) ? 'eo' : k === 'act' ? 'act' : null;
+    const n = m[2].toLowerCase();
+    return LAWS.rows.filter(r => r[2] === n && (!sr || r[1] === sr)).sort((a, b) => ORDER_S.indexOf(a[1]) - ORDER_S.indexOf(b[1]) || (b[3] || '').localeCompare(a[3] || ''));
+  }
+  const ws = t.toLowerCase().split(/\s+/).filter(w => w.length > 1);
+  return LAWS.rows.filter(r => { const x = r[5].toLowerCase(); return ws.every(w => x.includes(w)); }).sort((a, b) => (b[7] - a[7]) || (b[3] || '').localeCompare(a[3] || '')).slice(0, 150);
+}
+const ORDER_S = ['ra', 'pd', 'bp', 'ca', 'act', 'eo', 'const'];
+function lawRow(r) { return `<li><a href="#/law/${r[0]}"><span class="kind k-law">${esc(r[1] === 'const' ? 'Charter' : r[1].toUpperCase())}</span><span><span class="it">${esc(shortLab(r))}${r[8] ? ' <span class="chip bad">repealed</span>' : ''}</span><br><span class="im">${esc(r[5].slice(0, 160))}</span></span><span class="st">${esc(r[3] || '')}${r[7] ? ` · ${r[7]} later` : ''}</span></a></li>`; }
+
+/* statute text: the Markdown LawCodex uses (headings, bold, italics, pipe and HTML tables) */
+function mdTable(html) {
+  const doc = new DOMParser().parseFromString(html, 'text/html');
+  return `<div class="tbl"><table>${[...doc.querySelectorAll('tr')].map(tr => `<tr>${[...tr.children].map(td => `<td>${esc(td.textContent.trim())}</td>`).join('')}</tr>`).join('')}</table></div>`;
+}
+function mdInline(t) {
+  return esc(t.replace(/\\([\\`*_{}\[\]()#+\-.!|])/g, '$1')).replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>').replace(/(^|[\s(“"])_([^_]+)_(?=[\s.,;:)”"]|$)/g, '$1<i>$2</i>');
+}
+function mdBlocks(md) {
+  const lines = md.split('\n'); const out = []; let par = [], i = 0;
+  const flush = () => { if (par.length) { out.push(`<p>${par.map(mdInline).join('<br>')}</p>`); par = []; } };
+  while (i < lines.length) {
+    const L = lines[i];
+    if (/^\s*<table/i.test(L)) { flush(); let h = ''; while (i < lines.length) { h += lines[i] + '\n'; if (/<\/table>/i.test(lines[i])) break; i++; } out.push(mdTable(h)); i++; continue; }
+    if (/^\s*\|/.test(L)) { flush(); const rows = []; while (i < lines.length && /^\s*\|/.test(lines[i])) { if (!/^\s*\|\s*:?-{2,}/.test(lines[i])) rows.push(lines[i].trim().replace(/^\||\|$/g, '').split('|').map(c => mdInline(c.trim()))); i++; } out.push(`<div class="tbl"><table>${rows.map(r => `<tr>${r.map(c => `<td>${c}</td>`).join('')}</tr>`).join('')}</table></div>`); continue; }
+    const h = L.match(/^(#{1,6})\s+(.*)$/);
+    if (h) { flush(); out.push(`<h${Math.min(6, h[1].length + 2)} class="lh">${mdInline(h[2])}</h${Math.min(6, h[1].length + 2)}>`); i++; continue; }
+    if (!L.trim()) { flush(); i++; continue; }
+    par.push(L.replace(/\s{2,}$/, '')); i++;
+  }
+  flush();
+  return out;
+}
+
+async function lawsView(parts, q) {
+  setNav('library');
+  await loadLaws();
+  const [sr] = parts;
+  const base = [['Law school', '#/map'], ['Every statute', sr ? '#/laws' : '']];
+  if (!sr) {
+    const top = LAWS.rows.filter(r => r[7]).sort((a, b) => b[7] - a[7]).slice(0, 12);
+    const g = CAT.lawgaps || {};
+    main.innerHTML = `${mapCrumbs(base)}<span class="eyebrow">The statute library</span><h1>Every Philippine statute</h1>
+    <p class="lead">${LAWS.rows.length.toLocaleString()} national laws, from the Philippine Commission’s first Act in 1900 to the Republic Acts of ${new Date().getFullYear()}, as enacted. Each shows the later laws that amended or repealed it, found in those laws’ own titles and text, with the sentence that says so. The codes you study are taken apart in the study library; here is everything around them.</p>
+    <form id="lsf" class="row" style="margin:12px 0 4px"><input id="lsq" value="${esc(q.get('q') || '')}" placeholder="RA 9262 · Act 3815 · EO 292 · or words in a title" style="flex:1;min-width:200px;padding:10px 14px;border-radius:12px;border:1px solid var(--line2);background:var(--card)"><button class="btn primary">Find</button></form>
+    <div id="lsr"></div>
+    <div class="grid g3" style="margin-top:14px">${Object.entries(SERIES).map(([k, [nm, yrs]]) => `<a class="card codecard" href="#/laws/${k}"><span class="t">${esc(nm)}</span><span class="c">${esc(yrs)} · ${(LAWS.counts[k] || 0).toLocaleString()}</span><span class="small muted">${esc(SERIES_NOTE[k])}</span></a>`).join('')}</div>
+    <div class="sect"><h2>The most amended laws</h2></div><ul class="items lawlist">${top.map(lawRow).join('')}</ul>
+    <div class="card flat small" style="margin-top:16px"><b>What is and is not here.</b> Texts are as enacted, transcribed by The LawPhil Project; they are not official, and later amendments are not written into them (the history panel shows them). Numbers missing from the source: ${['act', 'ca', 'ra', 'pd', 'bp'].filter(k => g[k]).map(k => `${SERIES[k][0]} ${g[k].missing}`).join(' · ')}. Not national statutes, so not here: implementing rules and regulations, agency circulars, Supreme Court rules and circulars, and local ordinances. See <a href="#/about">About → Coverage</a>.</div>`;
+    const run = () => { const v = $('#lsq').value; history.replaceState(null, '', '#/laws?q=' + encodeURIComponent(v)); const hits = lawSearch(v); $('#lsr').innerHTML = v.trim() ? (hits.length ? `<ul class="items lawlist">${hits.map(lawRow).join('')}</ul>${hits.length >= 150 ? '<p class="tiny muted">First 150 shown. Add a word.</p>' : ''}` : '<p class="muted small">Nothing in the titles matches. Try a number (RA 9262) or fewer words.</p>') : ''; };
+    $('#lsf').onsubmit = e => { e.preventDefault(); run(); };
+    if (q.get('q')) run();
+    return;
+  }
+  const rows = LAWS.rows.filter(r => r[1] === sr); if (!rows.length) return lawsView([], q);
+  const byY = {}; rows.forEach(r => (byY[r[3] || 'undated'] = byY[r[3] || 'undated'] || []).push(r));
+  const years = Object.keys(byY).sort((a, b) => b.localeCompare(a));
+  main.innerHTML = `${mapCrumbs(base.concat([[SERIES[sr][0], '']]))}<span class="eyebrow">${esc(SERIES[sr][1])} · ${rows.length.toLocaleString()}</span><h1>${esc(SERIES[sr][0])}</h1><p class="lead">${esc(SERIES_NOTE[sr])}</p>
+    <div class="path">${years.map((y, k) => `<details class="track" data-y="${esc(y)}" ${k === 0 ? 'open' : ''}><summary><span class="tn">${esc(y)}</span><span class="cnt">${byY[y].length}</span></summary><ul class="items lawlist">${k === 0 ? byY[y].map(lawRow).join('') : ''}</ul></details>`).join('')}</div>`;
+  main.addEventListener('toggle', function tg(e) { if (!location.hash.startsWith('#/laws/' + sr)) { main.removeEventListener('toggle', tg, true); return; } const d = e.target; if (d.dataset && d.dataset.y && d.open) { const ul = d.querySelector('ul'); if (!ul.children.length) ul.innerHTML = byY[d.dataset.y].map(lawRow).join(''); } }, true);
+}
+
+function historyCard(h, opts = {}) {
+  if (!h) return '';
+  const lk = l => l && LAWS && LAWS.byId[l] ? ` <a class="small" href="#/law/${l}">${esc(shortLab(LAWS.byId[l]))}</a>` : '';
+  return `<div class="card hist"><span class="eyebrow">How this law came to be</span><p class="explain" style="margin:6px 0 10px">${esc(h.origin)}</p>
+    <ol class="tl compact">${h.m.map(([y, t, l]) => `<li class="r-refine"><span class="ty">${esc(y)}</span><div><p>${esc(t)}${lk(l)}</p></div></li>`).join('')}</ol>
+    ${h.why ? `<p class="small" style="margin:6px 0 0"><b>Why it matters.</b> ${esc(h.why)}</p>` : ''}
+    ${opts.law ? `<p class="small" style="margin:10px 0 0"><a href="#/law/${opts.law}">Every later law that amended it, with the text as enacted →</a></p>` : ''}</div>`;
+}
+async function lawView(id) {
+  setNav('library');
+  await Promise.all([loadLaws(), loadHistory()]);
+  const r = LAWS.byId[id]; if (!r) return lawsView([], new URLSearchParams());
+  const rec = await lawRec(id);
+  const study = LAWS.study[id];
+  const date = d => (LAWS.byId[d] || [])[4] || ((LAWS.byId[d] || [])[3] || '');
+  const inc = rec.in.slice().sort((a, b) => date(a[0]).localeCompare(date(b[0])));
+  const out = rec.out.slice().sort((a, b) => date(a[0]).localeCompare(date(b[0])));
+  const evLine = e => { const rr = LAWS.byId[e[0]]; return `<li class="r-${e[1] === 'a' ? 'refine' : 'old'}"><span class="ty">${esc((rr && rr[3]) || '')}</span><div><div class="row"><a class="tc" href="#/law/${e[0]}">${esc(rr ? shortLab(rr) : e[0])}</a><span class="chip ${KIND[e[1]][1]}">${KIND[e[1]][0]}</span></div>${e[2] === 'title' ? `<p class="ev"><span class="tiny muted">Its title:</span> “${esc(e[3])}”</p>` : `<div class="tiny muted">${esc(rr ? rr[5].slice(0, 120) : '')}</div><p class="ev"><span class="tiny muted">From ${HOW[e[2]]}:</span> “${esc(e[3])}”</p>`}</div></li>`; };
+  const h = study && HIS.codes[study];
+  const blocks = mdBlocks(rec.b.replace(/^#\s.*\n+(\*\*[^\n]*\*\*\n+)?/, ''));
+  const CUT = 180;
+  main.innerHTML = `${mapCrumbs([['Law school', '#/map'], ['Every statute', '#/laws'], [SERIES[r[1]][0], `#/laws/${r[1]}`], [shortLab(r), '']])}
+  <article class="lawv"><span class="eyebrow">${esc(lawLabel(r))}${r[4] ? ` · approved ${esc(fmtDate(r[4]))}` : r[3] ? ` · ${esc(r[3])}` : ''}</span><h1 class="lawt">${esc(r[5])}</h1>
+  <div class="row" style="margin:8px 0 14px">${study ? `<a class="btn primary" href="#/map/${(fieldOf(study) || {}).id || 'pol'}/${study}">Study it, provision by provision</a>` : ''}${r[8] ? '<span class="chip bad">Repealed (detected below)</span>' : ''}${rec.src ? `<a class="btn sm ghost" href="${esc(rec.src)}" target="_blank" rel="noopener">LawPhil page</a>` : ''}</div>
+  ${h ? historyCard(h) : ''}
+  <div class="card lawhist"><div class="row"><h2 style="margin:0">Its history</h2><span class="spacer"></span><span class="small muted">${inc.length} later law${inc.length === 1 ? '' : 's'} · changed ${out.length}</span></div>
+    <ol class="tl compact"><li class="r-new"><span class="ty">${esc(r[3] || '')}</span><div><p><b>Enacted</b>${r[4] ? `, ${esc(fmtDate(r[4]))}` : ''}.</p></div></li>${inc.map(evLine).join('')}</ol>
+    ${inc.length ? '' : '<p class="small muted">No later law in the library says, in its title or text, that it amends or repeals this one. Implied repeal and Supreme Court rulings are not detected.</p>'}
+    ${out.length ? `<details class="lawout"><summary class="small"><b>What this law changed</b> · ${out.length}</summary><ol class="tl compact">${out.map(evLine).join('')}</ol></details>` : ''}
+    <p class="tiny muted" style="margin:8px 0 0">Detected automatically from the laws’ own words, so read the quoted sentence: it is the evidence. Express amendments and repeals are found; implied repeals, partial invalidation by the courts and amendments that do not name this law are not.</p></div>
+  <div class="law lawtext"><div class="text">${blocks.slice(0, CUT).join('')}</div>${blocks.length > CUT ? `<button class="btn" id="more">Show the rest (${(blocks.length - CUT).toLocaleString()} more paragraphs)</button>` : ''}</div>
+  ${rec.note ? `<p class="tiny muted">${esc(rec.note)}</p>` : ''}
+  <p class="tiny muted">Text as enacted, from The LawPhil Project (via LawCodex). Not an official text: check the Official Gazette or the enrolled copy before citing.</p></article>`;
+  const mb = $('#more'); if (mb) mb.onclick = () => { $('.lawtext .text').insertAdjacentHTML('beforeend', blocks.slice(CUT).join('')); mb.remove(); };
+}
+
+async function historyView() {
+  setNav('library');
+  await Promise.all([loadHistory(), loadLaws()]);
+  seenMark('history');
+  main.innerHTML = `${mapCrumbs([['Law school', '#/map'], ['How Philippine law evolved', '']])}<span class="eyebrow">Legal history</span><h1>How Philippine law evolved</h1>
+  <p class="lead">Every layer of the law you study was laid down in a particular era, for a particular reason. Read the eras in order; then open any code to see its own history and every later law that changed it.</p>
+  <ol class="tl eras">${HIS.eras.map(e => `<li class="r-refine"><span class="ty">${esc(e.y)}</span><div><div class="tc">${esc(e.t)}</div><p>${esc(e.x)}</p>${e.laws.length ? `<div class="row" style="margin-top:6px">${e.laws.map(l => `<a class="chip blue" href="#/law/${l}">${esc(shortLab(LAWS.byId[l]))}</a>`).join('')}</div>` : ''}</div></li>`).join('')}</ol>
+  <div class="sect"><h2>The history of each code</h2></div>
+  <div class="grid g3">${Object.entries(HIS.codes).map(([cid, h]) => { const m = meta(cid); const f = fieldOf(cid); return m ? `<a class="card codecard f-${f ? f.id : ''}" href="#/map/${f ? f.id : 'pol'}/${cid}"><span class="t">${esc(m.short)}</span><span class="c">${esc(h.m[0][0])}–${esc(h.m[h.m.length - 1][0])}</span><span class="small muted">${esc(h.origin.slice(0, 140))}…</span></a>` : ''; }).join('')}</div>
+  ${nextBar(pathNext('history', 'eras'))}`;
+}
+
+async function treatiesView(id) {
+  setNav('library');
+  await Promise.all([loadTreaties(), loadLaws()]);
+  seenMark('treaties');
+  const f = CUR.byId.intl;
+  const base = [['Law school', '#/map'], [f.name, '#/map/intl'], ['Treaties binding the Philippines', id ? '#/treaties' : '']];
+  const lawChip = l => l.c === 'law' ? `<a class="chip blue" href="#/law/${l.i}">${esc(l.t)}</a>` : l.i ? `<a class="chip blue" href="#/p/${l.c}/${l.i}">${esc(l.t)}</a>` : `<a class="chip blue" href="#/map/${(fieldOf(l.c) || {}).id || 'pol'}/${l.c}">${esc(l.t)}</a>`;
+  const st = x => ({ party: '<span class="chip ok">Party</span>', withdrawn: '<span class="chip warn">Withdrew</span>', declaration: '<span class="chip blue">Declaration</span>', 'soft law': '<span class="chip">Soft law</span>' }[x.status] || '');
+  if (!id) {
+    const areas = [...new Set(TRE.treaties.map(x => x.area))];
+    main.innerHTML = `${mapCrumbs(base)}<span class="eyebrow">International law</span><h1>Treaties binding the Philippines</h1>
+    <p class="lead">International law reaches Philippine law in two ways. Generally accepted principles are part of the law of the land by <b>incorporation</b>, without any act (Constitution, Art. II, Sec. 2). Treaties bind once the Senate concurs by two-thirds (Art. VII, Sec. 21) and are usually <b>transformed</b> by a statute that implements them. Executive agreements that implement existing law or treaties need no concurrence. Below are the treaties that matter most for the bar, each with the Philippine laws that carry it out and the cases that apply it.</p>
+    <div class="row" style="margin:6px 0 0">${[['const1987', 'art-ii-sec-2', 'Art. II, Sec. 2 (incorporation)'], ['const1987', 'art-vii-sec-21', 'Art. VII, Sec. 21 (Senate concurrence)'], ['const1987', 'art-xviii-sec-25', 'Art. XVIII, Sec. 25 (foreign bases)'], ['const1987', 'art-viii-sec-5', 'Art. VIII, Sec. 5 (review of treaties)']].map(([c, i, t]) => lawChip({ c, i, t })).join('')}</div>
+    <div class="note blue" style="margin-top:12px"><b>Where a treaty ranks.</b> A treaty has the force of a statute: if it conflicts with a later statute, the later one generally prevails in domestic law (Secretary of Justice v. Lantion, G.R. No. 139465, January 18, 2000), though the state may still answer internationally (Vienna Convention, Art. 27). The Constitution prevails over both, and the Supreme Court may declare a treaty unconstitutional (Art. VIII, Sec. 5(2)(a)).</div>
+    ${areas.map(a => `<div class="sect"><h2>${esc(a)}</h2></div><div class="grid g2">${TRE.treaties.filter(x => x.area === a).map(x => `<a class="card shiftcard f-intl" href="#/treaties/${x.id}"><span class="row">${st(x)}<span class="chip">${esc(x.adopted)}</span></span><span class="t">${esc(x.name)}</span><span class="small muted">${esc(x.ph)}</span></a>`).join('')}</div>`).join('')}
+    <p class="tiny muted" style="margin-top:16px">${esc(TRE.note)}</p>
+    ${nextBar(pathNext('treaties', 'registry'))}`;
+    return;
+  }
+  const x = TRE.byId[id]; if (!x) return treaties2();
+  const ix = TRE.treaties.indexOf(x), nx = TRE.treaties[ix + 1];
+  main.innerHTML = `${mapCrumbs(base.concat([[x.name.length > 40 ? x.name.slice(0, 38) + '…' : x.name, '']]))}
+  <article class="movev f-intl"><span class="eyebrow">${esc(x.area)} · adopted ${esc(x.adopted)}</span><h1>${esc(x.name)}</h1>
+  <div class="row" style="margin:4px 0 12px">${st(x)}<span class="small">${esc(x.ph)}</span></div>
+  <h2>What it requires</h2><p class="explain">${esc(x.what)}</p>
+  <h2>How it works in Philippine law</h2><p class="explain">${esc(x.how)}</p>
+  ${x.laws.length ? `<div class="row">${x.laws.map(lawChip).join('')}</div>` : ''}
+  ${x.cases.length ? `<h2>Cases</h2>${x.cases.map(c => `<div class="case"><div class="cn">${esc(c.n)}</div><div class="cc">${esc(c.cite)}</div><div class="dg"><div>${esc(c.held)}</div></div></div>`).join('')}` : ''}
+  <p style="margin-top:14px"><a class="btn" href="${esc(x.url)}" target="_blank" rel="noopener">Official text</a></p>
+  <div class="pn"><a class="btn" href="#/treaties">← All treaties</a>${nx ? `<a class="btn primary" href="#/treaties/${nx.id}">${esc(nx.name.length > 50 ? nx.name.slice(0, 48) + '…' : nx.name)} →</a>` : ''}</div></article>`;
+  function treaties2() { return treatiesView(); }
+}
+function seenMark(k) { S.seen = S.seen || {}; if (!S.seen[k]) { S.seen[k] = Date.now(); save(); } }
+
 /* ------------------------------------------------------------------ search beyond the codes */
 function extraHits(terms) {
   const has = txt => { const low = txt.toLowerCase(); return terms.length && terms.every(w => low.includes(w)); };
@@ -2132,6 +2329,10 @@ async function route() {
     else if (parts[0] === 'progress') progressView();
     else if (parts[0] === 'syllabus') await syllabusView(parts[1], q);
     else if (parts[0] === 'shifts') await shiftsView(parts[1]);
+    else if (parts[0] === 'laws') await lawsView(parts.slice(1), q);
+    else if (parts[0] === 'law') await lawView(parts[1]);
+    else if (parts[0] === 'history') await historyView();
+    else if (parts[0] === 'treaties') await treatiesView(parts[1]);
     else if (parts[0] === 'enforce') await enforceView(parts.slice(1), q);
     else if (parts[0] === 'about') await aboutView();
     else await home();
