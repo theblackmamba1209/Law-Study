@@ -164,7 +164,7 @@ function figure(active, plain) {
   const order = ['pol', 'craft', 'lab', 'civ', 'com', 'crim', 'intl', 'eth'];
   const zone = id => { const f = CUR.byId[id]; const on = active === id; const [px, py] = figPos(id) || HOUSE_PIN[id];
     if (plain && !on) return '';
-    return `<a class="zone f-${id}${on ? ' on' : ''}" data-id="${id}" href="#/field/${id}" aria-label="${f.n}. ${esc(f.name)}: ${esc(f.pname)}">${on ? `<circle class="halo" cx="${px}" cy="${py}" r="30"/>` : ''}<circle class="pinsh" cx="${px}" cy="${py + 2.5}" r="17"/><circle class="pin" cx="${px}" cy="${py}" r="17"/><text class="nt" x="${px}" y="${py + 0.5}">${f.n}</text></a>`; };
+    return `<a class="zone f-${id}${on ? ' on' : ''}" data-id="${id}" href="#/map/${id}" aria-label="${f.n}. ${esc(f.name)}: ${esc(f.pname)}">${on ? `<circle class="halo" cx="${px}" cy="${py}" r="30"/>` : ''}<circle class="pinsh" cx="${px}" cy="${py + 2.5}" r="17"/><circle class="pin" cx="${px}" cy="${py}" r="17"/><text class="nt" x="${px}" y="${py + 0.5}">${f.n}</text></a>`; };
   return `<svg class="fig${plain ? ' plain' : ''}${active && !plain ? ' dim' : ''}" viewBox="0 0 600 520" role="img" aria-label="The House of Law: eight fields of law placed in eight parts of one building">
     ${img ? `<defs><clipPath id="${u}r"><rect width="600" height="520" rx="22"/></clipPath></defs><rect width="600" height="520" rx="22" fill="#0b1424"/><image href="${img}" width="600" height="520" preserveAspectRatio="xMidYMid slice" clip-path="url(#${u}r)"/>` : houseSVG(u, { active: plain ? active : null })}
     ${order.map(zone).join('')}</svg>`;
@@ -204,7 +204,7 @@ async function figurePicture(done) {
 }
 function partsList() {
   const foc = focusIds();
-  return `<ol class="parts">${CUR.fields.map(f => `<li class="f-${f.id}${foc.includes(f.id) ? '' : ' off'}"><a href="#/field/${f.id}"><span class="n">${f.n}</span><span class="tx"><span class="t">${esc(f.name)}</span><span class="p">${esc(f.pname)}</span><span class="hk">${esc(f.hook)}</span></span></a></li>`).join('')}</ol>`;
+  return `<ol class="parts">${CUR.fields.map(f => `<li class="f-${f.id}${foc.includes(f.id) ? '' : ' off'}"><a href="#/map/${f.id}"><span class="n">${f.n}</span><span class="tx"><span class="t">${esc(f.name)}</span><span class="p">${esc(f.pname)}</span><span class="hk">${esc(f.hook)}</span></span></a></li>`).join('')}</ol>`;
 }
 async function chooseFocus() {
   const foc = focusIds();
@@ -575,7 +575,8 @@ function crumbs(d, p, cid) {
   const chain = []; let v = p ? p.d : null;
   while (v != null) { chain.unshift(v); v = d.divisions[v].p; }
   const f = fieldOf(cid);
-  return `<div class="crumbs"><a href="#/learn">Learn</a>${f ? `<span class="sep">›</span><a href="#/field/${f.id}">${esc(f.name)}</a>` : ''}<span class="sep">›</span><a href="#/code/${cid}">${esc(d.short)}</a>${chain.slice(-2).map(i => `<span class="sep">›</span><a href="#/code/${cid}?div=${i}">${esc(shortDiv(d.divisions[i].t))}</a>`).join('')}</div>`;
+  const base = f ? `#/map/${f.id}/${cid}` : `#/code/${cid}`;
+  return `<div class="crumbs"><a href="#/map">Law school</a>${f ? `<span class="sep">›</span><a href="#/map/${f.id}">${esc(f.name)}</a>` : ''}<span class="sep">›</span><a href="${base}">${esc(d.short)}</a>${chain.slice(-2).map(i => `<span class="sep">›</span><a href="${f ? base + '/' + i : base + '?div=' + i}">${esc(shortDiv(d.divisions[i].t))}</a>`).join('')}</div>`;
 }
 function shortDiv(t) { return t.length > 60 ? t.slice(0, 57) + '…' : t; }
 function counts(cid) {
@@ -592,16 +593,21 @@ function codeCard(c) {
 
 async function home() {
   setNav('home');
-  const due = dueKeys().length, nt = newToday(), st = streak();
+  await Promise.all([loadShifts(), loadEnforce()]);
+  const dk = dueKeys(), due = dk.length, nt = newToday(), st = streak();
+  const dq = dk.filter(k => k.startsWith('q|')).length, dpv = due - dq;
+  const dueWhat = [dpv ? `${dpv} provision${dpv === 1 ? '' : 's'}` : '', dq ? `${dq} question${dq === 1 ? '' : 's'}` : ''].filter(Boolean).join(' and ');
+  const pf = (S.last && fieldOf(S.last.c)) || CUR.byId[focusIds()[0]]; const todo = pf && pathTodo(pf);
   const last = S.last;
   let head, sub, btn, second = '';
   const ms = memoryStats(); const mins = S.settings.sprint || 5;
-  if (due) { head = `${due} provision${due === 1 ? ' is' : 's are'} slipping`; sub = `A ${mins}-minute sprint brings back the ones you are closest to forgetting, one at a time.`; btn = `<a class="btn primary" href="#/sprint">Start a ${mins}-minute sprint</a>`; second = `<a class="btn" href="#/review">Review all ${due}</a>`; }
+  if (due) { head = `${dueWhat} ${due === 1 ? 'is' : 'are'} slipping`; sub = `A ${mins}-minute sprint brings back the ones you are closest to forgetting, one at a time.`; btn = `<a class="btn primary" href="#/sprint">Start a ${mins}-minute sprint</a>`; second = `<a class="btn" href="#/review">Review all ${due}</a>`; }
   else if (last) { head = `Continue where you stopped`; sub = esc(last.l); btn = `<a class="btn primary" href="#/p/${last.c}/${last.p}">Continue</a>`; second = `<a class="btn" href="#/sprint">${mins}-minute sprint</a>`; }
   else { head = 'Start with ten minutes'; sub = 'One short lesson on how to read any provision. It makes everything after it easier.'; btn = `<a class="btn primary" href="#/lesson/read-provision">Read the first lesson</a>`; second = `<a class="btn" href="#/learn">Choose a field</a>`; }
   main.innerHTML = `
   <section class="next"><span class="eyebrow">Your next step</span><h1>${head}</h1><p class="muted" style="margin:0">${sub}</p>
     <div class="row">${btn}${second}</div>
+    ${todo ? `<a class="pathnext f-${pf.id}" href="${todo[0]}"><span class="eyebrow">Next in your path · ${esc(pf.name)}</span><span class="pnl">${esc(todo[1])} →</span></a>` : ''}
     <div class="meters">${ms.n ? `<span title="Average chance you would recall a provision you are keeping, if asked right now"><b>${Math.round(ms.avg * 100)}%</b> recall</span>` : ''}<span><b>${due}</b> due</span><span><b>${nt}</b> of ${S.settings.newPerDay} new today</span><span><b>${st}</b> day streak</span><a href="#/progress">Memory</a></div></section>
   <div class="sect"><h2>The House of Law</h2><span class="spacer"></span><button class="btn sm ghost" id="foc">This semester</button><button class="btn sm ghost" id="pic">Use a place you know</button></div>
   <p class="small muted" style="margin:-4px 0 12px;max-width:65ch">Eight fields, eight places in one building drawn after the Supreme Court on Padre Faura, read from the roof down to the seven steps. A fixed place is a fixed cue: when you forget, walk through the building again.</p>
@@ -616,9 +622,9 @@ function learn() {
   const foc = focusIds();
   const tile = f => { const k = fieldCount(f); const lb = S.lastBy[f.id]; const first = f.tracks[0].items[0];
     const start = first.t === 'code' ? meta(first.id).short : first.t === 'lesson' ? CUR.lessons[first.id].title : first.title || '';
-    return `<a class="tile f-${f.id}" href="#/field/${f.id}"><span class="p">${f.n} · ${esc(f.pname)}</span><span class="t">${esc(f.name)}</span><span class="q">${esc(f.q)}</span><div class="thin"><i style="width:${Math.min(100, k.pct).toFixed(1)}%"></i></div><span class="go">${lb ? `Continue: <b>${esc(lb.l)}</b>` : `Start here: <b>${esc(start)}</b>`}</span></a>`; };
+    return `<a class="tile f-${f.id}" href="#/map/${f.id}"><span class="p">${f.n} · ${esc(f.pname)}</span><span class="t">${esc(f.name)}</span><span class="q">${esc(f.q)}</span><div class="thin"><i style="width:${Math.min(100, k.pct).toFixed(1)}%"></i></div><span class="go">${lb ? `Continue: <b>${esc(lb.l)}</b>` : `Start here: <b>${esc(start)}</b>`}</span></a>`; };
   const mine = CUR.fields.filter(f => foc.includes(f.id)), rest = CUR.fields.filter(f => !foc.includes(f.id));
-  main.innerHTML = `<div class="crumbs"><a href="#/map">The whole map</a><span class="sep">›</span><span>Fields and study paths</span></div><h1>Learn</h1><p class="lead">Pick one field. Inside it you will find a short path: start here, then the core, then deeper only when you need it.</p>
+  main.innerHTML = `<div class="crumbs"><a href="#/map">Law school</a><span class="sep">›</span><span>Choose your fields</span></div><h1>Learn</h1><p class="lead">Choose the fields you are taking this semester. Each field is one path, in the order it is best learned: start here, then the core, then deeper only when you need it.</p>
   <div class="sect"><h2>This semester</h2><span class="spacer"></span><button class="btn sm ghost" id="foc">Change</button></div>
   <div class="tiles">${mine.map(tile).join('') || '<p class="muted">No fields chosen yet.</p>'}</div>
   ${rest.length ? `<div class="sect"><h2>Other fields</h2></div><div class="tiles">${rest.map(tile).join('')}</div>` : ''}
@@ -627,43 +633,29 @@ function learn() {
 }
 
 function itemRow(it, f) {
-  if (it.t === 'code') { const m = meta(it.id), k = counts(it.id); return `<li><a href="#/code/${it.id}"><span class="kind">Code</span><span><span class="it">${esc(m.short)}</span><br><span class="im">${esc(m.citation)}${it.x ? ' · also in ' + esc(fieldOf(it.id).name) : ''}</span></span><span class="st">${k.touched}/${k.total.toLocaleString()}</span></a></li>`; }
+  if (it.t === 'code') { const m = meta(it.id), k = counts(it.id); return `<li><a href="#/map/${(fieldOf(it.id) || f).id}/${it.id}"><span class="kind">Code</span><span><span class="it">${esc(m.short)}</span><br><span class="im">${esc(m.citation)}${it.x ? ' · also in ' + esc(fieldOf(it.id).name) : ''}</span></span><span class="st">${k.touched}/${k.total.toLocaleString()}</span></a></li>`; }
   if (it.t === 'lesson') { const l = CUR.lessons[it.id]; return `<li><a href="#/lesson/${it.id}"><span class="kind k-lesson">Lesson</span><span><span class="it">${esc(l.title)}</span><br><span class="im">${l.mins} minute read</span></span><span class="st">${S.lessons[it.id] ? '<span class="done">Read</span>' : ''}</span></a></li>`; }
   if (it.t === 'set') { const st = CUR.sets[it.id]; const n = st.items.filter(x => S.cards[ck(x.c, x.i)]).length; return `<li><a href="#/set/${it.id}"><span class="kind k-set">Walk</span><span><span class="it">${esc(st.title)}</span><br><span class="im">${st.items.length} provisions, placed head to toe</span></span><span class="st">${n}/${st.items.length}</span></a></li>`; }
   if (it.t === 'b2') return `<li><a href="#/b2"><span class="kind k-set">Studio</span><span><span class="it">${esc(it.title)}</span><br><span class="im">Crimes in families: elements, comparison tables, drills</span></span><span class="st"></span></a></li>`;
+  if (it.t === 'shift') { const sh = SHF && SHF.byId[it.id]; if (!sh) return ''; return `<li><a href="#/shifts/${it.id}"><span class="kind k-shift">Change</span><span><span class="it">${esc(sh.title)}</span><br><span class="im">${esc(shiftSpan(sh))} · how the doctrine changed, and why</span></span><span class="st">${qChip('shift:' + it.id)}</span></a></li>`; }
+  if (it.t === 'enforce') { const pb = it.id === 'playbook'; const n = ENF ? (pb ? ENF.moves.length : ENF.drills.length) : 0; const inMem = ENF ? ENF.drills.filter(d => lockState(QK('enf:' + d.id)) !== 'n').length : 0;
+    return `<li><a href="${pb ? '#/enforce' : '#/enforce/drills'}"><span class="kind k-enf">${pb ? 'Playbook' : 'Cases'}</span><span><span class="it">${pb ? 'Enforcing a judgment' : 'Case files: enforcing a judgment'}</span><br><span class="im">${pb ? `${n} moves in nine stages, each tied to its rule` : `${n} problems; each joins your reviews once answered`}</span></span><span class="st">${pb ? (S.enf.seen ? '<span class="done">Opened</span>' : '') : (inMem ? `${inMem}/${n}` : '')}</span></a></li>`; }
   if (it.t === 'syl') return `<li><a href="#/syllabus/${it.id}"><span class="kind k-syl">Cases</span><span><span class="it">${esc(it.title)}</span><br><span class="im">Every assigned case, filed under its provision</span></span><span class="st"></span></a></li>`;
   return `<li><div class="miss"><span class="kind k-miss">Not yet</span><span><span class="it">${esc(it.title)}</span><br><span class="im">${esc(it.citation)}. ${esc(it.why)}${it.url ? ` <a href="${esc(it.url)}" target="_blank" rel="noopener">Official text</a>` : ''}</span></span></div></li>`;
 }
-function fieldView(id) {
-  setNav('library');
-  const f = CUR.byId[id];
-  if (!f) return learn();
-  const k = fieldCount(f); const lb = S.lastBy[f.id];
-  const tierName = { start: 'Start here', core: 'Core', deep: 'Go deeper when you need it' };
-  let prevTier = '';
-  const tracks = f.tracks.map(t => {
-    const head = t.tier !== prevTier ? `<div class="tier">${tierName[t.tier]}</div>` : ''; prevTier = t.tier;
-    const n = t.items.filter(i => i.t !== 'missing').length;
-    return `${head}<details class="track" ${t.tier === 'start' ? 'open' : ''}><summary><span class="tn">${esc(t.name)}</span><span class="cnt">${n} item${n === 1 ? '' : 's'}</span><span class="pic">Picture: ${esc(t.pic)}</span>${t.why ? `<span class="why">${esc(t.why)}</span>` : ''}</summary><ul class="items">${t.items.map(i => itemRow(i, f)).join('')}</ul></details>`;
-  }).join('');
-  main.innerHTML = `<div class="f-${f.id}"><div class="crumbs"><a href="#/learn">Learn</a><span class="sep">›</span><span>${esc(f.name)}</span></div>
-  <div class="fhead"><div><span class="eyebrow" style="color:var(--f)">${f.n} · ${esc(f.pname)}</span><h1>${esc(f.name)}</h1><p class="hook" style="margin:0 0 6px">${esc(f.hook)}</p><p class="small" style="margin:0 0 10px">${esc(f.q)}</p>
-    <div class="thin" style="max-width:320px"><i style="width:${Math.min(100, k.pct).toFixed(1)}%"></i></div><p class="tiny muted" style="margin:6px 0 10px">${k.touched.toLocaleString()} of ${k.total.toLocaleString()} provisions studied</p>
-    ${lb ? `<a class="btn primary" href="#/p/${lb.c}/${lb.p}">Continue ${esc(lb.l)}</a>` : ''}</div>${figure(f.id, true)}</div>
-  <div class="path">${tracks}</div></div>`;
-}
+/* the field page is the map’s field level: one page per field, holding its whole path */
+function fieldView(id) { return mapView([id]); }
 function findItem(type, id) { for (const f of CUR.fields) for (const t of f.tracks) { const ix = t.items.findIndex(i => i.t === type && i.id === id); if (ix >= 0) return { f, t, ix }; } return null; }
 function lessonView(id) {
   setNav('library');
   const l = CUR.lessons[id]; if (!l) return learn();
-  const at = findItem('lesson', id); const f = at.f; const nx = at.t.items[at.ix + 1];
-  const nxLink = nx && nx.t !== 'missing' ? (nx.t === 'code' ? [`#/code/${nx.id}`, meta(nx.id).short] : nx.t === 'lesson' ? [`#/lesson/${nx.id}`, CUR.lessons[nx.id].title] : nx.t === 'set' ? [`#/set/${nx.id}`, CUR.sets[nx.id].title] : nx.t === 'b2' ? ['#/b2', nx.title] : [`#/syllabus/${nx.id}`, nx.title]) : null;
-  main.innerHTML = `<article class="lesson f-${f.id}"><div class="crumbs"><a href="#/learn">Learn</a><span class="sep">›</span><a href="#/field/${f.id}">${esc(f.name)}</a><span class="sep">›</span><span>${esc(at.t.name)}</span></div>
+  const at = findItem('lesson', id); const f = at.f; const pn = pathNext('lesson', id); const nxLink = pn && pn.link;
+  main.innerHTML = `<article class="lesson f-${f.id}"><div class="crumbs"><a href="#/map">Law school</a><span class="sep">›</span><a href="#/map/${f.id}">${esc(f.name)}</a><span class="sep">›</span><span>${esc(at.t.name)}</span></div>
   <span class="eyebrow" style="color:var(--f)">Lesson · ${l.mins} minutes</span><h1>${esc(l.title)}</h1><p class="lead">${rich(l.lead)}</p>
   ${l.sections.map(x => `<h2 class="sec">${esc(x.h.replace(/^\d+\.\s*/, ''))}</h2><div class="explain">${x.p.map(p => `<p>${rich(p)}</p>`).join('')}${x.l.length ? `<ul>${x.l.map(p => `<li>${rich(p)}</li>`).join('')}</ul>` : ''}</div>`).join('')}
   ${l.try.length ? `<h2>Try it now</h2><div class="tryit explain">${l.try.map(p => `<p>${rich(p)}</p>`).join('')}</div>` : ''}
   <p class="tiny muted" style="margin-top:14px">Lessons are study aids in our own words. The verbatim provisions they link to are what you cite.</p>
-  <div class="pn"><button class="btn${S.lessons[id] ? '' : ' primary'}" id="ldone">${S.lessons[id] ? 'Read ✓' : 'Mark as read'}</button>${nxLink ? `<a class="btn" href="${nxLink[0]}">Next: ${esc(nxLink[1])} →</a>` : `<a class="btn" href="#/field/${f.id}">Back to ${esc(f.name)}</a>`}</div></article>`;
+  <div class="pn"><button class="btn${S.lessons[id] ? '' : ' primary'}" id="ldone">${S.lessons[id] ? 'Read ✓' : 'Mark as read'}</button>${nxLink ? `<a class="btn" href="${nxLink[0]}">Next in ${esc(f.name)}: ${esc(nxLink[1])} →</a>` : `<a class="btn" href="#/map/${f.id}">Back to ${esc(f.name)}</a>`}</div></article>`;
   $('#ldone').onclick = () => { if (S.lessons[id]) delete S.lessons[id]; else S.lessons[id] = Date.now(); save(); lessonView(id); };
 }
 function setView(id) {
@@ -671,16 +663,16 @@ function setView(id) {
   const st = CUR.sets[id]; if (!st) return learn();
   const at = findItem('set', id); const f = at.f;
   const first = st.items.find(x => !S.cards[ck(x.c, x.i)]) || st.items[0];
-  main.innerHTML = `<div class="f-${f.id}" style="max-width:760px"><div class="crumbs"><a href="#/learn">Learn</a><span class="sep">›</span><a href="#/field/${f.id}">${esc(f.name)}</a><span class="sep">›</span><span>${esc(at.t.name)}</span></div>
+  main.innerHTML = `<div class="f-${f.id}" style="max-width:760px"><div class="crumbs"><a href="#/map">Law school</a><span class="sep">›</span><a href="#/map/${f.id}">${esc(f.name)}</a><span class="sep">›</span><span>${esc(at.t.name)}</span></div>
   <span class="eyebrow" style="color:var(--ok)">A walk · ${st.items.length} provisions</span><h1>${esc(st.title)}</h1><p class="lead">${esc(st.blurb)}</p>
   <div class="tryit small" style="margin:12px 0"><b>How to use the walk.</b> Start at the flag on the roof of the House of Law and move down to the seven steps. At each place, see the provision’s key idea happening there, the stranger the better. To recall the list later, walk through the building again and say what you find at each place.</div>
   <ol class="walk">${st.items.map(x => `<li><a href="#/p/${x.c}/${x.i}?set=${id}"><span class="loc">${esc(x.loc)}</span><span><span class="wl">${esc(x.l)}</span>${x.cap ? ` <span class="muted small">${esc(x.cap)}</span>` : ''}<br><span class="ww">${esc(x.why)}</span>${S.hooks[ck(x.c, x.i)] ? `<br><span class="tiny" style="color:var(--warn)">Your picture: ${esc(S.hooks[ck(x.c, x.i)])}</span>` : ''}</span><i class="dot ${status(ck(x.c, x.i))}"></i></a></li>`).join('')}</ol>
-  <div class="pn"><a class="btn" href="#/field/${f.id}">Back to ${esc(f.name)}</a><a class="btn primary" href="#/p/${first.c}/${first.i}?set=${id}">Start the walk →</a></div></div>`;
+  <div class="pn"><a class="btn" href="#/map/${f.id}">Back to ${esc(f.name)}</a><a class="btn primary" href="#/p/${first.c}/${first.i}?set=${id}">Start the walk →</a></div></div>`;
 }
 
 function library() {
   setNav('library');
-  main.innerHTML = `<div class="crumbs"><a href="#/learn">Learn</a><span class="sep">›</span><span>All codes</span></div><h1>All codes</h1><p class="muted">Every instrument in the library, by field. Open a field to see its list.</p>
+  main.innerHTML = `<div class="crumbs"><a href="#/map">Law school</a><span class="sep">›</span><span>All codes</span></div><h1>All codes</h1><p class="muted">Every instrument in the library, by field. Open a field to see its list.</p>
   <div class="path">${CUR.fields.map(f => { const ids = fieldCodes(f); return `<details class="track f-${f.id}"><summary><span class="tn">${esc(f.name)}</span><span class="cnt">${ids.length} codes</span></summary><ul class="items">${ids.map(id => itemRow({ t: 'code', id }, f)).join('')}</ul></details>`; }).join('')}</div>`;
 }
 
@@ -822,6 +814,7 @@ async function provView(cid, pid, q) {
   const cases = (CASES[cid] || {})[pid] || [];
   const syl = SYX[ck(cid, pid)] || [], rec = REC.by[ck(cid, pid)] || [];
   const shf = SHF.byLink[ck(cid, pid)] || [], enf = ENF.byLink[ck(cid, pid)] || [];
+  shf.forEach(x => seenQ('shift:' + x.id)); if (shf.length) save();
   const ncase = cases.length + syl.length + rec.length + (((notes || {}).d) || []).length + shf.length + enf.length;
   const on = S.settings.hl;
   const tabs = [['guide', 'Step 2', 'Understand'], ['recall', 'Step 3', 'Recall'], ['cases', 'Step 4', `Cases${ncase ? ' (' + ncase + ')' : ''}${rec.length ? ' <span class="newdot" title="has 2023–2026 rulings">new</span>' : ''}`], ['notes', 'Yours', 'My notes']];
@@ -1013,7 +1006,7 @@ function sylHTML(syl) {
 }
 function casesHTML(cid, pid, n, cases, syl = [], rec = [], shf = [], enf = []) {
   let h = '<div class="panel">';
-  if (shf.length) h += `<h3>How the doctrine changed</h3><p class="small muted">The Supreme Court changed its own rule on this provision. The analysis gives the cases in order, the reasons and the dissents.</p>` + shf.map(shiftCard).join('');
+  if (shf.length) h += `<h3>How the doctrine changed</h3><p class="small muted">The Supreme Court changed its own rule on this provision. The analysis gives the cases in order, the reasons and the dissents. Its question has joined your reviews.</p>` + shf.map(shiftCard).join('');
   if (enf.length) h += `<h3 style="margin-top:14px">Enforcing it</h3><p class="small muted">Moves from the playbook on executing judgments that rest on this provision.</p><div class="grid g2">${enf.map(m => moveCard(m, stageName(m.stage))).join('')}</div>`;
   if (rec.length) h += `<h3>Recent rulings (2023–2026)</h3><p class="small muted">Added after a check of recent Supreme Court decisions (last checked ${esc(REC.checked || '')}). Holdings are summarised in our own words.</p>` + recentHTML(rec);
   if (syl.length) h += `<h3 style="margin-top:14px">In your syllabus</h3><p class="small muted">Cases your professors assigned under this provision.</p>` + sylHTML(syl);
@@ -1197,13 +1190,22 @@ async function reviewView() {
   }
   queue = queue.concat(fresh);
   if (!queue.length) {
-    main.innerHTML = `<div class="reviewcard card"><h1>All caught up.</h1><p class="muted">Nothing is due. New provisions enter review once you open them under Learn. Today: ${newToday()} new, ${(S.days[today()] || {}).r || 0} reviews.</p><div class="row"><a class="btn primary" href="#/learn">Learn new provisions</a><a class="btn" href="#/drill">Drill anyway</a></div></div>`;
+    main.innerHTML = `<div class="reviewcard card"><h1>All caught up.</h1><p class="muted">Nothing is due. New provisions and questions enter review once you open them on the map. Today: ${newToday()} new, ${(S.days[today()] || {}).r || 0} reviews.</p><div class="row"><a class="btn primary" href="#/map">Open the map</a><a class="btn" href="#/drill">Drill anyway</a></div></div>`;
     return;
   }
   let i = 0;
   const step = async () => {
-    if (i >= queue.length) { main.innerHTML = `<div class="reviewcard card"><h1>Session complete.</h1><p class="muted">${queue.length} provisions reviewed. Come back tomorrow — spacing is what makes it stick.</p><a class="btn primary" href="#/">Home</a></div>`; return; }
+    if (i >= queue.length) { main.innerHTML = `<div class="reviewcard card"><h1>Session complete.</h1><p class="muted">${queue.length} reviewed. Come back tomorrow — spacing is what makes it stick.</p><a class="btn primary" href="#/">Home</a></div>`; return; }
     const key = queue[i]; const [cid, pid] = key.split('|');
+    if (key.startsWith('q|')) {
+      const qi = await qResolve(key);
+      if (!qi) { delete S.cards[key]; save(); i++; return step(); }
+      main.innerHTML = `<div class="reviewcard"><div class="row small muted"><span>${i + 1} / ${queue.length}</span><span class="spacer"></span><span>${esc(qi.kind)}</span></div><div class="qtitle">${esc(qi.title)}</div>${quizHTML('rq', qi.t)}</div>`;
+      const box = wireQuiz('rq', qi.t, ok => rate(key, ok ? 3 : 1), (ok, c) => `${memLine(c)}<div class="row" style="margin-top:10px"><a class="btn sm ghost" href="${qi.href}">${esc(qi.open)}</a><span class="spacer"></span><button class="btn primary" id="rnx">Next</button></div>`);
+      box.addEventListener('click', e => { if (e.target.id === 'rnx') { i++; step(); } });
+      document.onkeydown = e => { if (!location.hash.startsWith('#/review') || /input|textarea/i.test(e.target.tagName)) return; if (/^[1-4]$/.test(e.key)) { const b = $(`#rq .opt[data-o="${+e.key - 1}"]`); if (b && !b.disabled) b.click(); } if (e.key === 'Enter') { const n = $('#rnx'); if (n) n.click(); } };
+      return;
+    }
     if (!meta(cid)) { i++; return step(); }
     const d = await loadCode(cid); const p = d.byId[pid];
     if (!p) { delete S.cards[key]; save(); i++; return step(); }
@@ -1308,26 +1310,36 @@ async function mapView(parts) {
       ${LEGEND}<p class="tiny muted">Each square in a tile is 1% of that field. Faded fields are outside this semester. <a href="#/learn">Change your fields</a> · <a href="#/about">What “locked in” means</a></p>
       <div class="mapextra"><a class="card codecard" href="#/shifts"><span class="eyebrow">Across the fields</span><span class="t">How the doctrine changed</span><span class="small muted">Where the Court abandoned its own rule: old rule, new rule, the reasons, the dissents.</span></a><a class="card codecard" href="#/enforce"><span class="eyebrow">After you win</span><span class="t">Enforcing a judgment</span><span class="small muted">Nine stages from attachment to the ten-year clock, with case files to practise on.</span></a></div></div>`;
   } else if (!cid) {
-    // level 1: one field, its codes by tier
+    // level 1: one field — its whole path in the order it is best learned: lessons, walks, codes, changes of course, case files
     const f = CUR.byId[fid]; if (!f) return mapView([]);
+    await Promise.all([loadShifts(), loadEnforce()]);
     const tierName = { start: 'Start here', core: 'Core', deep: 'Go deeper when you need it' };
     const ft = fieldCodes(f).reduce((a, c) => addT(a, codeTally(c)), zeroT());
     let nxt = null;
-    const tiers = ['start', 'core', 'deep'].map(tier => {
-      const items = f.tracks.filter(t => t.tier === tier).flatMap(t => t.items.filter(i => i.t === 'code' && !i.x).map((i, k) => ({ id: i.id, track: t.name, pic: k === 0 ? t.pic : '' })));
-      if (!items.length) return '';
-      return `<div class="tier">${tierName[tier]}</div><div class="mcodes">${items.map(({ id, track, pic }) => { const m = meta(id); const t = codeTally(id); if (!nxt && t.k < t.total) nxt = id;
-        return `<a class="mcode" href="#/map/${fid}/${id}">${ringHTML(t, 56)}<span class="mt"><b>${esc(m.short)}</b><span class="tiny muted">${esc(track)} · ${(m.live ?? m.count).toLocaleString()} provisions${m.live != null && m.live < m.count ? ` in force (${(m.count - m.live).toLocaleString()} repealed)` : ''}</span><span class="ml">${lockLine(t)}</span>${pic ? `<span class="mpic">Picture: ${esc(pic)}</span>` : ''}</span>${waffle(t)}</a>`; }).join('')}</div>`;
-    }).join('');
+    const codeTile = (id, track) => { const m = meta(id); const t = codeTally(id); if (!nxt && t.k < t.total) nxt = id;
+      return `<a class="mcode" href="#/map/${fid}/${id}">${ringHTML(t, 56)}<span class="mt"><b>${esc(m.short)}</b><span class="tiny muted">${esc(track)} · ${(m.live ?? m.count).toLocaleString()} provisions${m.live != null && m.live < m.count ? ` in force (${(m.count - m.live).toLocaleString()} repealed)` : ''}</span><span class="ml">${lockLine(t)}</span></span>${waffle(t)}</a>`; };
+    const trackHTML = t => {
+      // consecutive codes form a grid; everything else is a row of the path, in place
+      const out = []; let codes = [], rows = [];
+      const flush = () => { if (codes.length) out.push(`<div class="mcodes">${codes.join('')}</div>`); if (rows.length) out.push(`<ul class="items">${rows.join('')}</ul>`); codes = []; rows = []; };
+      t.items.forEach(i => { if (i.t === 'code' && !i.x) { if (rows.length) flush(); codes.push(codeTile(i.id, t.name)); } else { if (codes.length) flush(); rows.push(itemRow(i, f)); } });
+      flush();
+      return `<section class="mtrack"><div class="mtrh"><b>${esc(t.name)}</b>${t.why ? `<span class="small muted">${esc(t.why)}</span>` : ''}<span class="mpic">Picture: ${esc(t.pic)}</span></div>${out.join('')}</section>`;
+    };
+    const tiers = ['start', 'core', 'deep'].map(tier => { const ts = f.tracks.filter(t => t.tier === tier); return ts.length ? `<div class="tier">${tierName[tier]}</div>${ts.map(trackHTML).join('')}` : ''; }).join('');
+    const lb = S.lastBy[f.id], todo = pathTodo(f);
     html = `<div class="mapv zin f-${f.id}">${mapCrumbs([['Law school', '#/map'], [f.name, '']])}
       <div class="fieldhero"><div class="fhfig">${figure(f.id, true)}</div><div><span class="eyebrow" style="color:var(--f)">${f.n} · ${esc(f.pname)}</span><h1>${esc(f.name)}</h1><p class="hook" style="margin:0 0 8px">${esc(f.q)}</p>
       <div class="mhstat">${ringHTML(ft, 72, 'locked in')}<div class="small">${lockLine(ft)}</div></div></div></div>
-      ${nxt ? `<div class="mapnext"><span class="eyebrow">Next to lock in</span><a class="btn primary" href="#/map/${fid}/${nxt}">${esc(meta(nxt).short)} →</a><span class="small muted">In the order this field is best learned: foundations first.</span></div>` : ''}
-      ${tiers}
-      <p class="small" style="margin-top:14px"><a href="#/field/${fid}">Open this field’s study path</a> for its lessons and memory walks.</p></div>`;
+      <div class="card fnext"><span class="eyebrow">Your next step in ${esc(f.name)}</span><div class="row">
+        ${lb ? `<a class="btn primary" href="#/p/${lb.c}/${lb.p}">Continue: ${esc(lb.l)}</a>` : ''}
+        ${nxt ? `<a class="btn${lb ? '' : ' primary'}" href="#/map/${fid}/${nxt}">Lock in: ${esc(meta(nxt).short)}</a>` : ''}
+        ${todo ? `<a class="btn" href="${todo[0]}">Next in the path: ${esc(todo[1])}</a>` : ''}</div>
+        <p class="tiny muted" style="margin:8px 0 0">One path, read top to bottom. Codes fill with colour as you lock them in; a change of course sits right after the code it construes; every question you answer joins the same reviews.</p></div>
+      ${tiers}</div>`;
   } else {
     // level 2+: a code, or a division inside it
-    const f = CUR.byId[fid] || fieldOf(cid); const d = await loadCode(cid); const m = meta(cid);
+    const f = CUR.byId[fid] || fieldOf(cid); const d = await loadCode(cid); const m = meta(cid); await loadShifts();
     const at = dv != null && dv !== '' ? +dv : null;
     const chain = []; let v = at; while (v != null) { chain.unshift(v); v = d.divisions[v].p; }
     const kids = at == null ? d.roots : d.kids[at];
@@ -1348,7 +1360,7 @@ async function mapView(parts) {
         <div class="row" style="margin-top:10px">${T.k < T.total ? `<a class="btn primary" href="#/sprint?${scope}">${due ? `Bring back ${due} slipping` : T.k + T.g ? 'Lock in the next ones' : 'Start locking this in'}</a>` : '<span class="chip ok">Every provision here is locked in</span>'}<a class="btn" href="#/code/${cid}${at != null ? '?div=' + at : ''}">Read it in order</a></div></div>
       ${nx && kidRows.length > 1 ? `<div class="mapnext"><span class="eyebrow">Next to lock in</span><a class="btn" href="#/map/${fid}/${cid}/${nx.i}">${esc(shortDiv(d.divisions[nx.i].t))} →</a></div>` : ''}
       ${kidRows.length ? `<div class="mblocks">${kidRows.map(r => `<a class="mblock${r.t.k === r.t.total ? ' done' : ''}" href="#/map/${fid}/${cid}/${r.i}"><span class="mbh">${ringHTML(r.t, 44)}<span class="mt"><b>${esc(d.divisions[r.i].t)}</b><span class="tiny muted">${r.keys.length} provision${r.keys.length === 1 ? '' : 's'}${r.keys.length <= 15 && r.t.k < r.t.total ? ` · one sitting` : ''}</span></span></span>${mosaic(r.keys, d, cid, false)}</a>`).join('')}</div>` : ''}
-      ${direct.length ? `<div class="card flat mosdirect">${mosaic(direct.map(p => ck(cid, p.i)), d, cid, true)}<span class="tiny muted">One square per provision. Tap one to study it.</span></div><ul class="plist mapprov">${direct.map(p => { const st = lockState(ck(cid, p.i)); return `<li><a href="#/p/${cid}/${p.i}"><span class="ls ${st}" title="${{ k: 'Locked in', g: 'Learning', x: 'Slipping', o: 'Opened', n: 'Not started' }[st]}">${st === 'k' ? '🔒' : ''}</span><span class="pl">${esc(p.l)}</span><span class="pc">${esc(p.c || inForce(p).cap || firstWords(p))}</span></a></li>`; }).join('')}</ul>` : ''}
+      ${direct.length ? `<div class="card flat mosdirect">${mosaic(direct.map(p => ck(cid, p.i)), d, cid, true)}<span class="tiny muted">One square per provision. Tap one to study it.</span></div><ul class="plist mapprov">${direct.map(p => { const st = lockState(ck(cid, p.i)); return `<li><a href="#/p/${cid}/${p.i}"><span class="ls ${st}" title="${{ k: 'Locked in', g: 'Learning', x: 'Slipping', o: 'Opened', n: 'Not started' }[st]}">${st === 'k' ? '🔒' : ''}</span><span class="pl">${esc(p.l)}</span><span class="pc">${esc(p.c || inForce(p).cap || firstWords(p))}${SHF.byLink[ck(cid, p.i)] ? ' <span class="shx" title="The Supreme Court changed course on this provision">⇄ doctrine changed</span>' : ''}</span></a></li>`; }).join('')}</ul>` : ''}
       ${LEGEND}</div>`;
   }
   main.innerHTML = html;
@@ -1395,7 +1407,7 @@ async function sprintView(q) {
   const queue = due.slice(0, 8);
   fresh.forEach((k, j) => queue.splice(Math.min(queue.length, j === 0 ? 1 : 4), 0, k));
   if (!queue.length) {
-    main.innerHTML = `<div class="reviewcard card"><span class="eyebrow">Sprint</span><h1>Nothing to do right now.</h1><p class="muted">Nothing is due and you have no new provision waiting. Open one under Learn; it joins your sprints from then on.</p><div class="row"><a class="btn primary" href="#/learn">Learn something new</a><a class="btn" href="#/drill">Drill anyway</a></div></div>`;
+    main.innerHTML = `<div class="reviewcard card"><span class="eyebrow">Sprint</span><h1>Nothing to do right now.</h1><p class="muted">Nothing is due and nothing new is waiting. Open a provision or a change of course on the map; it joins your sprints from then on.</p><div class="row"><a class="btn primary" href="#/map">Open the map</a><a class="btn" href="#/drill">Drill anyway</a></div></div>`;
     return;
   }
   document.body.classList.add('focus');
@@ -1419,8 +1431,8 @@ async function sprintView(q) {
     const nd = Object.values(S.cards).filter(c => c.due && (c.reps || c.last)).map(c => c.due).sort((a, b) => a - b)[0];
     const pc = x => Math.round(x * 100) + '%';
     main.innerHTML = `<div class="reviewcard card sprintdone"><span class="eyebrow">Sprint done · ${fmtClock(elapsed)}</span><h1>${ok} of ${done.length} recalled</h1>
-      ${after.n ? `<p>Across the ${after.n.toLocaleString()} provision${after.n === 1 ? '' : 's'} you are keeping, average recall now is <b>${pc(after.avg)}</b>${before.n ? ` (it was ${pc(before.avg)} when you started)` : ''}. ${after.risk ? `${after.risk} ${after.risk === 1 ? 'is' : 'are'} below ${pc(goal())} and will come up next.` : 'None is below your target.'}</p>` : ''}
-      ${Object.keys(missed).length ? `<p class="small">Missed at least once: ${Object.keys(missed).map(k => { const [c, p] = k.split('|'); const pr = CODES[c] && CODES[c].byId[p]; return `<a href="#/p/${c}/${p}">${esc(meta(c).short)} ${esc(pr ? pr.l : p)}</a>`; }).join(' · ')}. Each comes back in ten minutes, then tomorrow.</p>` : ''}
+      ${after.n ? `<p>Across the ${after.n.toLocaleString()} ${memNoun(after.n)} you are keeping, average recall now is <b>${pc(after.avg)}</b>${before.n ? ` (it was ${pc(before.avg)} when you started)` : ''}. ${after.risk ? `${after.risk} ${after.risk === 1 ? 'is' : 'are'} below ${pc(goal())} and will come up next.` : 'None is below your target.'}</p>` : ''}
+      ${Object.keys(missed).length ? `<p class="small">Missed at least once: ${Object.keys(missed).map(k => { const [h, l] = keyLabel(k); return `<a href="${h}">${esc(l)}</a>`; }).join(' · ')}. Each comes back in ten minutes, then tomorrow.</p>` : ''}
       <div class="tryit small"><b>Now rest for five minutes.</b> Stand up, look at something far away, have some water, and do not pick up your phone. A few minutes of quiet rest right after learning helps the brain keep what it just took in (Dewar and others, 2012).</div>
       <p class="small muted">${nd ? `Next provision due ${nd <= Date.now() ? 'now' : new Date(nd).toLocaleString([], { weekday: 'short', hour: 'numeric', minute: '2-digit' })}.` : ''} Two or three short sprints spread over the day beat one long sitting.</p>
       <div class="row"><button class="btn primary" id="spagain">Another sprint</button><a class="btn" href="#/">Home</a></div></div>`;
@@ -1429,6 +1441,19 @@ async function sprintView(q) {
   const step = async () => {
     if (i >= queue.length || (over && shown > 0 && i >= shown)) return finish();
     const key = queue[i]; const [cid, pid] = key.split('|');
+    const head = () => `${scopeName ? `<p class="tiny muted" style="margin:6px 0 0">Locking in: <b>${esc(scopeName)}</b></p>` : ''}<div class="sphead"><span id="sptime" class="sptime">${fmtClock(left())}</span><div class="spbar"><i id="spbar" style="width:${Math.min(100, elapsed / (mins * 600))}%"></i></div><span class="small muted">${queue.length - i} left</span><button class="btn sm ghost" id="spend">End</button></div>
+      <p id="spover" class="small spover" ${over ? '' : 'hidden'}>Time is up. Finish this one, then rest.</p>`;
+    if (key.startsWith('q|')) {
+      const qi = await qResolve(key); if (!qi) { i++; return step(); }
+      shown = i + 1; const q0 = S.cards[key]; const qNew = !(q0 && (q0.reps || q0.last));
+      main.innerHTML = `<div class="sprint">${head()}<div class="small muted" style="margin-top:10px">${esc(qi.kind)}${qNew ? ' · <b class="newtag">New</b>' : ''}</div><div class="qtitle">${esc(qi.title)}</div>${quizHTML('spq', qi.t)}</div>`;
+      $('#spend').onclick = finish;
+      const box = wireQuiz('spq', qi.t, ok => { const g = ok ? 3 : 1; const c = rate(key, g); done.push([key, g]); if (g === 1) { missed[key] = (missed[key] || 0) + 1; if (missed[key] <= 2) queue.splice(Math.min(queue.length, i + 3), 0, key); } return c; },
+        (ok, c) => `${memLine(c)}<div class="row" style="margin-top:10px"><a class="btn sm ghost" href="${qi.href}">${esc(qi.open)}</a><span class="spacer"></span><button class="btn primary" id="spnx">Next</button></div>`);
+      box.addEventListener('click', e => { if (e.target.id === 'spnx') { i++; step(); } });
+      document.onkeydown = e => { if (!location.hash.startsWith('#/sprint') || /input|textarea/i.test(e.target.tagName)) return; if (/^[1-4]$/.test(e.key)) { const b = $(`#spq .opt[data-o="${+e.key - 1}"]`); if (b && !b.disabled) b.click(); } if (e.key === 'Enter') { const n = $('#spnx'); if (n) n.click(); } };
+      return;
+    }
     if (!meta(cid)) { i++; return step(); }
     const d = await loadCode(cid); const p = d.byId[pid];
     if (!p) { i++; return step(); }
@@ -1442,8 +1467,7 @@ async function sprintView(q) {
     const first = plain(ps[0] || '').split(/(?<=[.;:])\s/)[0];
     const hint = first.split(/\s+/).map(w => w.replace(/^([“"(‘'\[]*)([A-Za-z0-9])[^\s]*/, '$1$2…')).join(' ');
     main.innerHTML = `<div class="sprint">
-      ${scopeName ? `<p class="tiny muted" style="margin:6px 0 0">Locking in: <b>${esc(scopeName)}</b></p>` : ''}<div class="sphead"><span id="sptime" class="sptime">${fmtClock(left())}</span><div class="spbar"><i id="spbar" style="width:${Math.min(100, elapsed / (mins * 600))}%"></i></div><span class="small muted">${queue.length - i} left</span><button class="btn sm ghost" id="spend">End</button></div>
-      <p id="spover" class="small spover" ${over ? '' : 'hidden'}>Time is up. Finish this one, then rest.</p>
+      ${head()}
       <div class="card spcard">
         <div class="small muted">${esc(d.short)}${isNew ? ' · <b class="newtag">New</b>' : r != null ? ` · your recall now ≈ ${Math.round(r * 100)}%` : ''}${c0 && (c0.lapses || 0) >= LEECH ? ' · <b style="color:var(--warn)">stubborn</b>' : ''}</div>
         <div class="prompt">${esc(p.l)}${cap ? ' — ' + esc(cap) : ''}</div>
@@ -1612,7 +1636,8 @@ async function searchView(q) {
     const mark = s => { let h = esc(s); for (const w of terms.concat(phrases)) if (w.length > 2) h = h.replace(new RegExp('(' + w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi'), '<mark>$1</mark>'); return h; };
     const snip = p => { const t2 = provText(p); const low = t2.toLowerCase(); const w = (phrases[0] || terms[0] || ''); const k = w ? low.indexOf(w) : 0; const a = Math.max(0, k - 90); return (a ? '…' : '') + t2.slice(a, a + 260) + (t2.length > a + 260 ? '…' : ''); };
     const ch = await caseHits(terms.concat(phrases), only);
-    sr.innerHTML = (ch.length ? `<div class="card flat" style="margin-bottom:12px"><h3 style="margin:0 0 6px">Cases named “${esc(t)}” (${ch.length})</h3><ul class="small" style="margin:0;padding-left:1.1em">${ch.slice(0, 60).map(x => `<li><span style="font-family:var(--serif)">${mark(x.n)}</span>${x.c ? `, <span class="muted">${esc(x.c)}</span>` : ''} <span class="tiny muted">${esc(x.src)}</span> → ${x.ks.slice(0, 6).map(k => { const [c, p] = k.split('|'); const pr = CODES[c] && CODES[c].byId[p]; return `<a class="chip blue" href="#/p/${c}/${p}">${esc((meta(c) || {}).short || c)} ${esc(pr ? pr.l : p)}</a>`; }).join(' ')}</li>`).join('')}</ul></div>` : '') + `<p class="small muted">${hits.length.toLocaleString()} provision${hits.length === 1 ? '' : 's'}${hits.length > 150 ? ' · showing 150' : ''}</p><ol class="results" style="padding-left:1.2em">${hits.slice(0, 150).map(h => `<li><a href="#/p/${h.cid}/${h.p.i}"><b>${esc(meta(h.cid).short)} · ${esc(h.p.l)}</b>${h.p.c ? ' — ' + mark(h.p.c) : ''}</a><div class="small" style="font-family:var(--serif)">${mark(snip(h.p))}</div></li>`).join('')}</ol>`;
+    await Promise.all([loadShifts(), loadEnforce()]); const xh = only ? [] : extraHits(terms.concat(phrases));
+    sr.innerHTML = (xh.length ? `<div class="card flat" style="margin-bottom:12px"><h3 style="margin:0 0 6px">In the changes of course and the enforcement playbook (${xh.length})</h3><ul class="small" style="margin:0;padding-left:1.1em">${xh.map(([h, k, t2]) => `<li><span class="chip violet">${esc(k)}</span> <a href="${h}">${mark(t2)}</a></li>`).join('')}</ul></div>` : '') + (ch.length ? `<div class="card flat" style="margin-bottom:12px"><h3 style="margin:0 0 6px">Cases named “${esc(t)}” (${ch.length})</h3><ul class="small" style="margin:0;padding-left:1.1em">${ch.slice(0, 60).map(x => `<li><span style="font-family:var(--serif)">${mark(x.n)}</span>${x.c ? `, <span class="muted">${esc(x.c)}</span>` : ''} <span class="tiny muted">${esc(x.src)}</span> → ${x.ks.slice(0, 6).map(k => { const [c, p] = k.split('|'); const pr = CODES[c] && CODES[c].byId[p]; return `<a class="chip blue" href="#/p/${c}/${p}">${esc((meta(c) || {}).short || c)} ${esc(pr ? pr.l : p)}</a>`; }).join(' ')}</li>`).join('')}</ul></div>` : '') + `<p class="small muted">${hits.length.toLocaleString()} provision${hits.length === 1 ? '' : 's'}${hits.length > 150 ? ' · showing 150' : ''}</p><ol class="results" style="padding-left:1.2em">${hits.slice(0, 150).map(h => `<li><a href="#/p/${h.cid}/${h.p.i}"><b>${esc(meta(h.cid).short)} · ${esc(h.p.l)}</b>${h.p.c ? ' — ' + mark(h.p.c) : ''}</a><div class="small" style="font-family:var(--serif)">${mark(snip(h.p))}</div></li>`).join('')}</ol>`;
   };
   $('#sf').onsubmit = e => { e.preventDefault(); run(); return false; };
   if (term) run();
@@ -1640,12 +1665,12 @@ function memoryCard() {
   const mx = Math.max(1, ...m.fc);
   const day = k => k === 0 ? 'today' : k === 1 ? 'tmrw' : new Date(Date.now() + k * DAY).toLocaleDateString([], { weekday: 'short' });
   return `<div class="card" style="margin-top:14px"><h3>Your memory</h3>
-    <div class="grid g3"><div><div class="stat">${Math.round(m.avg * 100)}%</div><div class="small muted">average recall right now, across ${m.n.toLocaleString()} provision${m.n === 1 ? '' : 's'}</div></div>
+    <div class="grid g3"><div><div class="stat">${Math.round(m.avg * 100)}%</div><div class="small muted">average recall right now, across ${m.n.toLocaleString()} ${memNoun(m.n)}</div></div>
       <div><div class="stat">${m.risk}</div><div class="small muted">below your ${Math.round(goal() * 100)}% target</div></div>
       <div><div class="stat">${m.leeches.length}</div><div class="small muted">stubborn (forgotten ${LEECH}+ times)</div></div></div>
     <p class="small" style="margin:14px 0 6px"><b>Coming due, next 14 days</b></p>
     <div class="fc" role="img" aria-label="Provisions falling due each day for the next 14 days">${m.fc.map((n, k) => `<div class="fcb" title="${day(k)}: ${n}"><span class="fcn">${n || ''}</span><i style="height:${Math.round(n / mx * 100)}%"></i><span class="fcd">${day(k)}</span></div>`).join('')}</div>
-    ${m.leeches.length ? `<p class="small" style="margin:14px 0 4px"><b>Stubborn provisions.</b> Rereading will not fix these. Give each one a vivid picture hook and take it apart again.</p><ul class="small">${m.leeches.slice(0, 20).map(k => { const [c, p] = k.split('|'); const cc = S.cards[k]; return `<li><a href="#/p/${c}/${p}">${esc((meta(c) || {}).short || c)} · ${esc(CODES[c] && CODES[c].byId[p] ? CODES[c].byId[p].l : p.replace(/-/g, ' '))}</a> <span class="muted">· forgotten ${cc.lapses}×${S.hooks[k] ? ' · has a picture' : ''}</span></li>`; }).join('')}</ul>` : ''}
+    ${m.leeches.length ? `<p class="small" style="margin:14px 0 4px"><b>Stubborn provisions.</b> Rereading will not fix these. Give each one a vivid picture hook and take it apart again.</p><ul class="small">${m.leeches.slice(0, 20).map(k => { const [h, l] = keyLabel(k); const cc = S.cards[k]; return `<li><a href="${h}">${esc(l)}</a> <span class="muted">· forgotten ${cc.lapses}×${S.hooks[k] ? ' · has a picture' : ''}</span></li>`; }).join('')}</ul>` : ''}
     <p class="tiny muted" style="margin:10px 0 0">Recall is estimated by the FSRS memory model from your own ratings. It is a forecast, not a grade: rate honestly and it gets better.</p></div>`;
 }
 function progressView() {
@@ -1687,7 +1712,8 @@ function progressView() {
 }
 function merge(o) {
   for (const [k, c] of Object.entries(o.cards || {})) if (!S.cards[k] || (c.last || 0) > (S.cards[k].last || 0)) S.cards[k] = c;
-  for (const f of ['notes', 'marks', 'flags', 'tutor', 'hooks', 'lessons', 'lastBy', 'b2']) Object.assign(S[f], o[f] || {});
+  for (const f of ['notes', 'marks', 'flags', 'tutor', 'hooks', 'lessons', 'lastBy', 'b2', 'shift']) Object.assign(S[f], o[f] || {});
+  if (o.enf) { S.enf.day1 = Object.assign(S.enf.day1 || {}, o.enf.day1 || {}); S.enf.best = Math.max(S.enf.best || 0, o.enf.best || 0) || S.enf.best; S.enf.seen = S.enf.seen || o.enf.seen; }
   for (const [d, v] of Object.entries(o.days || {})) { const a = S.days[d] || { r: 0, n: 0 }; S.days[d] = { r: Math.max(a.r, v.r), n: Math.max(a.n, v.n) }; }
 }
 function dl(name, text) {
@@ -1699,7 +1725,7 @@ function dl(name, text) {
 
 /* ---- Book Two Studio */
 const B2TABS = [['elements', 'Elements'], ['compare', 'Compare'], ['sort', 'Sort it'], ['practice', 'Practice'], ['cases', 'Cases']];
-const b2crumbs = extra => `<div class="crumbs"><a href="#/learn">Learn</a><span class="sep">›</span><a href="#/field/crim">Criminal Law</a><span class="sep">›</span>${extra ? `<a href="#/b2">Book Two Studio</a><span class="sep">›</span><span>${esc(extra)}</span>` : '<span>Book Two Studio</span>'}</div>`;
+const b2crumbs = extra => `<div class="crumbs"><a href="#/map">Law school</a><span class="sep">›</span><a href="#/map/crim">Criminal Law</a><span class="sep">›</span>${extra ? `<a href="#/b2">Book Two Studio</a><span class="sep">›</span><span>${esc(extra)}</span>` : '<span>Book Two Studio</span>'}</div>`;
 const b2score = id => { const r = S.b2[id]; return r && r.n ? `${r.r}/${r.n} right last time` : 'Not practised yet'; };
 async function b2View(id, q) {
   setNav('library');
@@ -1831,7 +1857,9 @@ async function aboutView() {
   <li><b>A memory model, not a fixed timetable.</b> Every rating updates an estimate of how well you would recall that provision today (the FSRS model). Each provision comes back on the day your recall would fall to your target, 90% by default. Under Progress you can see your average recall, what is slipping, what falls due over the next two weeks, and which provisions keep slipping. Those need a new picture, not more rereading.</li>
   <li><b>Eight fields in one building.</b> The House of Law is a memory palace drawn after the Supreme Court’s building on Padre Faura, Manila: its four columns, three doors and seven marble steps, with the Court’s motto, <i>Batas at Bayan</i>, carved above. Each field has a fixed place in it, from the pediment down to the steps, and each topic inside a field is one object at that place. Fixed places give you somewhere to look when you forget.</li>
   <li><b>A short path in each field.</b> Start here, then the core, then deeper only when you need it. A code page offers five provisions at a time.</li>
-  <li><b>Why the law changed.</b> Where the Supreme Court abandoned its own rule, “How the doctrine changed” sets the old rule beside the new, lists the cases in order, gives the Court’s reasons and the dissents, and ends with a question. The change also shows on the provision itself, in its Cases tab.</li>
+  <li><b>One path per field.</b> Each field is a single ordered path on its Map page: lessons, memory walks, codes, the changes of course placed right after the code they construe, your syllabus cases and, in The Lawyer’s Craft, the enforcement playbook. Every page ends with “Next in this field”, and every breadcrumb leads back into the same map.</li>
+  <li><b>One memory for everything.</b> Provisions, the question on each change of course and the enforcement case files are cards in the same memory model. Answer one anywhere and it is scheduled with your provisions; Review and sprints mix them, weakest first.</li>
+  <li><b>Why the law changed.</b> Where the Supreme Court abandoned its own rule, “How the doctrine changed” sets the old rule beside the new, lists the cases in order, gives the Court’s reasons and the dissents, and ends with a question. The change also shows on the provision itself (Cases tab) and on the map.</li>
   <li><b>Winning after you win.</b> “Enforcing a judgment” is a playbook for the stage after the decision: securing assets early, the first 72 hours with a writ, answering the debtor’s defenses, finding hidden assets, special debtors such as the government, and the five- and ten-year clocks. Each move names its rule, and ten case files test it.</li>
   <li><b>Four steps on each provision.</b> Read the verbatim text. Understand it by taking it apart and making your own picture. Recall it with the text hidden. Connect it to cases. Then rate yourself, and Review brings it back just before you would forget it.</li>
   <li><b>The law in force comes first.</b> Where a later law restated a provision, the amended text is what you read, take apart and recall; the text as enacted and the amending law, verbatim, sit under “How the text read before”. Repealed or superseded provisions are marked, so you do not memorize dead law.</li>
@@ -1873,13 +1901,17 @@ async function aboutView() {
   <p class="small muted">Built ${esc(CAT.built)} · ${CAT.total.toLocaleString()} provisions ${/claude|anthropic/.test(location.hostname) ? '' : '· <a href="legacy/">Open the previous Sinag Learning Studio</a>'}</p></div>`;
 }
 
-/* ------------------------------------------------------------------ doctrine shifts */
+/* ------------------------------------------------------------------ one path, one memory
+   Every field is one ordered path (curriculum.json): lessons, walks, codes, the changes of course placed right after
+   the code they construe, case sets and the enforcement playbook. Every question answered anywhere (a change of course,
+   a case file) becomes a card in the same memory as the provisions, scheduled by the same model, reviewed in the same
+   Review and sprints. Keys: provision cards "code|provision"; question cards "q|shift:<id>" and "q|enf:<drill>". */
 let SHF = null, ENF = null;
 async function loadShifts() {
   if (!SHF) {
     SHF = await getJSON('data/shifts.json?v=' + (CAT.xhash || CAT.built)).catch(() => ({ shifts: [] }));
     SHF.byId = {}; SHF.byLink = {};
-    SHF.shifts.forEach(s => { SHF.byId[s.id] = s; s.links.forEach(l => (SHF.byLink[l] = SHF.byLink[l] || []).push(s)); });
+    SHF.shifts.forEach(x => { SHF.byId[x.id] = x; x.links.forEach(l => (SHF.byLink[l] = SHF.byLink[l] || []).push(x)); });
   }
   return SHF;
 }
@@ -1887,84 +1919,142 @@ async function loadEnforce() {
   if (!ENF) {
     ENF = await getJSON('data/enforce.json?v=' + (CAT.ehash || CAT.built)).catch(() => ({ stages: [], moves: [], day1: [], guard: [], drills: [], note: '' }));
     ENF.byId = {}; ENF.byLink = {}; ENF.stageById = {};
-    ENF.stages.forEach(s => { ENF.stageById[s.id] = s; });
-    ENF.moves.forEach(m => { ENF.byId[m.id] = m; m.basis.forEach(b => { if (!b.c) return; const k = ck(b.c, b.i); const a = ENF.byLink[k] = ENF.byLink[k] || []; if (!a.includes(m)) a.push(m); }); });
+    ENF.stages.forEach(x => { ENF.stageById[x.id] = x; });
+    ENF.moves.forEach(m => { ENF.byId[m.id] = m; m.basis.forEach(b => { if (!b.c) return; const k = ck(b.c, b.i); const arr = ENF.byLink[k] = ENF.byLink[k] || []; if (!arr.includes(m)) arr.push(m); }); });
   }
   return ENF;
 }
+const QK = id => 'q|' + id;
+function seenQ(id) { const k = QK(id); if (!S.cards[k]) S.cards[k] = { reps: 0, lapses: 0, seen: Date.now() }; }
+function qChip(id) { const st = lockState(QK(id)); return { k: '<span class="chip ok">Locked in</span>', g: '<span class="chip blue">In memory</span>', x: '<span class="chip warn">Slipping</span>', o: '<span class="chip">Opened</span>', n: '' }[st]; }
+async function qResolve(key) {
+  const id = key.slice(2); await Promise.all([loadShifts(), loadEnforce()]);
+  if (id.startsWith('shift:')) { const x = SHF.byId[id.slice(6)]; return x && { t: x.test, kind: 'How the doctrine changed', title: x.title, href: `#/shifts/${x.id}`, open: 'Read the analysis' }; }
+  if (id.startsWith('enf:')) { const d = ENF.drills.find(z => z.id === id.slice(4)); const m = d && ENF.byId[d.m[0]]; return d && { t: d, kind: 'Case file · enforcing a judgment', title: m ? m.title : 'Enforcing a judgment', href: m ? `#/enforce/${m.id}` : '#/enforce', open: 'Open the move' }; }
+  return null;
+}
+function keyLabel(k) {
+  if (k.startsWith('q|shift:')) { const x = SHF && SHF.byId[k.slice(8)]; return [`#/shifts/${k.slice(8)}`, 'Question: ' + (x ? x.title : 'a change of course')]; }
+  if (k.startsWith('q|enf:')) return [`#/enforce/drills?only=${k.slice(6)}`, 'Case file ' + k.slice(7) + ', enforcing a judgment'];
+  const [c, pid] = k.split('|'); const pr = CODES[c] && CODES[c].byId[pid];
+  return [`#/p/${c}/${pid}`, `${(meta(c) || {}).short || c} ${pr ? pr.l : String(pid).replace(/-/g, ' ')}`];
+}
+const memNoun = n => Object.keys(S.cards).some(k => k.startsWith('q|')) ? `item${n === 1 ? '' : 's'} (provisions and questions)` : `provision${n === 1 ? '' : 's'}`;
+const memLine = c => c ? `<p class="tiny muted" style="margin:8px 0 0">In your memory now: it comes back ${c.ivl < 1 || !c.ivl ? 'in about ten minutes' : 'in ' + fmtIvl(c.ivl)}, mixed in with your provisions.</p>` : '';
+
+/* the path */
+function pathFlat(f) { return f.tracks.flatMap(t => t.items.filter(i => i.t !== 'missing' && !(i.t === 'code' && i.x)).map(i => Object.assign({ track: t.name }, i))); }
+function itemLink(i, f) {
+  if (i.t === 'code') return [`#/map/${f.id}/${i.id}`, meta(i.id).short];
+  if (i.t === 'lesson') return [`#/lesson/${i.id}`, CUR.lessons[i.id].title];
+  if (i.t === 'set') return [`#/set/${i.id}`, CUR.sets[i.id].title];
+  if (i.t === 'b2') return ['#/b2', i.title];
+  if (i.t === 'syl') return [`#/syllabus/${i.id}`, i.title];
+  if (i.t === 'shift') { const x = SHF && SHF.byId[i.id]; return [`#/shifts/${i.id}`, x ? x.title : 'How the doctrine changed']; }
+  if (i.t === 'enforce') return i.id === 'drills' ? ['#/enforce/drills', 'Case files: enforcing a judgment'] : ['#/enforce', 'Enforcing a judgment'];
+  return ['#/map/' + f.id, f.name];
+}
+function pathNext(type, id) {
+  const at = findItem(type, id); if (!at) return null;
+  const flat = pathFlat(at.f); const k = flat.findIndex(i => i.t === type && i.id === id); const nx = flat[k + 1];
+  return { f: at.f, link: nx ? itemLink(nx, at.f) : null };
+}
+/* the first thing in a field's path not yet done (codes are long; they are continued, not "done") */
+function pathTodo(f) {
+  for (const i of pathFlat(f)) {
+    if (i.t === 'lesson' && !S.lessons[i.id]) return itemLink(i, f);
+    if (i.t === 'set' && CUR.sets[i.id].items.some(x => !S.cards[ck(x.c, x.i)])) return itemLink(i, f);
+    if (i.t === 'shift' && SHF && SHF.byId[i.id] && ['n', 'o'].includes(lockState(QK('shift:' + i.id)))) return itemLink(i, f);
+    if (i.t === 'enforce' && ENF && (i.id === 'playbook' ? !S.enf.seen : ENF.drills.some(d => lockState(QK('enf:' + d.id)) === 'n'))) return itemLink(i, f);
+  }
+  return null;
+}
+
+/* ------------------------------------------------------------------ doctrine shifts */
 const ROLE = { old: ['Old rule', 'bad'], refine: ['Refined', 'blue'], new: ['New rule', 'ok'] };
 const fieldName = id => (CUR.byId[id] || {}).name || '';
 const stageName = id => { const st = ENF && ENF.stageById[id]; return st ? `Stage ${st.n} · ${st.title}` : ''; };
 function basisHTML(b) { return b.c ? `<a class="chip blue" href="#/p/${b.c}/${b.i}">${esc(b.t)}</a>` : `<span class="chip">${esc(b.t)}</span>`; }
-function shiftSpan(s) { const ys = s.timeline.map(t => t.y).filter(y => /^\d{4}$/.test(y)).sort(); return ys.length ? (ys[0] === ys[ys.length - 1] ? ys[0] : `${ys[0]}–${ys[ys.length - 1]}`) : ''; }
-function thenNow(s, sm) { return `<div class="thennow${sm ? ' sm' : ''}"><div class="tn then"><b>Then</b>${esc(s.then)}</div><div class="tn now"><b>Now</b>${esc(s.now)}</div></div>`; }
-function shiftCard(s) {
-  return `<div class="shiftmini"><div class="row"><span class="chip violet">Doctrine changed · ${esc(shiftSpan(s))}</span><span class="spacer"></span><a class="small" href="#/shifts/${s.id}">Full analysis →</a></div><div class="sm-t">${esc(s.title)}</div>${thenNow(s, 1)}</div>`;
+function shiftSpan(x) { const ys = x.timeline.map(t => t.y).filter(y => /^\d{4}$/.test(y)).sort(); return ys.length ? (ys[0] === ys[ys.length - 1] ? ys[0] : `${ys[0]}–${ys[ys.length - 1]}`) : ''; }
+function thenNow(x, sm) { return `<div class="thennow${sm ? ' sm' : ''}"><div class="tn then"><b>Then</b>${esc(x.then)}</div><div class="tn now"><b>Now</b>${esc(x.now)}</div></div>`; }
+function shiftCard(x) {
+  return `<div class="shiftmini"><div class="row"><span class="chip violet">Doctrine changed · ${esc(shiftSpan(x))}</span>${qChip('shift:' + x.id)}<span class="spacer"></span><a class="small" href="#/shifts/${x.id}">Full analysis →</a></div><div class="sm-t">${esc(x.title)}</div>${thenNow(x, 1)}</div>`;
 }
 function moveCard(m, label) { return `<a class="movecard" href="#/enforce/${m.id}">${label ? `<span class="eyebrow">${esc(label)}</span>` : ''}<span class="mt">${esc(m.title)}</span><span class="mh">${esc(m.hook)}</span></a>`; }
-function quizHTML(id, t) { return `<div class="card quiz" id="${id}"><p class="explain" style="margin-top:0">${esc(t.q)}</p><div class="opts">${t.options.map((o, i) => `<button class="opt" data-o="${i}">${esc(o)}</button>`).join('')}</div><div class="qres"></div></div>`; }
-function wireQuiz(id, t, done, extra) {
+function quizHTML(id, t) { return `<div class="card quiz" id="${id}"><p class="explain" style="margin-top:0">${esc(t.q)}</p><div class="opts">${t.options.map((o, i) => `<button class="opt" data-o="${i}"><span class="qn">${i + 1}</span>${esc(o)}</button>`).join('')}</div><div class="qres"></div></div>`; }
+/* grade first (the card is rated), then show the reason and whatever comes next */
+function wireQuiz(id, t, grade, extra) {
   const box = $('#' + id);
   $$('.opt', box).forEach(b => b.onclick = () => {
     const o = +b.dataset.o, ok = o === t.a;
     $$('.opt', box).forEach((x, i) => { x.disabled = true; x.classList.toggle('right', i === t.a); x.classList.toggle('wrong', i === o && !ok); });
-    $('.qres', box).innerHTML = `<div class="note ${ok ? '' : 'bad'}" style="margin-top:10px"><b>${ok ? 'Right.' : 'Not quite.'}</b> ${esc(t.why)}</div>${extra ? extra(ok) : ''}`;
-    done(ok);
+    const r = grade(ok);
+    $('.qres', box).innerHTML = `<div class="note ${ok ? '' : 'bad'}" style="margin-top:10px"><b>${ok ? 'Right.' : 'Not quite.'}</b> ${esc(t.why)}</div>${extra ? extra(ok, r) : ''}`;
   });
+  return box;
+}
+function nextBar(pn, extraLeft) {
+  const nx = pn && pn.link;
+  return `<div class="pn">${extraLeft || '<span></span>'}${nx ? `<a class="btn primary" href="${nx[0]}">Next in ${esc(pn.f.name)}: ${esc(nx[1])} →</a>` : pn ? `<a class="btn primary" href="#/map/${pn.f.id}">Back to ${esc(pn.f.name)}</a>` : ''}</div>`;
 }
 async function shiftsView(id) {
-  setNav('syllabus');
+  setNav('library');
   await loadShifts();
   if (!id) {
-    const by = {}; SHF.shifts.forEach(s => (by[s.field] = by[s.field] || []).push(s));
-    const ok = SHF.shifts.filter(s => (S.shift[s.id] || {}).ok).length;
-    main.innerHTML = `<span class="eyebrow">Jurisprudence</span><h1>How the doctrine changed</h1>
-    <p class="lead">Where the Supreme Court abandoned or rewrote its own rule. For each change: the old rule and the new, the cases in order, why the Court changed course, who disagreed and why, and the rule that governs now. Read the dissents as arguments you may one day have to make.</p>
-    <div class="row small muted" style="margin:8px 0 0"><span>${SHF.shifts.length} changes of course</span><span>·</span><span>${ok} answered correctly</span><span class="spacer"></span><a href="#/enforce">Enforcing a judgment →</a></div>
-    ${CUR.fields.filter(f => by[f.id]).map(f => `<div class="sect"><h2>${esc(f.name)}</h2></div><div class="grid g2">${by[f.id].map(s => `<a class="card shiftcard f-${f.id}" href="#/shifts/${s.id}"><span class="row"><span class="chip violet">${esc(shiftSpan(s))}</span>${(S.shift[s.id] || {}).ok ? '<span class="chip ok">✓ answered</span>' : ''}</span><span class="t">${esc(s.title)}</span><span class="small muted">${esc(s.q)}</span></a>`).join('')}</div>`).join('')}
+    const by = {}; SHF.shifts.forEach(x => (by[x.field] = by[x.field] || []).push(x));
+    const ok = SHF.shifts.filter(x => ['g', 'k'].includes(lockState(QK('shift:' + x.id)))).length;
+    main.innerHTML = `${mapCrumbs([['Law school', '#/map'], ['How the doctrine changed', '']])}<span class="eyebrow">Across the fields</span><h1>How the doctrine changed</h1>
+    <p class="lead">Where the Supreme Court abandoned or rewrote its own rule. Each change of course also sits in its field’s path, right after the code it construes, and on the provisions themselves. Here they are side by side, so you can see how the Court reasons when it changes its mind.</p>
+    <div class="row small muted" style="margin:8px 0 0"><span>${SHF.shifts.length} changes of course</span><span>·</span><span>${ok} in your memory</span></div>
+    ${CUR.fields.filter(f => by[f.id]).map(f => `<div class="sect"><h2>${esc(f.name)}</h2><span class="spacer"></span><a class="small" href="#/map/${f.id}">The ${esc(f.name)} path →</a></div><div class="grid g2">${by[f.id].map(x => `<a class="card shiftcard f-${f.id}" href="#/shifts/${x.id}"><span class="row"><span class="chip violet">${esc(shiftSpan(x))}</span>${qChip('shift:' + x.id)}</span><span class="t">${esc(x.title)}</span><span class="small muted">${esc(x.q)}</span></a>`).join('')}</div>`).join('')}
     <p class="tiny muted" style="margin-top:18px">Analysis in our own words. Each citation was checked against the decision or the Supreme Court E-Library. Read the decision itself before you cite it.</p>`;
     return;
   }
-  const s = SHF.byId[id]; if (!s) return shiftsView();
-  const ix = SHF.shifts.indexOf(s), prev = SHF.shifts[ix - 1], next = SHF.shifts[ix + 1];
-  await Promise.all([...new Set(s.links.map(l => l.split('|')[0]))].map(c => loadCode(c).catch(() => 0)));
+  const x = SHF.byId[id]; if (!x) return shiftsView();
+  seenQ('shift:' + id); save();
+  const at = findItem('shift', id); const f = at ? at.f : CUR.byId[x.field];
+  await Promise.all([...new Set(x.links.map(l => l.split('|')[0]))].map(c => loadCode(c).catch(() => 0)));
   const plink = l => { const [c, pid] = l.split('|'); const d = CODES[c]; const pr = d && d.byId[pid]; return `<a class="chip blue" href="#/p/${c}/${pid}">${esc((meta(c) || {}).short || c)} ${esc(pr ? pr.l : pid)}</a>`; };
-  main.innerHTML = `<p class="small"><a href="#/shifts">← How the doctrine changed</a></p>
-  <article class="shiftv f-${s.field}"><span class="eyebrow">${esc(fieldName(s.field))} · ${esc(shiftSpan(s))}</span><h1>${esc(s.title)}</h1>
-  <p class="lead"><b>The question.</b> ${esc(s.q)}</p>
-  ${s.links.length ? `<div class="row" style="margin:6px 0 4px">${s.links.map(plink).join('')}</div>` : ''}
-  ${thenNow(s)}
+  main.innerHTML = `${mapCrumbs([['Law school', '#/map'], [f.name, `#/map/${f.id}`], [at ? at.t.name : 'How the doctrine changed', ''], ])}
+  <article class="shiftv f-${f.id}"><span class="eyebrow">How the doctrine changed · ${esc(shiftSpan(x))}</span><h1>${esc(x.title)}</h1>
+  <p class="lead"><b>The question.</b> ${esc(x.q)}</p>
+  ${x.links.length ? `<div class="row" style="margin:6px 0 4px"><span class="small muted">Read with:</span>${x.links.map(plink).join('')}</div>` : ''}
+  ${thenNow(x)}
   <h2>The cases, in order</h2>
-  <ol class="tl">${s.timeline.map(e => `<li class="r-${e.role}"><span class="ty">${esc(e.y)}</span><div><div class="row"><span class="tc">${esc(e.case)}</span><span class="chip ${ROLE[e.role][1]}">${ROLE[e.role][0]}</span></div><div class="tiny muted">${esc(e.cite)}</div><p>${esc(e.rule)}</p></div></li>`).join('')}</ol>
-  <h2>Why the Court changed course</h2><ol class="explain">${s.why.map(x => `<li>${esc(x)}</li>`).join('')}</ol>
-  <h2>The other side</h2><p class="small muted" style="margin-top:-4px">Dissents and competing views. Today’s dissent is sometimes tomorrow’s majority.</p><ul class="explain">${s.competing.map(x => `<li>${esc(x)}</li>`).join('')}</ul>
-  <div class="note blue"><b>On the exam.</b> ${esc(s.exam)}</div>
-  <h2>Test yourself</h2>${quizHTML('sq', s.test)}
-  <div class="pn">${prev ? `<a class="btn" href="#/shifts/${prev.id}">← Previous</a>` : '<span></span>'}${next ? `<a class="btn primary" href="#/shifts/${next.id}">Next: ${esc(next.title)} →</a>` : `<a class="btn primary" href="#/shifts">All changes of course</a>`}</div></article>`;
-  wireQuiz('sq', s.test, ok => { if (!(S.shift[id] || {}).ok) S.shift[id] = { ok, at: Date.now() }; save(); });
+  <ol class="tl">${x.timeline.map(e => `<li class="r-${e.role}"><span class="ty">${esc(e.y)}</span><div><div class="row"><span class="tc">${esc(e.case)}</span><span class="chip ${ROLE[e.role][1]}">${ROLE[e.role][0]}</span></div><div class="tiny muted">${esc(e.cite)}</div><p>${esc(e.rule)}</p></div></li>`).join('')}</ol>
+  <h2>Why the Court changed course</h2><ol class="explain">${x.why.map(z => `<li>${esc(z)}</li>`).join('')}</ol>
+  <h2>The other side</h2><p class="small muted" style="margin-top:-4px">Dissents and competing views. Today’s dissent is sometimes tomorrow’s majority.</p><ul class="explain">${x.competing.map(z => `<li>${esc(z)}</li>`).join('')}</ul>
+  <div class="note blue"><b>On the exam.</b> ${esc(x.exam)}</div>
+  <h2>Test yourself</h2><p class="small muted" style="margin-top:-4px">Your answer is graded and the question joins your reviews, with your provisions.</p>${quizHTML('sq', x.test)}
+  ${nextBar(at && pathNext('shift', id), `<a class="btn" href="#/shifts">All changes of course</a>`)}</article>`;
+  wireQuiz('sq', x.test, ok => { S.shift[id] = { ok, at: Date.now() }; return rate(QK('shift:' + id), ok ? 3 : 1); }, (ok, c) => memLine(c));
 }
 
 /* ------------------------------------------------------------------ enforcing a judgment */
 async function enforceView(parts, q) {
-  setNav('syllabus');
+  setNav('library');
   await loadEnforce();
   S.enf = S.enf || { day1: {}, best: null }; S.enf.day1 = S.enf.day1 || {};
   const [id] = parts;
-  if (id === 'drills') return enforceDrills(q);
+  const craft = CUR.byId.craft;
+  const base = [['Law school', '#/map'], [craft.name, '#/map/craft']];
+  if (id === 'drills') return enforceDrills(q, base);
   if (!id) {
+    if (!S.enf.seen) { S.enf.seen = Date.now(); save(); }
     const done = ENF.day1.filter((_, i) => S.enf.day1[i]).length;
-    main.innerHTML = `<span class="eyebrow">Creative lawyering</span><h1>Enforcing a judgment</h1>
-    <p class="lead">A judgment is paper until it is paid. Winners often lose at this stage: the debtor moves the money, the sheriff waits, the five years run out. These are the moves that work, stage by stage, each tied to the rule that allows it.</p>
+    main.innerHTML = `${mapCrumbs(base.concat([['Enforcing a judgment', '']]))}<span class="eyebrow">After the judgment · creative lawyering</span><h1>Enforcing a judgment</h1>
+    <p class="lead">A judgment is paper until it is paid. Winners often lose at this stage: the debtor moves the money, the sheriff waits, the five years run out. These are the moves that work, stage by stage, each tied to the rule that allows it. The codal provisions they rest on show the move in their Cases tab.</p>
     <nav class="stagepath" aria-label="Stages">${ENF.stages.map(st => `<button data-go="${st.id}" title="${esc(st.title)}"><b>${st.n}</b><span>${esc(st.short)}</span></button>`).join('')}</nav>
     <div class="grid g2" style="margin-top:16px">
       <div class="card"><div class="row"><h3 style="margin:0">The writ is out: the first 72 hours</h3><span class="spacer"></span><span class="chip ${done === ENF.day1.length ? 'ok' : ''}" id="d1c">${done}/${ENF.day1.length}</span></div>
-        <ol class="day1">${ENF.day1.map((x, i) => `<li><label><input type="checkbox" data-d="${i}" ${S.enf.day1[i] ? 'checked' : ''}><span>${esc(x)}</span></label></li>`).join('')}</ol>
+        <ol class="day1">${ENF.day1.map((z, i) => `<li><label><input type="checkbox" data-d="${i}" ${S.enf.day1[i] ? 'checked' : ''}><span>${esc(z)}</span></label></li>`).join('')}</ol>
         <button class="btn sm ghost" id="d1r">Clear for a new case</button></div>
       <div class="card"><h3 style="margin-top:0">Guardrails</h3><ul class="guard">${ENF.guard.map(g => `<li><b>${esc(g.t)}.</b> ${esc(g.x)} ${g.l ? basisHTML(g.l) : ''}</li>`).join('')}</ul>
-        <div class="row"><a class="btn primary" href="#/enforce/drills">Work the ${ENF.drills.length} case files</a>${S.enf.best != null ? `<span class="small muted">Best so far: ${S.enf.best}/${ENF.drills.length}</span>` : ''}</div></div>
+        <div class="row"><a class="btn primary" href="#/enforce/drills">Work the ${ENF.drills.length} case files</a><span class="small muted">${ENF.drills.filter(d => lockState(QK('enf:' + d.id)) !== 'n').length} in your memory</span></div></div>
     </div>
     ${ENF.stages.map(st => `<section class="stage" id="${st.id}"><div class="sect"><span class="stn">${st.n}</span><h2>${esc(st.title)}</h2></div><p class="small muted" style="margin:-4px 0 10px;max-width:70ch">${esc(st.goal)}</p><div class="grid g3">${ENF.moves.filter(m => m.stage === st.id).map(m => moveCard(m)).join('')}</div></section>`).join('')}
-    <p class="tiny muted" style="margin-top:18px">${esc(ENF.note)}</p>`;
+    <p class="tiny muted" style="margin-top:18px">${esc(ENF.note)}</p>
+    ${nextBar(pathNext('enforce', 'playbook'))}`;
     $$('.stagepath button').forEach(b => b.onclick = () => document.getElementById(b.dataset.go).scrollIntoView({ behavior: 'smooth', block: 'start' }));
     $$('[data-d]').forEach(c => c.onchange = () => { S.enf.day1[c.dataset.d] = c.checked; save(); const n = ENF.day1.filter((_, i) => S.enf.day1[i]).length; $('#d1c').textContent = `${n}/${ENF.day1.length}`; $('#d1c').classList.toggle('ok', n === ENF.day1.length); });
     $('#d1r').onclick = () => { S.enf.day1 = {}; save(); enforceView([]); };
@@ -1973,32 +2063,46 @@ async function enforceView(parts, q) {
   const m = ENF.byId[id]; if (!m) return enforceView([]);
   const ix = ENF.moves.indexOf(m), prev = ENF.moves[ix - 1], next = ENF.moves[ix + 1];
   const dr = ENF.drills.filter(d => d.m.includes(m.id));
-  main.innerHTML = `<p class="small"><a href="#/enforce">← Enforcing a judgment</a></p>
+  const st = ENF.stageById[m.stage];
+  main.innerHTML = `${mapCrumbs(base.concat([['Enforcing a judgment', '#/enforce'], [`Stage ${st.n}`, '']]))}
   <article class="movev"><span class="eyebrow">${esc(stageName(m.stage))}</span><h1>${esc(m.title)}</h1><p class="lead">${esc(m.hook)}</p>
   <div class="note blue"><b>When.</b> ${esc(m.when)}</div>
-  <h2>The moves</h2><ol class="explain">${m.steps.map(x => `<li>${esc(x)}</li>`).join('')}</ol>
+  <h2>The moves</h2><ol class="explain">${m.steps.map(z => `<li>${esc(z)}</li>`).join('')}</ol>
   <h2>Legal basis</h2><div class="row">${m.basis.map(basisHTML).join('')}</div>
   ${m.cases.length ? `<h2>Cases</h2>${m.cases.map(c => `<div class="case"><div class="cn">${esc(c.n)}</div><div class="cc">${esc(c.cite)}</div><div class="dg"><div>${esc(c.held)}</div></div></div>`).join('')}` : ''}
-  ${m.traps.length ? `<h2>Watch out</h2><ul class="explain">${m.traps.map(x => `<li>${esc(x)}</li>`).join('')}</ul>` : ''}
-  ${dr.length ? `<div class="row" style="margin-top:14px"><a class="btn" href="#/enforce/drills?only=${dr.map(d => d.id).join(',')}">Try the case file${dr.length > 1 ? 's' : ''} on this move</a></div>` : ''}
-  <div class="pn">${prev ? `<a class="btn" href="#/enforce/${prev.id}">← ${esc(prev.title)}</a>` : '<span></span>'}${next ? `<a class="btn primary" href="#/enforce/${next.id}">${esc(next.title)} →</a>` : `<a class="btn primary" href="#/enforce/drills">Case files</a>`}</div></article>`;
+  ${m.traps.length ? `<h2>Watch out</h2><ul class="explain">${m.traps.map(z => `<li>${esc(z)}</li>`).join('')}</ul>` : ''}
+  ${dr.length ? `<div class="card flat" style="margin-top:14px"><div class="row"><b>Test it</b><span class="small muted">${dr.length} case file${dr.length > 1 ? 's' : ''} on this move; each joins your reviews once answered.</span><span class="spacer"></span><a class="btn" href="#/enforce/drills?only=${dr.map(d => d.id).join(',')}">Try ${dr.length > 1 ? 'them' : 'it'}</a></div></div>` : ''}
+  <div class="pn">${prev ? `<a class="btn" href="#/enforce/${prev.id}">← ${esc(prev.title)}</a>` : `<a class="btn" href="#/enforce">← The playbook</a>`}${next ? `<a class="btn primary" href="#/enforce/${next.id}">${esc(next.title)} →</a>` : `<a class="btn primary" href="#/enforce/drills">Case files →</a>`}</div></article>`;
 }
-function enforceDrills(q) {
+function enforceDrills(q, base) {
   const only = ((q && q.get('only')) || '').split(',').filter(Boolean);
   const list = only.length ? ENF.drills.filter(d => only.includes(d.id)) : ENF.drills;
+  const crumb = mapCrumbs(base.concat([['Enforcing a judgment', '#/enforce'], ['Case files', '']]));
   let i = 0, score = 0;
   const draw = () => {
     if (i >= list.length) {
       if (!only.length) { S.enf.best = Math.max(S.enf.best || 0, score); save(); }
-      main.innerHTML = `<p class="small"><a href="#/enforce">← Enforcing a judgment</a></p><div class="reviewcard card"><h1>${score} of ${list.length}</h1><p class="muted">${score === list.length ? 'Every case file solved.' : 'Open the moves you missed, read the steps once more, and try again tomorrow.'}</p><div class="row"><a class="btn primary" href="#/enforce">Back to the playbook</a><button class="btn" id="again">Again</button></div></div>`;
+      main.innerHTML = `${crumb}<div class="reviewcard card"><h1>${score} of ${list.length}</h1><p class="muted">${score === list.length ? 'Every case file solved.' : 'The ones you missed come back in your reviews within minutes, then on the schedule your memory needs.'} All of them are now in your memory, with your provisions.</p><div class="row"><a class="btn primary" href="#/enforce">Back to the playbook</a><button class="btn" id="again">Again</button></div></div>
+      ${only.length ? '' : nextBar(pathNext('enforce', 'drills'))}`;
       $('#again').onclick = () => { i = 0; score = 0; draw(); };
       return;
     }
     const d = list[i];
-    main.innerHTML = `<p class="small"><a href="#/enforce">← Enforcing a judgment</a></p><span class="eyebrow">Case file ${i + 1} of ${list.length}</span>${quizHTML('dq', d)}`;
-    wireQuiz('dq', d, ok => { if (ok) score++; $('#nx').onclick = () => { i++; draw(); window.scrollTo(0, 0); }; }, () => `<div class="row" style="margin-top:10px">${d.m.map(x => ENF.byId[x]).filter(Boolean).map(mv => `<a class="btn sm" href="#/enforce/${mv.id}">${esc(mv.title)}</a>`).join('')}<span class="spacer"></span><button class="btn primary" id="nx">${i + 1 < list.length ? 'Next case file' : 'See your score'}</button></div>`);
+    main.innerHTML = `${crumb}<span class="eyebrow">Case file ${i + 1} of ${list.length}</span>${quizHTML('dq', d)}`;
+    const box = wireQuiz('dq', d, ok => { if (ok) score++; return rate(QK('enf:' + d.id), ok ? 3 : 1); },
+      (ok, c) => `${memLine(c)}<div class="row" style="margin-top:10px">${d.m.map(z => ENF.byId[z]).filter(Boolean).map(mv => `<a class="btn sm" href="#/enforce/${mv.id}">${esc(mv.title)}</a>`).join('')}<span class="spacer"></span><button class="btn primary" id="nx">${i + 1 < list.length ? 'Next case file' : 'See your score'}</button></div>`);
+    box.addEventListener('click', e => { if (e.target.id === 'nx') { i++; draw(); window.scrollTo(0, 0); } });
   };
   draw();
+}
+
+/* ------------------------------------------------------------------ search beyond the codes */
+function extraHits(terms) {
+  const has = txt => { const low = txt.toLowerCase(); return terms.length && terms.every(w => low.includes(w)); };
+  const out = [];
+  (SHF ? SHF.shifts : []).forEach(x => { if (has([x.title, x.q, x.then, x.now, ...x.timeline.flatMap(e => [e.case, e.cite, e.rule]), ...x.why, ...x.competing].join(' '))) out.push([`#/shifts/${x.id}`, 'Change of course', x.title]); });
+  (ENF ? ENF.moves : []).forEach(m => { if (has([m.title, m.hook, m.when, ...m.steps, ...m.traps, ...m.basis.map(b => b.t), ...m.cases.flatMap(c => [c.n, c.cite, c.held])].join(' '))) out.push([`#/enforce/${m.id}`, 'Enforcement move', m.title]); });
+  return out;
 }
 
 /* ------------------------------------------------------------------ router */
@@ -2013,7 +2117,7 @@ async function route() {
     if (!CUR) await loadCur();
     if (!parts[0]) await home();
     else if (parts[0] === 'learn') learn();
-    else if (parts[0] === 'field') fieldView(parts[1]);
+    else if (parts[0] === 'field') await mapView([parts[1]]);
     else if (parts[0] === 'lesson') lessonView(parts[1]);
     else if (parts[0] === 'set') setView(parts[1]);
     else if (parts[0] === 'b2') await b2View(parts[1], q);

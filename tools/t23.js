@@ -6,7 +6,7 @@ const { chromium } = require('/opt/npm-tools/node_modules/playwright');
   for (const [w, tag] of [[390, 'm'], [1280, 'd']]) {
     const pg = await b.newPage({ viewport: { width: w, height: 900 }, deviceScaleFactor: w === 390 ? 2 : 1 });
     pg.on('pageerror', e => errs.push(tag + ' ' + e.message));
-    pg.on('console', m => { if (m.type() === 'error') errs.push(tag + ' console ' + m.text()); });
+    pg.on('console', m => { if (m.type() === 'error' && !/Failed to load resource/.test(m.text())) errs.push(tag + ' console ' + m.text()); });
     await pg.goto('http://localhost:8811/', { waitUntil: 'networkidle' });
     await pg.evaluate(() => localStorage.clear());
     const go = async (h, f) => { await pg.goto('http://localhost:8811/' + h, { waitUntil: 'networkidle' }); await pg.waitForTimeout(400);

@@ -536,6 +536,10 @@
 {
 "id": "fresh-period",
 "field": "craft",
+"home": [
+"craft",
+"Courts and procedure"
+],
 "title": "The fresh period rule: a new 15 days after denial of reconsideration",
 "q": "After a motion for reconsideration is denied, how long does a party have to appeal?",
 "links": [],
@@ -594,6 +598,10 @@
 {
 "id": "probation-after-appeal",
 "field": "crim",
+"home": [
+"crim",
+"Computing and serving penalties"
+],
 "title": "Probation after appeal: Francisco, Colinares, and RA 10707",
 "q": "May an accused who appealed still apply for probation if the appellate court lowers the penalty?",
 "links": [],

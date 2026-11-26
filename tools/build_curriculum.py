@@ -79,6 +79,10 @@ FIELDS = [
    {'tier': 'core', 'name': 'Pay and leave', 'why': '', 'items': [C('pd851'), C('ra11210'), C('ra8187'), C('ra11165')]},
    {'tier': 'core', 'name': 'Workers the law singles out', 'why': 'Domestic workers, migrant workers, and protection from harassment.',
     'items': [C('ra10361'), C('ra8042'), C('ra10022'), C('ra7877'), C('ra11313'), C('ra9710')]},
+   {'tier': 'deep', 'name': 'Implementing rules', 'why': 'The Labor Code is applied through DOLE’s rules: read the article first, then the rule that carries it out.',
+    'items': [C('irrlabor'), C('do174')]},
+   {'tier': 'core', 'name': 'Foreign nationals working here', 'why': 'Two permits from two agencies: DOLE’s Alien Employment Permit and the Bureau of Immigration’s work visa.',
+    'items': [L('lab-aep'), S('lab-aep-walk'), C('ca613', 1)]},
    {'tier': 'deep', 'name': 'Social insurance, health and welfare', 'why': '',
     'items': [C('ra11199'), C('ra11223'), C('ra11036'), C('ra10354'), C('milk'), C('sanitation'), C('ra10931')]},
  ]},
@@ -89,7 +93,7 @@ FIELDS = [
     'items': [C('isl'), C('ra10951'), C('ra10592'), C('ra9346'), C('ra7659'), C('act3326')]},
    {'tier': 'core', 'name': 'Sexual offences and violence against women', 'why': '', 'items': [C('ra8353'), C('ra11648'), C('ra9262'), C('ra9995'), C('ra7877', 1)]},
    {'tier': 'core', 'name': 'Children', 'why': '', 'items': [C('ra7610'), C('ra9344'), C('ra11930')]},
-   {'tier': 'core', 'name': 'Drugs and firearms', 'why': '', 'items': [C('ra9165'), C('ra10591')]},
+   {'tier': 'core', 'name': 'Drugs and firearms', 'why': '', 'items': [C('ra9165'), C('irr9165'), C('ra10591')]},
    {'tier': 'deep', 'name': 'Public officers and corruption', 'why': '', 'items': [C('ra3019'), C('ra7080'), C('pd1829')]},
    {'tier': 'deep', 'name': 'Trafficking and hazing', 'why': '', 'items': [C('ra9208'), C('ra10364'), C('ra11862'), C('ra11053')]},
    {'tier': 'deep', 'name': 'Property and fraud', 'why': '',
@@ -131,12 +135,10 @@ FIELDS = [
    {'tier': 'start', 'name': 'Why lawyers owe more', 'why': 'Ethics makes sense once you see whom each duty protects.',
     'items': [L('eth-frame'), Y('ethics', 'Your Legal and Judicial Ethics syllabus')]},
    {'tier': 'core', 'name': 'The lawyer', 'why': '',
-    'items': [L('eth-cpra'), S('eth-profession'),
-              M('Code of Professional Responsibility and Accountability', 'A.M. No. 22-09-01-SC (2023)', 'A Supreme Court issuance, not yet in the library verbatim. Read the official text; send the PDF and it will be added provision by provision.',
-                'https://sc.judiciary.gov.ph/wp-content/uploads/2023/05/22-09-01-SC-FINAL.pdf')]},
+    'items': [L('eth-cpra'), C('cpra'), S('eth-cpra-core'), S('eth-profession'), C('notarial'), C('remotenot')]},
    {'tier': 'core', 'name': 'The judge', 'why': '',
     'items': [L('eth-judge'), S('eth-judiciary'),
-              M('2025 Code of Judicial Conduct and Accountability', 'A.M. No. 25-04-04-SC (in force December 21, 2025)', 'A Supreme Court issuance, not yet in the library verbatim.',
+              M('2025 Code of Judicial Conduct and Accountability', 'A.M. No. 25-04-04-SC (in force December 21, 2025)', 'A Supreme Court issuance. No reliable transcription could be reached from here; send the official PDF and it will be added verbatim, canon by canon.',
                 'https://sc.judiciary.gov.ph/wp-content/uploads/2025/12/A.M.-NO.-25-04-04-SC.pdf')]},
    {'tier': 'core', 'name': 'The public officer', 'why': '', 'items': [L('eth-public'), S('eth-accountability'), C('ra6713'), C('ra3019', 1), C('ra7080', 1), C('ra6770', 1)]},
  ]},
@@ -144,6 +146,17 @@ FIELDS = [
 
 # --------------------------------------------------------------------------- study sets
 SETS = {
+ 'eth-cpra-core': {'title': 'The CPRA: twelve sections examiners ask most', 'blurb': 'One rule per value, then how lawyers are punished.', 'items': [
+   ('cpra', 'preamble', 'Six values, four roles'), ('cpra', 'canon-i-sec-2', 'Win on the merits, never on influence'),
+   ('cpra', 'canon-ii-sec-1', 'No unlawful, dishonest, immoral or deceitful conduct'), ('cpra', 'canon-ii-sec-17', 'No solicitation; dignified, factual ads only'),
+   ('cpra', 'canon-iii-sec-6', 'The client’s trust and money'), ('cpra', 'canon-iii-sec-13', 'Conflict of interest: the test and the cure'),
+   ('cpra', 'canon-iii-sec-27', 'Confidences outlive the engagement'), ('cpra', 'canon-iii-sec-41', 'Fair and reasonable fees'),
+   ('cpra', 'canon-iv-sec-3', 'Diligence and punctuality'), ('cpra', 'canon-v-sec-3', 'Never turn away the indigent, save three cases'),
+   ('cpra', 'canon-vi-sec-32', 'Substantial evidence'), ('cpra', 'canon-vi-sec-37', 'Serious, less serious, light: the sanctions')]},
+ 'lab-aep-walk': {'title': 'Working in the Philippines as a foreigner', 'blurb': 'From the visa class to the permit and what happens without one.', 'items': [
+   ('ca613', 'section-9', 'Non-immigrant visas; 9(g) for pre-arranged employment'), ('labor', 'article-12', 'Why the Code protects Filipino jobs'),
+   ('labor', 'article-40', 'The Alien Employment Permit'), ('labor', 'article-41', 'No transfer without approval'),
+   ('labor', 'article-42', 'Replacing foreign nationals with trained Filipinos'), ('ca613', 'section-37', 'Deportation')]},
  'statcon-effect': {'title': 'When a law binds: the codal rules', 'blurb': 'Thirteen short provisions on effectivity, ignorance, prospectivity and repeal. Read them once in this order.', 'items': [
    ('civil', 'article-2', 'Effectivity after publication'), ('admincode', 'book-i-sec-18', 'The same rule, restated in 1987'),
    ('civil', 'article-3', 'Ignorance of the law'), ('admincode', 'book-i-sec-23', 'Ignorance, restated'),
@@ -181,6 +194,16 @@ SETS = {
 
 # --------------------------------------------------------------------------- lessons (our own words)
 LESSONS = {
+ 'lab-aep': {'title': 'Foreign nationals at work: the AEP after centralization', 'mins': 7,
+  'lead': 'A foreign national who will work in the Philippines needs two things from two agencies: permission to work from DOLE (the Alien Employment Permit) and a visa that allows work from the Bureau of Immigration. Since June 9, 2026, every AEP matter is handled by the DOLE Central Office.',
+  'sections': [
+   {'h': 'The rule in the Code', 'p': ['{labor:article-40} requires an employment permit for any non-resident foreign national, and the employer who hires one. DOLE issues it only after finding that no Filipino is competent, able and willing to do the work. {labor:article-41} forbids changing jobs or employers without approval.'], 'l': []},
+   {'h': 'The current rules', 'p': ['Department Order No. 248 (2025) replaced D.O. 221 (2021). Its main tools are the Labor Market Test (the employer publishes the vacancy first), the Economic Needs Test, and, for certain employers, an Understudy Training or Skills Development Program to train at least two Filipinos to take over the job. D.O. 248-A (2025) narrowed which employers must run training programs and listed exempt foreign nationals, who still need a Certificate of Exemption.'], 'l': []},
+   {'h': 'Centralization (June 9, 2026)', 'p': ['Administrative Order No. 199 and D.O. 248-B (2026) moved every AEP function from DOLE’s Regional Offices to the Central Office, through the Bureau of Local Employment (BLE): receiving, evaluating, approving, issuing, renewing, cancelling and revoking permits, certificates of exemption, training-program submissions and the Economic Needs Test. The Regional Directors’ powers passed to the BLE Director. A motion for reconsideration of a cancellation or revocation now goes to the Director of DOLE’s Legal Service. Filing is through DOLE’s online platform under a zero-contact policy.'], 'l': []},
+   {'h': 'Simplification (D.O. 248-C, 2026)', 'p': ['Announced in October 2026: fewer documents (several other-agency permits no longer need to be attached, though their laws still apply), processing cut from 15 to 10 working days with one 10-day extension, and Labor Market Test notices posted on the DOLE portal instead of paid newspapers.'], 'l': []},
+   {'h': 'Without a permit', 'p': ['The Court has refused labor-law relief to foreign nationals who worked without a permit (WPP Marketing v. Galera, 2010; McBurnie v. Ganzon, 2013), but granted it where the employer’s own counsel caused the lapse (Rouche v. French Chamber of Commerce). And the Labor Secretary may weigh the national interest in deciding a permit (General Milling v. Torres, 1991).'], 'l': []},
+   {'h': 'The immigration side', 'p': ['The work visa is a separate document from the Bureau of Immigration under {ca613:section-9} (paragraph (g), pre-arranged employment). Working on a tourist visa without the proper permit is a ground for deportation under {ca613:section-37}.'], 'l': []}],
+  'try': ['A Japanese engineer is offered a job in Cebu in December 2026. List, in order, every step and every office involved, and say what happens if she starts work on her tourist visa.']},
  'read-provision': {'title': 'Read a provision the way a lawyer does', 'mins': 6,
   'lead': 'A provision is a small machine. Someone must, may or must not do something, when certain facts exist, unless an exception applies, and then a consequence follows. Find those parts before you memorise a word.',
   'sections': [
@@ -406,7 +429,7 @@ PICS = {
          'The flag on the roof.', 'A watchman standing on the cornice.', 'Rice terraces carved along the slopes of the pediment.', 'A lightning rod and a fire bell on the roof.'],
  'craft': ['Each carved letter, read one word at a time.', 'A chisel correcting a doubtful letter.', 'A row of case numbers carved under the words.',
            'An open book carved at the end of the band.', 'Court seals pressed along the cornice.'],
- 'lab': ['A hard hat resting on the capital.', 'A pay envelope tucked into the fluting.', 'An apron and a passport hanging from a nail.', 'A safety net wrapped round the base.'],
+ 'lab': ['A hard hat resting on the capital.', 'A pay envelope tucked into the fluting.', 'An apron and a passport hanging from a nail.', 'A rulebook chained to the column, its pages flagged with department order numbers.', 'A visa stamp and a work permit pinned side by side on the column, a stamp reading “Central Office” across both.', 'A safety net wrapped round the base.'],
  'civ': ['A thick red Civil Code resting on the capital.', 'A family portrait hung on the shaft.', 'A land title rolled inside the fluting.', 'House keys hanging on a hook.', 'A phone glowing on the column, signing a contract.'],
  'com': ['A company seal pressed into the capital.', 'A cheque, a policy and a share certificate pinned to the shaft.', 'A tax stamp the size of a door, pasted on the column.',
          'A vault door set into the base.', 'A lightbulb glowing at the top.'],
@@ -427,6 +450,43 @@ def links(text):
         cid, pid = m.group(1), m.group(2)
         return f'⟦{cid}|{pid}|{plabel(cid, pid)}⟧'
     return LINK.sub(rep, text)
+
+
+def weave(FIELDS):
+    """One path: each change of course sits right after the code it construes, in that code's own track;
+    the enforcement playbook sits in the Lawyer's Craft after legal reasoning. Built from shifts.json and enforce.json."""
+    byid = {f['id']: f for f in FIELDS}
+    craft = byid['craft']
+    at = next(i for i, t in enumerate(craft['tracks']) if t['name'] == 'Cases and legal reasoning') + 1
+    craft['tracks'].insert(at, {'tier': 'core', 'name': 'After the judgment: enforcing it',
+        'why': 'A judgment is paper until it is paid. Nine stages, from attachment to the ten-year clock.',
+        'pic': 'A sheriff’s padlock hanging from the last carved letter.',
+        'items': [{'t': 'enforce', 'id': 'playbook'}, {'t': 'enforce', 'id': 'drills'}]})
+    shifts = json.load(open(f'{SITE}/shifts.json'))['shifts']
+    year = lambda s: max(int(t['y']) for t in s['timeline'] if t['y'].isdigit())
+    placed = 0
+    for s in sorted(shifts, key=year):
+        item = {'t': 'shift', 'id': s['id']}
+        if s.get('home'):
+            fid, tn = s['home']
+            next(t for t in byid[fid]['tracks'] if t['name'] == tn)['items'].append(item); placed += 1; continue
+        anchor = s['links'][0].split('|')[0]
+        order = [byid[s['field']]] + [f for f in FIELDS if f['id'] != s['field']]
+        done = False
+        for f in order:
+            for t in f['tracks']:
+                for j, it in enumerate(t['items']):
+                    if it['t'] == 'code' and it['id'] == anchor and not it.get('x'):
+                        k = j + 1
+                        while k < len(t['items']) and t['items'][k]['t'] == 'shift':
+                            k += 1
+                        t['items'].insert(k, item); done = True; break
+                if done: break
+            if done: break
+        if not done:
+            raise SystemExit(f"shift {s['id']}: no home for {anchor}")
+        placed += 1
+    print(f'woven: {placed} changes of course, 1 enforcement track')
 
 
 def main():
@@ -450,6 +510,7 @@ def main():
         for tr, pic in zip(f['tracks'], PICS[f['id']]):
             tr['pic'] = pic
     FIELDS.sort(key=lambda f: f['n'])
+    weave(FIELDS)
     sets = {}
     for sid, s in SETS.items():
         items = []

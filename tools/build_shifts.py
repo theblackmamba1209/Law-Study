@@ -191,7 +191,7 @@ add(id='ofw-unexpired-term', field='lab', title='OFW money claims: the “three 
               options=['three months’ salary', 'four and a half months’ salary', 'salaries for the 18 unexpired months', 'only the placement fee'],
               a=2, why='The “three months per year, whichever is less” cap was struck down (Serrano, 2009; again in Sameer, 2014); he recovers salaries for the whole unexpired portion.'))
 
-add(id='fresh-period', field='craft', title='The fresh period rule: a new 15 days after denial of reconsideration',
+add(id='fresh-period', field='craft', home=['craft', 'Courts and procedure'], title='The fresh period rule: a new 15 days after denial of reconsideration',
     q='After a motion for reconsideration is denied, how long does a party have to appeal?',
     links=[],
     timeline=[
@@ -210,7 +210,7 @@ add(id='fresh-period', field='craft', title='The fresh period rule: a new 15 day
               options=['March 16', 'April 7', 'April 17', 'May 2'],
               a=2, why='Under Neypes she has a fresh 15 days from April 2, receipt of the denial: April 17.'))
 
-add(id='probation-after-appeal', field='crim', title='Probation after appeal: Francisco, Colinares, and RA 10707',
+add(id='probation-after-appeal', field='crim', home=['crim', 'Computing and serving penalties'], title='Probation after appeal: Francisco, Colinares, and RA 10707',
     q='May an accused who appealed still apply for probation if the appellate court lowers the penalty?',
     links=[],
     timeline=[
