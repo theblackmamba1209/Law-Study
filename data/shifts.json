@@ -1,0 +1,1109 @@
+{
+"built": "shifts",
+"shifts": [
+{
+"id": "psych-incapacity",
+"field": "civ",
+"title": "Psychological incapacity: from a medical diagnosis to a legal concept",
+"q": "Must a petition under Article 36 prove a clinically identified disorder through a psychologist or psychiatrist?",
+"links": [
+"family|article-36"
+],
+"timeline": [
+{
+"y": "1995",
+"case": "Santos v. Court of Appeals",
+"cite": "G.R. No. 112019, January 4, 1995",
+"role": "old",
+"rule": "Psychological incapacity must show gravity, juridical antecedence and incurability, and is confined to the most serious personality disorders that leave a spouse unable to grasp the essential obligations of marriage."
+},
+{
+"y": "1997",
+"case": "Republic v. Court of Appeals and Molina",
+"cite": "G.R. No. 108763, February 13, 1997",
+"role": "old",
+"rule": "Eight guidelines. Among them: the root cause must be medically or clinically identified, alleged in the petition, proven by experts and explained in the decision, and the condition must be medically or clinically permanent or incurable."
+},
+{
+"y": "2009",
+"case": "Ngo Te v. Yu-Te",
+"cite": "G.R. No. 161793, February 13, 2009",
+"role": "refine",
+"rule": "Warned that Molina had hardened into a rigid checklist and that each case must be judged on its own facts."
+},
+{
+"y": "2021",
+"case": "Tan-Andal v. Andal",
+"cite": "G.R. No. 196359, May 11, 2021 (En Banc)",
+"role": "new",
+"rule": "Psychological incapacity is a legal, not a medical, concept. Expert testimony is no longer required (the second Molina guideline is abandoned); ordinary witnesses who knew the spouse before the marriage may prove an enduring personality structure. Incurability is understood in the legal sense, as incapacity toward the particular spouse. The required proof is clear and convincing evidence."
+}
+],
+"then": "A diagnosed disorder, proven by an expert, clinically incurable.",
+"now": "A legal incapacity, proven by the totality of evidence (expert testimony helpful but not indispensable), clear and convincing, grave, existing at the marriage and enduring.",
+"why": [
+"Molina was meant as a guide but was applied as a straitjacket: courts denied petitions for want of a medical label, not for want of proof of incapacity.",
+"Article 36 came from canon law and was drafted to be flexible and decided case by case; the Family Code Revision Committee chose not to define the term.",
+"Requiring a psychiatric diagnosis forced experts to label people with disorders they may not have, and put the remedy out of reach of spouses who could not pay for an expert.",
+"The Court tied its reading to liberty, autonomy and human dignity rather than to a clinical model."
+],
+"competing": [
+"A separate opinion in Tan-Andal (Hernando, J.) defended the Molina guidelines as clarified in Ngo Te, wary of loosening the standard.",
+"The Constitution protects marriage as an inviolable social institution (Art. XV, Sec. 2), so the State, through the Solicitor General, still opposes petitions that show only immaturity, irreconcilable differences or refusal to perform marital duties."
+],
+"exam": "Ask what the evidence shows about the spouse’s personality before the marriage and how it made the essential obligations (Arts. 68-71, 220, 221, 225) impossible to perform. Mere difficulty, refusal or neglect is not incapacity, even after Tan-Andal.",
+"test": {
+"q": "After Tan-Andal v. Andal, a court may declare a marriage void under Article 36 without any psychologist testifying if…",
+"options": [
+"never: expert testimony remains indispensable",
+"the totality of evidence clearly and convincingly shows a grave, enduring incapacity existing at the time of marriage",
+"both spouses agree that the marriage has failed",
+"the respondent spouse fails to answer the petition"
+],
+"a": 1,
+"why": "Tan-Andal abandoned the requirement of expert testimony but kept a high bar: clear and convincing proof of a grave, enduring incapacity with juridical antecedence. Agreement of the spouses or default never suffices (collusion is a ground to deny)."
+}
+},
+{
+"id": "foreign-divorce",
+"field": "civ",
+"title": "Foreign divorce: does it matter who filed?",
+"q": "May a Filipino spouse remarry under Article 26(2) if the Filipino, not the foreign spouse, obtained the divorce abroad?",
+"links": [
+"family|article-26"
+],
+"timeline": [
+{
+"y": "1985",
+"case": "Van Dorn v. Romillo",
+"cite": "G.R. No. L-68470, October 8, 1985",
+"role": "old",
+"rule": "A divorce validly obtained abroad by the foreign spouse binds that spouse, who can no longer claim rights as husband here."
+},
+{
+"y": "2005",
+"case": "Republic v. Orbecido III",
+"cite": "G.R. No. 154380, October 5, 2005",
+"role": "refine",
+"rule": "Article 26(2) also covers a marriage of two Filipinos where one later becomes a foreign citizen and obtains a divorce; citizenship is reckoned at the time of the divorce."
+},
+{
+"y": "2018",
+"case": "Republic v. Manalo",
+"cite": "G.R. No. 221029, April 24, 2018 (En Banc)",
+"role": "new",
+"rule": "Article 26(2) applies even if the Filipino spouse initiated the divorce abroad, so long as it was validly obtained and capacitated the foreign spouse to remarry."
+},
+{
+"y": "2018",
+"case": "Racho v. Tanaka",
+"cite": "G.R. No. 199515, June 25, 2018",
+"role": "refine",
+"rule": "A divorce by mutual agreement under the foreign spouse’s national law is covered too."
+}
+],
+"then": "Recognition was read as limited to a divorce initiated by the foreign spouse.",
+"now": "Who filed does not matter; what matters is that a valid foreign divorce capacitated the foreign spouse to remarry. The decree and the foreign law must still be pleaded and proved as facts.",
+"why": [
+"The text says a divorce “validly obtained abroad”; it does not say obtained by the foreign spouse alone.",
+"The provision exists to avoid the absurdity of a Filipino still married to someone who, under his or her own law, is no longer married.",
+"Treating Filipinos differently according to who went to court abroad raised equal-protection concerns."
+],
+"competing": [
+"The dissenting Justices in Manalo read Article 26(2) as a narrow exception to the nationality principle of Article 15 of the Civil Code, and warned that the ruling in effect allows divorce for Filipinos, a matter for Congress.",
+"The Philippines still has no general divorce law for marriages between two Filipinos who remain Filipinos (Muslim personal law aside)."
+],
+"exam": "Two steps: (1) the foreign divorce decree and (2) the foreign law allowing it, both alleged and proved as facts (Garcia v. Recio, G.R. No. 138322, October 2, 2001), usually in a petition for judicial recognition of foreign judgment. Only then may the Filipino remarry.",
+"test": {
+"q": "Maria, a Filipina, files for divorce in Japan against her Japanese husband and obtains it. Under Republic v. Manalo…",
+"options": [
+"she cannot remarry because she, not her husband, obtained the divorce",
+"she may have the divorce recognized here and remarry, once the decree and Japanese law are proved",
+"the divorce is void because Filipinos cannot divorce",
+"she must first have the marriage annulled"
+],
+"a": 1,
+"why": "Manalo held Article 26(2) applies regardless of who initiated the divorce. Recognition still requires proof of the decree and the foreign law."
+}
+},
+{
+"id": "legal-interest",
+"field": "civ",
+"title": "Legal interest: 12% to 6%, and how stipulated interest runs",
+"q": "What interest applies to a judgment for a sum of money, and from when?",
+"links": [
+"civil|article-2209",
+"civil|article-2212",
+"civil|article-1956"
+],
+"timeline": [
+{
+"y": "1994",
+"case": "Eastern Shipping Lines v. Court of Appeals",
+"cite": "G.R. No. 97412, July 12, 1994",
+"role": "old",
+"rule": "Guidelines: 12% a year for loans or forbearance of money; 6% for other obligations; 12% from finality of judgment until paid."
+},
+{
+"y": "2013",
+"case": "Nacar v. Gallery Frames",
+"cite": "G.R. No. 189871, August 13, 2013",
+"role": "new",
+"rule": "After BSP Monetary Board Circular No. 799 lowered the rate effective July 1, 2013, the legal rate for loans or forbearance, and for judgments from finality, is 6% a year."
+},
+{
+"y": "2019",
+"case": "Lara’s Gifts & Decors v. Midtown Industrial Sales",
+"cite": "G.R. No. 225433, August 28, 2019 (En Banc); resolution on reconsideration September 20, 2022",
+"role": "refine",
+"rule": "Stipulated interest, unless unconscionable, governs until full payment; the legal rate applies only when there is no stipulation. The guidelines on compensatory interest and interest on interest were restated."
+}
+],
+"then": "12% for loans and forbearance, and 12% on judgments from finality.",
+"now": "6% a year as the legal rate (from July 1, 2013); stipulated rates, if not unconscionable, run until full payment.",
+"why": [
+"The legal rate tracks monetary policy: the Central Bank (now BSP) sets it under its charter, and the Usury Law ceilings have been suspended since 1982 (CB Circular No. 905).",
+"Nacar applied the lower rate to keep interest in line with market conditions without disturbing judgments already final.",
+"Lara’s Gifts corrected a reading of the earlier guidelines that replaced the parties’ agreed rate with the legal rate after judgment; the contract is the law between the parties (Art. 1159)."
+],
+"competing": [
+"Separate opinions in Lara’s Gifts differed on how far legal interest may be imposed on stipulated or compensatory interest (Art. 2212), and the 2022 resolution deleted such an award because the creditor had not appealed it.",
+"Courts still cut down unconscionable stipulated rates (e.g., Medel v. Court of Appeals, G.R. No. 131622, November 27, 1998, 5.5% a month)."
+],
+"exam": "Identify the period (before or after July 1, 2013), whether there is a stipulated rate, whether the amount is liquidated, and the reckoning point (demand, filing, judgment, finality).",
+"test": {
+"q": "A judgment for a loan with no stipulated interest became final in 2020. From finality until paid, the interest is…",
+"options": [
+"12% a year",
+"6% a year",
+"none",
+"the bank’s prevailing lending rate"
+],
+"a": 1,
+"why": "Under Nacar (applying BSP-MB Circular 799), the legal rate from July 1, 2013 is 6% a year, including on judgments from finality until full payment."
+}
+},
+{
+"id": "condonation",
+"field": "pol",
+"title": "The condonation doctrine: re-election no longer wipes the slate",
+"q": "Does re-election bar administrative discipline for misconduct in the earlier term?",
+"links": [
+"lgc|section-60",
+"const1987|art-xi-sec-1",
+"ra6770|section-14"
+],
+"timeline": [
+{
+"y": "1959",
+"case": "Pascual v. Hon. Provincial Board of Nueva Ecija",
+"cite": "G.R. No. L-11959, October 31, 1959",
+"role": "old",
+"rule": "An official cannot be removed for misconduct in a prior term; re-election is taken as the electorate’s forgiveness."
+},
+{
+"y": "1992",
+"case": "Aguinaldo v. Santos",
+"cite": "G.R. No. 94115, August 21, 1992",
+"role": "old",
+"rule": "Reiterated the doctrine under the 1987 Constitution."
+},
+{
+"y": "2015",
+"case": "Carpio-Morales v. Court of Appeals and Binay",
+"cite": "G.R. Nos. 217126-27, November 10, 2015 (En Banc)",
+"role": "new",
+"rule": "Abandoned the condonation doctrine, prospectively. The Court also struck down the second paragraph of Sec. 14 of RA 6770, which barred courts other than the Supreme Court from reviewing Ombudsman decisions."
+}
+],
+"then": "Re-election condoned administrative misconduct in the previous term.",
+"now": "Re-election does not erase administrative liability; the abandonment applies prospectively, so the date of the re-election matters.",
+"why": [
+"The doctrine had no basis in the 1987 Constitution or in statute; it was borrowed from American state cases decided under different conditions.",
+"Public office is a public trust and officers must at all times be accountable (Art. XI, Sec. 1).",
+"Voters cannot be presumed to know of, let alone forgive, misconduct that may not yet have come to light.",
+"Prospectivity protected officials who had relied on the doctrine."
+],
+"competing": [
+"Defenders of the old rule stress the sovereign will of the electorate and the stability of local government.",
+"Because the abandonment is prospective, later cases have had to decide which re-elections it reaches; check the date of the re-election against the finality of Carpio-Morales."
+],
+"exam": "Identify the date of the re-election. Also note that condonation never applied to criminal liability.",
+"test": {
+"q": "A mayor re-elected in 2022 is charged administratively for 2020 acts. The condonation doctrine…",
+"options": [
+"bars the case because she was re-elected",
+"does not apply: it was abandoned prospectively in Carpio-Morales (2015)",
+"bars both criminal and administrative cases",
+"applies only if the voters knew of the acts"
+],
+"a": 1,
+"why": "Carpio-Morales abandoned condonation; for re-elections after the abandonment took effect, re-election is no defense."
+}
+},
+{
+"id": "party-list",
+"field": "pol",
+"title": "Party-list: who may run, from Ang Bagong Bayani to Atong Paglaum",
+"q": "Must every party-list group represent the marginalized and underrepresented?",
+"links": [
+"const1987|art-vi-sec-5"
+],
+"timeline": [
+{
+"y": "2001",
+"case": "Ang Bagong Bayani-OFW Labor Party v. COMELEC",
+"cite": "G.R. No. 147589, June 26, 2001",
+"role": "old",
+"rule": "The party-list system is for the marginalized and underrepresented; every party and nominee must represent them. Eight guidelines."
+},
+{
+"y": "2009",
+"case": "BANAT v. COMELEC",
+"cite": "G.R. No. 179271, April 21, 2009",
+"role": "refine",
+"rule": "Reworked the seat-allocation formula so the 20% of seats can be filled; the 2% threshold applies only to the guaranteed first seat; major political parties barred from party-list."
+},
+{
+"y": "2013",
+"case": "Atong Paglaum v. COMELEC",
+"cite": "G.R. No. 203766, April 2, 2013 (En Banc)",
+"role": "new",
+"rule": "New parameters: national, regional and sectoral parties may participate; national and regional parties need not represent the marginalized; major parties may join only through sectoral wings; sectoral parties must represent the marginalized or those lacking a well-defined political constituency; nominees must belong to the sector or have a track record of advocacy."
+}
+],
+"then": "All party-list groups must represent the marginalized and underrepresented.",
+"now": "Only sectoral parties must; national and regional parties need not, though they cannot be major parties running as such.",
+"why": [
+"The Constitution (Art. VI, Sec. 5) and RA 7941 speak of “registered national, regional, and sectoral parties or organizations”; the marginalization test appears only for sectoral representation.",
+"The Constitutional Commission deliberately rejected a purely sectoral system in favor of an open, multi-party one.",
+"Ang Bagong Bayani, the Court held, read into the system a requirement that the text did not impose."
+],
+"competing": [
+"Critics argue the ruling lets established politicians, dynasties and well-funded groups take seats meant for those without a voice in Congress.",
+"The seat-allocation formula of BANAT remains in use."
+],
+"exam": "Classify the group first (national, regional, sectoral). Only sectoral groups face the marginalization test; check the nominee rules.",
+"test": {
+"q": "A regional party not representing any marginalized sector seeks party-list registration. Under Atong Paglaum…",
+"options": [
+"it must be denied: all party-list groups must represent the marginalized",
+"it may be registered; the marginalization requirement applies to sectoral parties",
+"it may register only as a major political party",
+"it may run only in a district"
+],
+"a": 1,
+"why": "Atong Paglaum held that national and regional parties need not represent the marginalized and underrepresented."
+}
+},
+{
+"id": "pork-barrel",
+"field": "pol",
+"title": "Pork barrel: from upheld to unconstitutional",
+"q": "May legislators identify projects and beneficiaries after the budget is enacted?",
+"links": [
+"const1987|art-vi-sec-25",
+"const1987|section-29"
+],
+"timeline": [
+{
+"y": "1994",
+"case": "Philconsa v. Enriquez",
+"cite": "G.R. No. 113105, August 19, 1994",
+"role": "old",
+"rule": "Upheld the Countrywide Development Fund: legislators merely recommend projects; the Executive implements."
+},
+{
+"y": "2012",
+"case": "LAMP v. Secretary of Budget and Management",
+"cite": "G.R. No. 164987, April 24, 2012",
+"role": "old",
+"rule": "Upheld the PDAF on the same reasoning, absent proof that legislators actually controlled releases."
+},
+{
+"y": "2013",
+"case": "Belgica v. Ochoa",
+"cite": "G.R. No. 208566, November 19, 2013 (En Banc)",
+"role": "new",
+"rule": "Declared the 2013 PDAF Article and all similar congressional pork barrel provisions unconstitutional, as well as phrases in the Malampaya Fund (PD 910) and Presidential Social Fund (PD 1869) laws that allowed use for any purpose the President directs. Philconsa and LAMP were abandoned to the extent inconsistent."
+}
+],
+"then": "Legislators’ post-enactment “recommendations” were constitutional.",
+"now": "Post-enactment identification of projects by legislators violates the Constitution.",
+"why": [
+"Separation of powers: once a budget is law, implementing it is executive; legislators who choose projects and recipients take part in execution.",
+"Non-delegation: lawmaking power cannot be split off to individual members.",
+"Checks and balances: lump sums allocated after enactment escape the President’s item veto.",
+"Accountability and local autonomy: the system weakened oversight and bypassed local development councils.",
+"The factual premise of Philconsa and LAMP (that legislators merely recommend) was refuted by the record, including audit findings."
+],
+"competing": [
+"Defenders argued that legislators know local needs and that recommendations are not binding.",
+"Belgica left lump-sum appropriations as such to be judged case by case; the line between itemization and discretion keeps recurring in later budget cases."
+],
+"exam": "Distinguish pre-enactment itemization (allowed: Congress may list projects in the law) from post-enactment identification (not allowed).",
+"test": {
+"q": "Under Belgica v. Ochoa, which is unconstitutional?",
+"options": [
+"Congress listing specific projects in the General Appropriations Act",
+"Legislators choosing projects and beneficiaries after the appropriation law is passed",
+"The President vetoing an item",
+"A lump-sum calamity fund with standards"
+],
+"a": 1,
+"why": "Belgica struck down post-enactment legislator identification as a violation of separation of powers, non-delegation and checks and balances."
+}
+},
+{
+"id": "ombudsman-appeals",
+"field": "pol",
+"title": "Appeals from the Ombudsman: Supreme Court or Court of Appeals?",
+"q": "Where does a party appeal an Ombudsman decision in an administrative disciplinary case?",
+"links": [
+"ra6770|section-27",
+"ra6770|section-14",
+"const1987|section-30"
+],
+"timeline": [
+{
+"y": "1989",
+"case": "RA 6770, Sec. 27",
+"cite": "Ombudsman Act of 1989",
+"role": "old",
+"rule": "Orders in administrative disciplinary cases may be appealed to the Supreme Court by petition for review on certiorari (Rule 45)."
+},
+{
+"y": "1998",
+"case": "Fabian v. Desierto",
+"cite": "G.R. No. 129742, September 16, 1998 (En Banc)",
+"role": "new",
+"rule": "Sec. 27 is unconstitutional insofar as it enlarges the Supreme Court’s appellate jurisdiction without its advice and concurrence (Art. VI, Sec. 30). Appeals in administrative cases go to the Court of Appeals under Rule 43."
+},
+{
+"y": "2015",
+"case": "Carpio-Morales v. Court of Appeals and Binay",
+"cite": "G.R. Nos. 217126-27, November 10, 2015",
+"role": "refine",
+"rule": "Struck down the second paragraph of Sec. 14 (no court but the Supreme Court may hear appeals or remedies against the Ombudsman); the Court of Appeals may act on Rule 65 petitions in administrative cases."
+}
+],
+"then": "Direct appeal to the Supreme Court under Rule 45.",
+"now": "Administrative cases: Rule 43 petition to the Court of Appeals. Criminal cases (finding of probable cause): Rule 65 certiorari to the Supreme Court, for grave abuse of discretion.",
+"why": [
+"Article VI, Sec. 30 forbids a law that increases the Supreme Court’s appellate jurisdiction without its advice and concurrence; RA 6770 had none.",
+"Rule 43 already governs appeals from quasi-judicial agencies, so routing Ombudsman administrative cases there keeps the system uniform."
+],
+"competing": [
+"Some urged that the Ombudsman’s constitutional rank warranted direct Supreme Court review; the Court held the Constitution itself does not provide for it."
+],
+"exam": "Ask first: administrative or criminal aspect? The remedy, the court and the period differ.",
+"test": {
+"q": "A provincial engineer is dismissed by the Ombudsman in an administrative case. The proper remedy is…",
+"options": [
+"Rule 45 petition to the Supreme Court",
+"Rule 43 petition for review to the Court of Appeals",
+"Rule 65 petition to the Sandiganbayan",
+"Appeal to the Civil Service Commission"
+],
+"a": 1,
+"why": "Fabian v. Desierto: administrative disciplinary decisions of the Ombudsman are reviewed by the Court of Appeals under Rule 43."
+}
+},
+{
+"id": "due-process-dismissal",
+"field": "lab",
+"title": "Dismissal for just cause without notice: Wenphil, Serrano, Agabon",
+"q": "What happens when an employer has a just cause to dismiss but skips the twin-notice procedure?",
+"links": [
+"labor|article-297",
+"labor|article-292"
+],
+"timeline": [
+{
+"y": "1989",
+"case": "Wenphil Corp. v. NLRC",
+"cite": "G.R. No. 80587, February 8, 1989",
+"role": "old",
+"rule": "The dismissal stands, but the employer pays an indemnity (₱1,000 in that case) for disregarding due process."
+},
+{
+"y": "2000",
+"case": "Serrano v. NLRC",
+"cite": "G.R. No. 117040, January 27, 2000",
+"role": "old",
+"rule": "A dismissal without notice is ineffectual; the employee gets backwages from dismissal until the court finds just cause."
+},
+{
+"y": "2004",
+"case": "Agabon v. NLRC",
+"cite": "G.R. No. 158693, November 17, 2004 (En Banc)",
+"role": "new",
+"rule": "Abandoned Serrano and returned to Wenphil: the dismissal is valid, but the employer pays nominal damages (₱30,000) for violating the statutory right to notice."
+},
+{
+"y": "2005",
+"case": "Jaka Food Processing Corp. v. Pacot",
+"cite": "G.R. No. 151378, March 28, 2005",
+"role": "refine",
+"rule": "For an authorized cause without the required notices, nominal damages are higher (₱50,000), since the dismissal is initiated by the employer’s own business decision."
+}
+],
+"then": "Serrano: backwages until the just cause is judicially determined.",
+"now": "Agabon: dismissal valid; nominal damages (₱30,000 for just cause, ₱50,000 for authorized cause, subject to the circumstances).",
+"why": [
+"Procedural due process in private dismissals comes from the Labor Code, not the Bill of Rights, which binds the State; its violation does not void a dismissal for a valid cause.",
+"Serrano gave windfall backwages to employees who were in fact guilty of serious misconduct.",
+"Nominal damages vindicate the right to notice without rewarding the wrongdoing that justified dismissal."
+],
+"competing": [
+"Dissenting Justices in Agabon warned that a fixed sum lets employers price out the notice requirement, and preferred Serrano’s stronger deterrent.",
+"Amounts are adjusted for the employer’s size and good faith in later cases."
+],
+"exam": "Two questions, always separately: (1) Was there a valid cause (substantive)? (2) Was the procedure followed (procedural)? Valid cause plus defective procedure = valid dismissal plus nominal damages.",
+"test": {
+"q": "An employee caught stealing is dismissed on the spot without notices. Under Agabon…",
+"options": [
+"the dismissal is void and he is reinstated with full backwages",
+"the dismissal is valid but the employer pays nominal damages",
+"the employer pays separation pay only",
+"the case must be dismissed for lack of jurisdiction"
+],
+"a": 1,
+"why": "Agabon: just cause plus violation of procedural due process yields a valid dismissal and nominal damages (₱30,000)."
+}
+},
+{
+"id": "ofw-unexpired-term",
+"field": "lab",
+"title": "OFW money claims: the “three months per year” cap, struck down twice",
+"q": "How much does an illegally dismissed overseas worker recover for the unexpired portion of the contract?",
+"links": [
+"ra8042|section-10"
+],
+"timeline": [
+{
+"y": "1995",
+"case": "RA 8042, Sec. 10, fifth paragraph",
+"cite": "Migrant Workers Act",
+"role": "old",
+"rule": "Salaries for the unexpired portion, or three months for every year of the unexpired term, whichever is less."
+},
+{
+"y": "2009",
+"case": "Serrano v. Gallant Maritime Services",
+"cite": "G.R. No. 167614, March 24, 2009 (En Banc)",
+"role": "new",
+"rule": "The “whichever is less” clause is unconstitutional: it singles out OFWs with contracts of a year or more for less protection, violating equal protection and substantive due process."
+},
+{
+"y": "2010",
+"case": "RA 10022, Sec. 7",
+"cite": "Republic Act No. 10022",
+"role": "old",
+"rule": "Congress restored the same clause in amending Sec. 10."
+},
+{
+"y": "2014",
+"case": "Sameer Overseas Placement Agency v. Cabiles",
+"cite": "G.R. No. 170139, August 5, 2014 (En Banc)",
+"role": "new",
+"rule": "Struck down the re-enacted clause: a law the Court has declared unconstitutional cannot simply be passed again."
+}
+],
+"then": "The lesser of the unexpired salaries or three months per year of the unexpired term.",
+"now": "Salaries for the entire unexpired portion of the contract.",
+"why": [
+"The cap created a classification (OFWs with longer contracts) with no substantial distinction justifying lesser relief.",
+"Labor is protected by the Constitution (Art. XIII, Sec. 3); the cap shifted the cost of illegal dismissal to the worker.",
+"In Sameer, the Court held that re-enacting the identical provision does not cure the constitutional defect."
+],
+"competing": [
+"Recruitment agencies and the government argued the cap kept Philippine labor competitive abroad and limited agencies’ exposure under joint and solidary liability."
+],
+"exam": "Also compute: placement fee refund with interest; the agency and the foreign principal are solidarily liable.",
+"test": {
+"q": "An OFW with 18 months left on a two-year contract is illegally dismissed. Under Sameer v. Cabiles he recovers…",
+"options": [
+"three months’ salary",
+"four and a half months’ salary",
+"salaries for the 18 unexpired months",
+"only the placement fee"
+],
+"a": 2,
+"why": "The “three months per year, whichever is less” cap was struck down (Serrano, 2009; again in Sameer, 2014); he recovers salaries for the whole unexpired portion."
+}
+},
+{
+"id": "fresh-period",
+"field": "craft",
+"title": "The fresh period rule: a new 15 days after denial of reconsideration",
+"q": "After a motion for reconsideration is denied, how long does a party have to appeal?",
+"links": [],
+"timeline": [
+{
+"y": "pre-2005",
+"case": "Earlier practice",
+"cite": "Rules of Court, as then applied",
+"role": "old",
+"rule": "A motion for reconsideration only interrupted the period; after denial, the party had only the balance of the original period (at least five days)."
+},
+{
+"y": "2005",
+"case": "Neypes v. Court of Appeals",
+"cite": "G.R. No. 141524, September 14, 2005 (En Banc)",
+"role": "new",
+"rule": "A fresh period of 15 days runs from receipt of the order denying the motion for new trial or reconsideration; it applies to appeals under Rules 40, 41, 42, 43 and 45."
+},
+{
+"y": "2011",
+"case": "Yu v. Samson-Tatad",
+"cite": "G.R. No. 170979, February 9, 2011",
+"role": "refine",
+"rule": "The fresh period rule applies to appeals in criminal cases (Rule 122)."
+},
+{
+"y": "2010",
+"case": "Panolino v. Tajala",
+"cite": "G.R. No. 183616, June 29, 2010",
+"role": "refine",
+"rule": "It does not extend to appeals from administrative bodies governed by their own rules."
+}
+],
+"then": "Only the remaining balance of the appeal period after denial.",
+"now": "A fresh 15-day period from receipt of the order denying the motion.",
+"why": [
+"The balance-of-period rule caused confusion and lost appeals over arithmetic, defeating the right to appeal on technicalities.",
+"A uniform rule standardizes appeal periods across courts and rules."
+],
+"competing": [
+"The rule is procedural and applied to pending cases; it does not revive periods that had already lapsed with finality."
+],
+"exam": "Count from receipt of the denial order, not from receipt of the decision; and remember it is a rule of court appeals, not of administrative appeals with their own rules.",
+"test": {
+"q": "Ana receives an RTC decision on March 1 and files a motion for reconsideration on March 10. The denial is received on April 2. Her last day to appeal is…",
+"options": [
+"March 16",
+"April 7",
+"April 17",
+"May 2"
+],
+"a": 2,
+"why": "Under Neypes she has a fresh 15 days from April 2, receipt of the denial: April 17."
+}
+},
+{
+"id": "probation-after-appeal",
+"field": "crim",
+"title": "Probation after appeal: Francisco, Colinares, and RA 10707",
+"q": "May an accused who appealed still apply for probation if the appellate court lowers the penalty?",
+"links": [],
+"timeline": [
+{
+"y": "1995",
+"case": "Francisco v. Court of Appeals",
+"cite": "G.R. No. 108747, April 6, 1995",
+"role": "old",
+"rule": "Appeal and probation are mutually exclusive; by appealing, the accused forfeits probation."
+},
+{
+"y": "2011",
+"case": "Colinares v. People",
+"cite": "G.R. No. 182748, December 13, 2011 (En Banc)",
+"role": "new",
+"rule": "Where the trial court imposed a non-probationable penalty and the appellate court reduces it to a probationable one, the accused may apply for probation: he never had a real choice."
+},
+{
+"y": "2015",
+"case": "Dimakuta v. People",
+"cite": "G.R. No. 206513, October 20, 2015 (En Banc)",
+"role": "refine",
+"rule": "Limited Colinares: the accused must not have contested the merits of the conviction on appeal; an appeal seeking acquittal shows he is not penitent."
+},
+{
+"y": "2015",
+"case": "RA 10707",
+"cite": "Amending Sec. 4 of PD 968",
+"role": "new",
+"rule": "Congress codified the rule: when a non-probationable penalty is modified on appeal to a probationable one, the accused may apply for probation upon remand, unless the appeal was on the merits and the conviction was affirmed."
+}
+],
+"then": "Any appeal bars probation.",
+"now": "If the appellate court reduces a non-probationable penalty to a probationable one, the accused may apply on remand (RA 10707).",
+"why": [
+"An accused given an erroneously high penalty had no choice but to appeal; penalizing that appeal punished him for the trial court’s error.",
+"Probation exists to rehabilitate first-time offenders who deserve it; the right penalty, not the procedural path, should decide eligibility."
+],
+"competing": [
+"Peralta, J., dissenting in part in Colinares, held that the text of PD 968 bars probation once the accused appeals, whatever the outcome.",
+"In Dimakuta, Leonen, J. wrote that Colinares had not yet become established doctrine; Velasco and Mendoza, JJ. wrote dissents."
+],
+"exam": "Check two things: the original penalty (probationable or not) and what the appeal asked for.",
+"test": {
+"q": "Convicted of frustrated homicide with a non-probationable penalty, X appeals; the Court finds only attempted homicide and imposes a probationable penalty. May X apply for probation?",
+"options": [
+"No: appeal and probation are mutually exclusive",
+"Yes, on remand to the trial court",
+"Only if the prosecution consents",
+"Only after serving one-third of the sentence"
+],
+"a": 1,
+"why": "Colinares and RA 10707: when the appellate court lowers a non-probationable penalty to a probationable one, the accused may apply for probation upon remand."
+}
+},
+{
+"id": "tulagan",
+"field": "crim",
+"title": "Sexual abuse of children: harmonizing the RPC and RA 7610 (People v. Tulagan)",
+"q": "Which law, nomenclature and penalty apply when a child is sexually abused: Article 266-A, Article 336, or Section 5(b) of RA 7610?",
+"links": [
+"rpc|article-266-a",
+"rpc|article-336",
+"ra7610|section-5"
+],
+"timeline": [
+{
+"y": "2009",
+"case": "People v. Abello",
+"cite": "G.R. No. 151952, March 25, 2009",
+"role": "old",
+"rule": "Treated the child being “exploited in prostitution or subjected to other sexual abuse” as a distinct element that must be alleged and proved before Sec. 5(b) applies."
+},
+{
+"y": "2017",
+"case": "Quimvel v. People",
+"cite": "G.R. No. 214497, April 18, 2017 (En Banc)",
+"role": "refine",
+"rule": "Read “other sexual abuse” broadly: a single act of lascivious conduct, done through coercion or influence, may suffice."
+},
+{
+"y": "2019",
+"case": "People v. Tulagan",
+"cite": "G.R. No. 227363, March 12, 2019 (En Banc)",
+"role": "new",
+"rule": "Laid down which law and nomenclature apply according to the age of the victim and the act (sexual intercourse, sexual assault, lascivious conduct), with the penalties in each case, generally applying the law that carries the higher penalty and avoiding double punishment for the same act."
+},
+{
+"y": "2022",
+"case": "RA 11648",
+"cite": "Republic Act No. 11648",
+"role": "refine",
+"rule": "Raised the age of sexual consent from 12 to 16, changing which acts are statutory rape; read Tulagan’s age brackets with it."
+}
+],
+"then": "Conflicting decisions on nomenclature and penalties for the same acts against children.",
+"now": "Tulagan’s guidelines, adjusted for RA 11648’s age of consent of 16.",
+"why": [
+"The Court sought to end inconsistent designations and penalties for identical acts, which undermined equal treatment and certainty.",
+"RA 7610 is a special law protecting children; where it and the RPC overlap, the Court preferred the reading that best protects the child, without punishing one act twice."
+],
+"competing": [
+"Caguioa, J. (concurring and dissenting) maintained that Sec. 5(b) applies only when it is alleged and proved that the child was exploited in prostitution or subjected to other sexual abuse; otherwise the RPC alone governs. He has reiterated this view in later cases.",
+"Perlas-Bernabe, J. (separate opinion) disagreed with the ponencia’s expansive reading of Sec. 5(b) and its effect on consent as a defense."
+],
+"exam": "Fix the victim’s age at the time of the act (under 16 after RA 11648, or under 12 before), the act, and whether coercion, influence or exploitation is alleged; then find the right nomenclature.",
+"test": {
+"q": "The main point of disagreement between the Tulagan majority and Justice Caguioa was…",
+"options": [
+"whether marital rape exists",
+"whether the child’s being exploited in prostitution or subjected to other sexual abuse is a separate element that must be alleged and proved for Sec. 5(b) to apply",
+"whether RA 7610 is constitutional",
+"whether minors can be prosecuted"
+],
+"a": 1,
+"why": "Justice Caguioa insisted on the EPSOSA element as the line between Sec. 5(b) and the RPC; the majority read Sec. 5(b) more broadly."
+}
+},
+{
+"id": "plea-bargaining-drugs",
+"field": "crim",
+"title": "Plea bargaining in drug cases: from a statutory ban to the Court’s framework",
+"q": "May an accused charged under RA 9165 plea bargain, and who decides?",
+"links": [
+"ra9165|section-23"
+],
+"timeline": [
+{
+"y": "2002",
+"case": "RA 9165, Sec. 23",
+"cite": "Comprehensive Dangerous Drugs Act",
+"role": "old",
+"rule": "No plea bargaining for any offense under the Act, whatever the penalty."
+},
+{
+"y": "2017",
+"case": "Estipona v. Lobrigo",
+"cite": "G.R. No. 226679, August 15, 2017 (En Banc)",
+"role": "new",
+"rule": "Sec. 23 is unconstitutional: plea bargaining is a rule of procedure, which only the Supreme Court may promulgate (Art. VIII, Sec. 5(5))."
+},
+{
+"y": "2018",
+"case": "A.M. No. 18-03-16-SC",
+"cite": "Plea Bargaining Framework in Drugs Cases, April 10, 2018",
+"role": "refine",
+"rule": "The Court set out which lesser offenses may be pleaded to for each drug offense; DOJ circulars at first took a stricter line."
+},
+{
+"y": "2022",
+"case": "People v. Montierro",
+"cite": "G.R. No. 254564 and related cases, July 26, 2022 (En Banc)",
+"role": "refine",
+"rule": "Noted that DOJ Circular No. 18 (May 10, 2022) aligned the prosecution’s guidelines with the Court’s framework, so objections based solely on the earlier circular are deemed withdrawn; restated guidelines for trial courts."
+}
+],
+"then": "A flat statutory prohibition.",
+"now": "Plea bargaining is allowed under the Court’s framework; the plea needs the prosecution’s position to be heard, and the court decides, weighing the evidence and the accused’s circumstances.",
+"why": [
+"Rules on pleas, including plea bargaining, govern procedure; the 1987 Constitution took that power from Congress and gave it exclusively to the Supreme Court.",
+"The flat ban also clogged courts and jails with cases that could be resolved by pleas to lesser offenses."
+],
+"competing": [
+"In Montierro, several Justices (including Lazaro-Javier, Kho and Singh, JJ.) wrote separately on how far a trial court may approve a plea bargain over the prosecution’s objection, since plea bargaining traditionally requires the prosecutor’s consent.",
+"Concerns remain that leniency in drug cases undercuts the State’s campaign against illegal drugs; the framework limits which pleas are acceptable."
+],
+"exam": "Distinguish the source of the rule (Court’s framework vs DOJ guidelines) and the court’s role: it does not rubber-stamp, it evaluates.",
+"test": {
+"q": "Why did Estipona v. Lobrigo strike down Sec. 23 of RA 9165?",
+"options": [
+"It violated equal protection",
+"It encroached on the Supreme Court’s exclusive power to promulgate rules of procedure",
+"It imposed cruel punishment",
+"It was a bill of attainder"
+],
+"a": 1,
+"why": "Plea bargaining is procedural; under Art. VIII, Sec. 5(5), only the Supreme Court promulgates rules of procedure."
+}
+},
+{
+"id": "inordinate-delay",
+"field": "pol",
+"title": "Inordinate delay: when the clock starts (Cagang)",
+"q": "For the right to speedy disposition, does the Ombudsman’s fact-finding stage count?",
+"links": [
+"const1987|art-iii-sec-16"
+],
+"timeline": [
+{
+"y": "1988",
+"case": "Tatad v. Sandiganbayan",
+"cite": "G.R. Nos. 72335-39, March 21, 1988",
+"role": "old",
+"rule": "Unexplained delay of years in a preliminary investigation violated the right to speedy disposition; cases dismissed."
+},
+{
+"y": "2013",
+"case": "People v. Sandiganbayan",
+"cite": "G.R. No. 188165, December 11, 2013",
+"role": "old",
+"rule": "The fact-finding investigation is counted together with the preliminary investigation in judging delay."
+},
+{
+"y": "2018",
+"case": "Cagang v. Sandiganbayan",
+"cite": "G.R. Nos. 206438, 206458 and 210141-42, July 31, 2018 (En Banc)",
+"role": "new",
+"rule": "Abandoned the 2013 ruling: fact-finding before a formal complaint is not counted because it is not adversarial. Set guidelines: the period starts from the filing of the formal complaint; who bears the burden depends on whether the delay exceeds the time periods in the rules; the right must be raised in time, or it is waived."
+}
+],
+"then": "Fact-finding plus preliminary investigation, counted together.",
+"now": "Only from the formal complaint; balancing of length, reasons, assertion and prejudice, with burdens shifting according to the prescribed periods.",
+"why": [
+"Before a formal complaint the respondent is not yet an accused party in an adversarial proceeding; the Ombudsman may investigate motu proprio.",
+"A clear starting point and burden-shifting rules give courts a workable test instead of ad hoc judgments."
+],
+"competing": [
+"Caguioa, J. dissented in Cagang and has argued since that prejudice to the respondent can begin during a long fact-finding phase, so excluding it may leave real harm without remedy."
+],
+"exam": "Mark the date of the formal complaint, compare the actual time with the periods in the rules, then ask who bears the burden and whether the right was timely asserted.",
+"test": {
+"q": "Under Cagang, the period for judging inordinate delay in an Ombudsman case begins…",
+"options": [
+"when the anomaly occurred",
+"when the fact-finding investigation starts",
+"when the formal complaint is filed",
+"when the Information is filed in court"
+],
+"a": 2,
+"why": "Cagang held that fact-finding before the formal complaint is excluded; the reckoning starts with the formal complaint."
+}
+},
+{
+"id": "vat-refund-periods",
+"field": "com",
+"title": "VAT refunds: the 120+30-day periods (Aichi and San Roque)",
+"q": "Must a taxpayer wait for the Commissioner’s 120-day period to lapse before going to the CTA, and is the 30-day period jurisdictional?",
+"links": [
+"nirc|section-112"
+],
+"timeline": [
+{
+"y": "2008",
+"case": "CIR v. Mirant Pagbilao Corp.",
+"cite": "G.R. No. 172129, September 12, 2008",
+"role": "refine",
+"rule": "The two-year period to claim a refund is counted from the close of the taxable quarter when the sales were made."
+},
+{
+"y": "2010",
+"case": "CIR v. Aichi Forging Company of Asia",
+"cite": "G.R. No. 184823, October 6, 2010",
+"role": "new",
+"rule": "The 120-day and 30-day periods are mandatory and jurisdictional; a judicial claim filed before the 120 days lapse is premature and must be dismissed."
+},
+{
+"y": "2013",
+"case": "CIR v. San Roque Power Corp.",
+"cite": "G.R. No. 187485, February 12, 2013 (En Banc); reconsideration denied October 8, 2013",
+"role": "new",
+"rule": "Reaffirmed Aichi, but recognized BIR Ruling No. DA-489-03 as an exception: judicial claims filed prematurely between December 10, 2003 and October 6, 2010 are allowed. Late filing is never excused."
+},
+{
+"y": "2018",
+"case": "RA 10963 (TRAIN)",
+"cite": "amending Sec. 112(C)",
+"role": "refine",
+"rule": "Shortened the Commissioner’s period from 120 to 90 days; later laws have amended Sec. 112 again. Read the current text in this app."
+}
+],
+"then": "Mixed practice; many taxpayers filed with the CTA without waiting.",
+"now": "The waiting period and the 30-day appeal period are mandatory and jurisdictional, save the DA-489-03 window for premature claims.",
+"why": [
+"The NIRC itself sets the periods; jurisdiction is conferred by law, and courts cannot relax it.",
+"A taxpayer who relied in good faith on a BIR general ruling should not be prejudiced by its later reversal (Sec. 246 of the NIRC), hence the window."
+],
+"competing": [
+"Velasco, J., joined by several Justices, dissented: before Aichi, BIR regulations and practice let taxpayers go to the CTA without waiting, so claims filed under them should be honored (an operative-fact argument). Sereno, C.J. also dissented.",
+"From the other side, Leonen, J. (concurring and dissenting) questioned whether a BIR ruling at odds with the statute could create any exception at all."
+],
+"exam": "Map the dates: when were the sales, when was the administrative claim filed, did the Commissioner act, and when was the judicial claim filed (premature, timely or late)?",
+"test": {
+"q": "A taxpayer filed its CTA petition 40 days after filing its administrative claim, in 2008, relying on BIR Ruling DA-489-03. Under San Roque…",
+"options": [
+"the petition must be dismissed as premature",
+"the petition may proceed because it falls within the DA-489-03 window",
+"the petition is late",
+"the CTA has no jurisdiction over VAT refunds"
+],
+"a": 1,
+"why": "San Roque recognized premature filings made between December 10, 2003 and October 6, 2010 in reliance on DA-489-03."
+}
+},
+{
+"id": "cta-jurisdiction",
+"field": "com",
+"title": "The Court of Tax Appeals: certiorari power and validity of tax issuances",
+"q": "May the CTA issue writs of certiorari and rule on the validity of tax laws and regulations?",
+"links": [
+"ra9282|section-7"
+],
+"timeline": [
+{
+"y": "2008",
+"case": "British American Tobacco v. Camacho",
+"cite": "G.R. No. 163583, August 20, 2008",
+"role": "old",
+"rule": "The CTA’s jurisdiction is limited to what the law expressly gives it; challenges to the validity of tax laws or regulations belong to the regular courts."
+},
+{
+"y": "2014",
+"case": "City of Manila v. Grecia-Cuerdo",
+"cite": "G.R. No. 175723, February 4, 2014 (En Banc)",
+"role": "new",
+"rule": "The CTA may issue writs of certiorari over interlocutory orders of the RTC in local tax cases, as an incident of its exclusive appellate jurisdiction, even without an express grant."
+},
+{
+"y": "2016",
+"case": "Banco de Oro v. Republic",
+"cite": "G.R. No. 198756, August 16, 2016 (En Banc)",
+"role": "new",
+"rule": "As the court with exclusive jurisdiction over tax matters, the CTA may pass on the validity of tax laws, rules and issuances, including through certiorari, departing from the narrower view in British American Tobacco."
+}
+],
+"then": "The CTA could act only within express grants; validity questions went to the RTC.",
+"now": "The CTA has certiorari power within its appellate jurisdiction and may rule on the validity of tax issuances.",
+"why": [
+"A court with appellate jurisdiction must be able to protect it; splitting certiorari between courts invites conflicting rulings and delay.",
+"Tax matters were meant to be handled by a specialized court for uniformity and expertise (RA 9282 elevated the CTA to the level of the Court of Appeals)."
+],
+"competing": [
+"Some argue that jurisdiction must be expressly conferred by law and cannot be implied; the Court answered with the inherent power of courts to issue writs in aid of their jurisdiction."
+],
+"exam": "First ask whether the main case falls within the CTA’s appellate jurisdiction; certiorari follows it.",
+"test": {
+"q": "An RTC issues an injunction in a local business tax case. The proper court for a Rule 65 petition is…",
+"options": [
+"the Court of Appeals",
+"the Court of Tax Appeals",
+"the Supreme Court only",
+"the Sandiganbayan"
+],
+"a": 1,
+"why": "City of Manila v. Grecia-Cuerdo: the CTA has certiorari jurisdiction over RTC interlocutory orders in local tax cases within its appellate jurisdiction."
+}
+},
+{
+"id": "sex-entry",
+"field": "civ",
+"title": "Changing the sex entry: Silverio v. Cagandahan",
+"q": "May a person have the sex entry in his or her birth certificate changed?",
+"links": [
+"civil|article-412",
+"ra9048|section-1"
+],
+"timeline": [
+{
+"y": "2007",
+"case": "Silverio v. Republic",
+"cite": "G.R. No. 174689, October 22, 2007",
+"role": "old",
+"rule": "No: no law allows a change of name or sex entry on the ground of sex reassignment; sex at birth is determined by the person’s biological attributes and is not changed by surgery."
+},
+{
+"y": "2008",
+"case": "Republic v. Cagandahan",
+"cite": "G.R. No. 166676, September 12, 2008",
+"role": "new",
+"rule": "Yes, for an intersex person with congenital adrenal hyperplasia: where nature did not fix the sex at birth, the person’s development at maturity, and his or her own choice, may be recognized."
+},
+{
+"y": "2012",
+"case": "RA 10172",
+"cite": "amending RA 9048",
+"role": "refine",
+"rule": "Allows administrative correction of the sex entry only for a clerical or typographical error, not for a change of sex."
+}
+],
+"then": "Silverio (2007): no change of the sex entry; sex at birth is fixed by biological attributes, and no law allows a change for sex reassignment.",
+"now": "The two cases stand together: no change for sex reassignment (Silverio); change allowed for intersex conditions (Cagandahan). Only Congress can widen the rule.",
+"why": [
+"Silverio: changing civil status entries is a legislative matter; the Civil Register records facts at birth.",
+"Cagandahan: where the biological facts at birth were themselves ambiguous, the record should follow what nature resolved, and the person should not be forced into a classification nature did not make."
+],
+"competing": [
+"Advocates argue Silverio’s biological test ignores gender identity and the right to privacy and dignity; others say any change must come from Congress, as RA 10172 shows by allowing only clerical corrections."
+],
+"exam": "Ask: intersex (Cagandahan, judicial, Rule 108) or reassignment (Silverio, not allowed), or a simple clerical error (RA 9048 as amended by RA 10172, administrative).",
+"test": {
+"q": "A person born with ambiguous genitalia due to a congenital condition, who developed male characteristics, petitions to change the sex entry. The controlling case is…",
+"options": [
+"Silverio v. Republic, so the petition is denied",
+"Republic v. Cagandahan, so the petition may be granted",
+"RA 10172, so the civil registrar decides",
+"none: courts have no power"
+],
+"a": 1,
+"why": "Cagandahan allowed the change for an intersex person; Silverio concerned sex reassignment surgery."
+}
+},
+{
+"id": "reinstatement-refund",
+"field": "lab",
+"title": "Reinstatement pending appeal: must the worker refund the pay if the employer wins?",
+"q": "A Labor Arbiter orders reinstatement; the employer puts the worker on the payroll; the NLRC later reverses. Must the worker return what was paid?",
+"links": [
+"labor|article-229"
+],
+"timeline": [
+{
+"y": "1997",
+"case": "Pioneer Texturizing Corp. v. NLRC",
+"cite": "G.R. No. 118651, October 16, 1997 (En Banc)",
+"role": "refine",
+"rule": "The reinstatement aspect of a Labor Arbiter’s decision is self-executory: the employer must reinstate, actually or in the payroll, without waiting for a writ of execution."
+},
+{
+"y": "2003",
+"case": "Roquero v. Philippine Airlines",
+"cite": "G.R. No. 152329, April 22, 2003",
+"role": "old",
+"rule": "An employee kept out despite a reinstatement order is entitled to the wages accrued during the appeal, even if the order is later reversed."
+},
+{
+"y": "2007",
+"case": "Genuino v. NLRC",
+"cite": "G.R. Nos. 142732-33 and 142753-54, December 4, 2007",
+"role": "old",
+"rule": "Departed from that line: if the dismissal is finally upheld, the employee placed on payroll reinstatement must refund the salaries received (the “refund doctrine”)."
+},
+{
+"y": "2009",
+"case": "Garcia v. Philippine Airlines",
+"cite": "G.R. No. 164856, January 20, 2009 (En Banc)",
+"role": "new",
+"rule": "Rejected the refund doctrine. Wages received under a reinstatement order need not be returned. Whether the employee may still collect wages that accrued but were not paid before the reversal depends on a two-part test: there must be actual delay in carrying out the order, and the delay must not be due to the employer’s unjustified act or omission."
+}
+],
+"then": "Genuino (2007): refund the payroll salaries if the employer finally wins.",
+"now": "Garcia (2009): no refund; accrued but unpaid wages are collectible if the employer’s unjustified refusal caused the delay.",
+"why": [
+"Article 229 makes reinstatement immediately executory even pending appeal and says a bond does not stay it; a refund rule would let the employer recover what the law told it to pay.",
+"Labor law’s social-justice policy (Art. XIII, Sec. 3 of the Constitution) outweighs the civil-law idea of unjust enrichment in this setting.",
+"A refund rule turns a worker’s victory before the Labor Arbiter into a debt, discouraging workers from accepting payroll reinstatement at all."
+],
+"competing": [
+"Genuino reasoned from unjust enrichment: a worker validly dismissed should not keep pay for no work.",
+"Garcia itself shows the limit: where the employer’s delay was justified (there, the suspension of claims during PAL’s corporate rehabilitation), the employee could not collect wages accrued before the reversal."
+],
+"exam": "Separate three things: wages already received (no refund), wages accrued but unpaid before the reversal (two-part test), and wages after the reversal (none).",
+"test": {
+"q": "An employer ignored a reinstatement order for eight months without any justification; then the NLRC reversed the Labor Arbiter. Under Garcia v. PAL, the worker…",
+"options": [
+"must return any amount received",
+"may collect the wages that accrued during the eight months",
+"gets nothing, because the employer won the appeal",
+"may collect only if a writ of execution had been issued"
+],
+"a": 1,
+"why": "The delay was due to the employer’s unjustified refusal, so the accrued wages remain collectible despite the reversal; and no writ was needed because reinstatement is self-executory (Pioneer Texturizing)."
+}
+},
+{
+"id": "reverse-piercing",
+"field": "com",
+"title": "Reaching a company that was never sued: Kukan vs I/AME (reverse piercing)",
+"q": "After judgment against a person or a company, may the sheriff levy on property of a different corporation that was never impleaded?",
+"links": [
+"rcc|section-2"
+],
+"timeline": [
+{
+"y": "2010",
+"case": "Kukan International Corp. v. Reyes",
+"cite": "G.R. No. 182729, September 29, 2010",
+"role": "old",
+"rule": "No. A corporation that was not impleaded, not served with summons and that did not submit to the court cannot be made liable through execution. Piercing the corporate veil determines liability that exists; it cannot give the court jurisdiction it never acquired."
+},
+{
+"y": "2017",
+"case": "International Academy of Management and Economics (I/AME) v. Litton and Co.",
+"cite": "G.R. No. 191525, December 13, 2017",
+"role": "new",
+"rule": "A corporation used by the judgment debtor to shield assets may be reached in execution although not impleaded (“reverse piercing”). The facts were extraordinary: the debtor conceived and funded the corporation, the property was moved to it while the appeal was pending, and the corporation’s own pleading admitted it was his alter ego. A corporation vulnerable to piercing cannot claim denial of due process."
+}
+],
+"then": "Kukan: a non-party corporation is beyond the writ.",
+"now": "Kukan remains the rule; I/AME is a narrow, equitable exception on clear and convincing proof that the corporation is the debtor’s alter ego used to evade the judgment.",
+"why": [
+"Kukan protects due process: no one may be bound by a judgment in a case where the court had no jurisdiction over it.",
+"I/AME protects the judgment: an artificial person created or used to hide the debtor’s assets should not defeat a final judgment.",
+"The Court reconciled them by fact, not by overruling: piercing at execution is allowed only where the evidence already shows the corporation is the debtor himself in another form."
+],
+"competing": [
+"The Court in I/AME itself warned that reverse piercing is to be used sparingly and that ordinary collection remedies come first.",
+"Read the two cases together: in Kukan the evidence of identity was thin and the company had no say; in I/AME the corporation’s own pleading supplied the admission."
+],
+"exam": "Ask: was the other entity a party? If not, is there clear and convincing proof (ideally its own admissions) that it is the debtor’s alter ego used to evade the judgment? Otherwise sue it in a new action, or rescind the transfer (accion pauliana).",
+"test": {
+"q": "A debtor transfers his building to a newly formed corporation he owns while his appeal is pending. The corporation’s own answer admits it was used to shield his assets. Can the judgment be executed on the building?",
+"options": [
+"No, never: Kukan bars execution against any non-party",
+"Yes, under I/AME v. Litton, as an exceptional case of reverse piercing",
+"Only if the corporation consents",
+"Only after the corporation is convicted of fraud"
+],
+"a": 1,
+"why": "I/AME allowed reverse piercing in these facts; Kukan still governs where there is no such proof."
+}
+}
+]
+}

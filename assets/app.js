@@ -11,7 +11,7 @@ const today = () => new Date(Date.now() - new Date().getTimezoneOffset() * 60000
 
 /* ------------------------------------------------------------------ storage */
 const KEY = 'sinag.codal.v1';
-const DEFAULTS = { cards: {}, notes: {}, marks: {}, flags: {}, days: {}, last: null, tutor: {}, hooks: {}, lessons: {}, lastBy: {}, b2: {}, cal: [],
+const DEFAULTS = { cards: {}, notes: {}, marks: {}, flags: {}, days: {}, last: null, tutor: {}, hooks: {}, lessons: {}, lastBy: {}, b2: {}, cal: [], shift: {}, enf: { day1: {}, best: null },
   settings: { newPerDay: 10, focus: null, figure: '', hl: { op: false, cond: true, exc: true, num: true, pen: true, def: true }, hlv: 2, passcode: '' } };
 let S;
 try { S = Object.assign(structuredClone(DEFAULTS), JSON.parse(localStorage.getItem(KEY) || '{}')); }
@@ -606,7 +606,7 @@ async function home() {
   <div class="sect"><h2>The House of Law</h2><span class="spacer"></span><button class="btn sm ghost" id="foc">This semester</button><button class="btn sm ghost" id="pic">Use a place you know</button></div>
   <p class="small muted" style="margin:-4px 0 12px;max-width:65ch">Eight fields, eight places in one building drawn after the Supreme Court on Padre Faura, read from the roof down to the seven steps. A fixed place is a fixed cue: when you forget, walk through the building again.</p>
   <div class="plate bodymap"><div class="pfig">${figure()}</div>${partsList()}<p class="cap">Read from the roof down to the steps. Faded fields are outside this semester.</p></div>
-  <div class="more"><a href="#/map">The whole map</a><a href="#/sprint">Sprint</a><a href="#/syllabus">Syllabus cases</a><a href="#/syllabus/recent">Recent rulings</a><a href="#/drill">Drill</a><a href="#/search">Find a case</a><a href="#/about">How this works</a></div>`;
+  <div class="more"><a href="#/map">The whole map</a><a href="#/sprint">Sprint</a><a href="#/syllabus">Syllabus cases</a><a href="#/syllabus/recent">Recent rulings</a><a href="#/shifts">How the doctrine changed</a><a href="#/enforce">Enforcing judgments</a><a href="#/drill">Drill</a><a href="#/search">Find a case</a><a href="#/about">How this works</a></div>`;
   $('#foc').onclick = async () => { if (await chooseFocus()) home(); };
   $('#pic').onclick = () => figurePicture(home);
 }
@@ -802,7 +802,7 @@ function verifyChips(cid, p) {
 
 async function provView(cid, pid, q) {
   setNav('library');
-  const d = await loadCode(cid); await loadExtras(cid); await Promise.all([loadSylIndex(), loadRecent(), cid === 'rpc' ? loadB2().catch(() => null) : null]);
+  const d = await loadCode(cid); await loadExtras(cid); await Promise.all([loadSylIndex(), loadRecent(), loadShifts(), loadEnforce(), cid === 'rpc' ? loadB2().catch(() => null) : null]);
   const p = d.byId[pid];
   if (!p) { main.innerHTML = `<div class="empty">That provision is not in this code. <a href="#/code/${cid}">Back to ${esc(d.short)}</a></div>`; return; }
   const key = ck(cid, pid);
@@ -821,13 +821,15 @@ async function provView(cid, pid, q) {
   const notes = (NOTES[cid] || {})[pid];
   const cases = (CASES[cid] || {})[pid] || [];
   const syl = SYX[ck(cid, pid)] || [], rec = REC.by[ck(cid, pid)] || [];
-  const ncase = cases.length + syl.length + rec.length + (((notes || {}).d) || []).length;
+  const shf = SHF.byLink[ck(cid, pid)] || [], enf = ENF.byLink[ck(cid, pid)] || [];
+  const ncase = cases.length + syl.length + rec.length + (((notes || {}).d) || []).length + shf.length + enf.length;
   const on = S.settings.hl;
   const tabs = [['guide', 'Step 2', 'Understand'], ['recall', 'Step 3', 'Recall'], ['cases', 'Step 4', `Cases${ncase ? ' (' + ncase + ')' : ''}${rec.length ? ' <span class="newdot" title="has 2023–2026 rulings">new</span>' : ''}`], ['notes', 'Yours', 'My notes']];
   main.innerHTML = `${crumbs(d, p, cid)}${setBar}
   <div class="pv"><div>
     <div class="row" style="margin-bottom:8px"><span class="eyebrow">Step 1 · Read</span><span class="spacer"></span><details class="hlbox"><summary>Highlights</summary><div class="legend">${HLORDER.map(k => `<label><input type="checkbox" data-hl="${k}" ${on[k] ? 'checked' : ''}><span class="${HLCLASS[k]}">${HLNAME[k]}</span></label>`).join('')}</div></details></div>
     <div id="lawbox">${lawHTML(d, p, cid, on)}</div>
+    ${shf.length ? `<div class="shiftcue"><span class="chip violet">Doctrine changed</span><span class="small">${esc(shf[0].title)}${shf.length > 1 ? ` and ${shf.length - 1} more` : ''}</span><span class="spacer"></span><a class="small" href="#/shifts/${shf[0].id}">How and why →</a></div>` : ''}
     <div class="steps" role="tablist">${tabs.map(([k, sm, n], i) => `<button role="tab" data-tab="${k}" class="${i ? '' : 'on'}"><small>${sm}</small><span>${n}</span></button>`).join('')}</div>
     <div id="tabbox"></div>
     <div class="pn">${prev ? `<a class="btn" href="${href(prev)}">← ${esc(prev.l)}</a>` : '<span></span>'}${next ? `<a class="btn primary" href="${href(next)}">${esc(next.l)} →</a>` : (sfx ? `<a class="btn primary" href="#/set/${setId}">Finish the walk</a>` : '')}</div>
@@ -844,7 +846,7 @@ async function provView(cid, pid, q) {
   const show = k => { $$('.steps button').forEach(b => b.classList.toggle('on', b.dataset.tab === k)); renderTab(k); };
   function renderTab(k) {
     if (k === 'guide') tabbox.innerHTML = guideHTML(d, p, cid, notes, loc);
-    if (k === 'cases') tabbox.innerHTML = casesHTML(cid, pid, notes, cases, syl, rec);
+    if (k === 'cases') tabbox.innerHTML = casesHTML(cid, pid, notes, cases, syl, rec, shf, enf);
     if (k === 'notes') { tabbox.innerHTML = `<div class="panel"><textarea id="mynote" placeholder="Your own words: what the provision says, the elements, a case that applies it, a mnemonic…">${esc(S.notes[key] || '')}</textarea><p class="tiny muted">Saved on this device as you type. Writing it in your own words is one of the strongest ways to learn it.</p></div>`; $('#mynote').addEventListener('input', e => { S.notes[key] = e.target.value; save(); }); }
     if (k === 'recall') { recallPanel(tabbox, d, p, cid); if (S.hooks[key]) $('.panel', tabbox).insertAdjacentHTML('afterbegin', `<div class="hookcue"><b>Your picture:</b> ${esc(S.hooks[key])}</div>`); }
     if (k === 'guide') { $$('[data-av]', tabbox).forEach(b => b.onclick = () => { S.settings.anatView = b.dataset.av; save(); $$('[data-av]', tabbox).forEach(x => x.classList.toggle('on', x === b)); $('#av-judge').hidden = b.dataset.av !== 'judge'; $('#av-text').hidden = b.dataset.av !== 'text'; }); }
@@ -1009,8 +1011,10 @@ function sylHTML(syl) {
   return Object.entries(by).map(([k, arr]) => `<div class="card flat" style="margin-bottom:10px"><div class="row"><b>${esc(COURSE[k] || k)}</b><span class="spacer"></span><a class="tiny" href="#/syllabus/${k}">open the syllabus</a></div>
     <ul style="margin:8px 0 0;padding-left:1.1em">${arr.map(c => `<li><span style="font-family:var(--serif)">${esc(c.n)}</span>${c.c ? `, <span class="muted">${esc(c.c)}</span>` : ''}${c.note ? ` <span class="small muted">— ${esc(c.note)}</span>` : ''}${c.topic ? `<div class="tiny muted">${esc(c.topic)}${c.d ? ' · filed by the outline section' : ''}</div>` : ''}</li>`).join('')}</ul></div>`).join('');
 }
-function casesHTML(cid, pid, n, cases, syl = [], rec = []) {
+function casesHTML(cid, pid, n, cases, syl = [], rec = [], shf = [], enf = []) {
   let h = '<div class="panel">';
+  if (shf.length) h += `<h3>How the doctrine changed</h3><p class="small muted">The Supreme Court changed its own rule on this provision. The analysis gives the cases in order, the reasons and the dissents.</p>` + shf.map(shiftCard).join('');
+  if (enf.length) h += `<h3 style="margin-top:14px">Enforcing it</h3><p class="small muted">Moves from the playbook on executing judgments that rest on this provision.</p><div class="grid g2">${enf.map(m => moveCard(m, stageName(m.stage))).join('')}</div>`;
   if (rec.length) h += `<h3>Recent rulings (2023–2026)</h3><p class="small muted">Added after a check of recent Supreme Court decisions (last checked ${esc(REC.checked || '')}). Holdings are summarised in our own words.</p>` + recentHTML(rec);
   if (syl.length) h += `<h3 style="margin-top:14px">In your syllabus</h3><p class="small muted">Cases your professors assigned under this provision.</p>` + sylHTML(syl);
   const dg = (n && n.d) || [];
@@ -1025,7 +1029,7 @@ function casesHTML(cid, pid, n, cases, syl = [], rec = []) {
       h += `<div class="card flat" style="margin-bottom:10px"><div class="row"><b>${esc(b)}</b><span class="spacer"></span><span class="tiny muted">${arr.length} citation${arr.length === 1 ? '' : 's'}</span></div><ul style="margin:8px 0 0;padding-left:1.1em">${arr.map(c => `<li><span style="font-family:var(--serif)">${esc(c.n)}</span>${c.c ? `, <span class="muted">${esc(c.c)}</span>` : ''} <span class="chip">p. ${esc(c.pg)}</span></li>`).join('')}</ul></div>`;
     }
   }
-  if (!dg.length && !cases.length && !syl.length && !rec.length) h += `<div class="empty">No cases indexed for this provision yet.</div>`;
+  if (!dg.length && !cases.length && !syl.length && !rec.length && !shf.length && !enf.length) h += `<div class="empty">No cases indexed for this provision yet.</div>`;
   return h + '</div>';
 }
 async function wireTutor(d, p, cid, cases) {
@@ -1301,7 +1305,8 @@ async function mapView(parts) {
           <div class="mhstat">${ringHTML(all, 84, 'locked in')}<div class="small">${lockLine(all)}<br><span class="muted">${all.total.toLocaleString()} provisions in this semester’s fields</span></div></div>
           ${nx ? `<div class="mapnext"><span class="eyebrow">Next to lock in</span><a class="btn primary" href="#/map/${nx.f.id}">${esc(nx.f.name)} →</a><span class="small muted">${nx.t.x ? `${nx.t.x} provision${nx.t.x === 1 ? ' is' : 's are'} slipping here.` : 'The least locked-in field you are taking this semester.'}</span></div>` : ''}</div></div>
       <div class="mapgrid">${rows.map(({ f, t, mine }) => `<a class="mtile f-${f.id}${mine ? '' : ' dim'}" href="#/map/${f.id}"><span class="mth"><span><span class="p">${f.n} · ${esc(f.pname)}</span><span class="t">${esc(f.name)}</span></span>${ringHTML(t, 52)}</span>${waffle(t)}<span class="ml">${lockLine(t)}</span></a>`).join('')}</div>
-      ${LEGEND}<p class="tiny muted">Each square in a tile is 1% of that field. Faded fields are outside this semester. <a href="#/learn">Change your fields</a> · <a href="#/about">What “locked in” means</a></p></div>`;
+      ${LEGEND}<p class="tiny muted">Each square in a tile is 1% of that field. Faded fields are outside this semester. <a href="#/learn">Change your fields</a> · <a href="#/about">What “locked in” means</a></p>
+      <div class="mapextra"><a class="card codecard" href="#/shifts"><span class="eyebrow">Across the fields</span><span class="t">How the doctrine changed</span><span class="small muted">Where the Court abandoned its own rule: old rule, new rule, the reasons, the dissents.</span></a><a class="card codecard" href="#/enforce"><span class="eyebrow">After you win</span><span class="t">Enforcing a judgment</span><span class="small muted">Nine stages from attachment to the ten-year clock, with case files to practise on.</span></a></div></div>`;
   } else if (!cid) {
     // level 1: one field, its codes by tier
     const f = CUR.byId[fid]; if (!f) return mapView([]);
@@ -1770,6 +1775,8 @@ async function syllabusView(id, q) {
     const nrec = new Set(Object.values(rc.by).flat().map(r => r.n + r.g)).size;
     main.innerHTML = `<h1>Syllabus</h1><p class="muted">Your law-school syllabi, with every case filed under the provision it is taught with. Open a provision’s <b>Cases</b> tab to see them beside the text.</p>
     <div class="grid g3">${sy.courses.map(c => { const cs = c.items.filter(i => i.t === 'c'); const f = cs.filter(i => (i.links || []).some(l => l.i)).length; return `<a class="card codecard" href="#/syllabus/${c.id}"><span class="t">${esc(c.title)}</span>${c.teacher ? `<span class="c">${esc(c.teacher)}</span>` : ''}<span class="small muted">${cs.length} cases · ${f} filed under a provision</span></a>`; }).join('')}
+    <a class="card codecard" href="#/shifts"><span class="t">How the doctrine changed</span><span class="c">competing cases and the reasons for the change</span><span class="small muted">Old rule, new rule, dissents, current rule</span></a>
+    <a class="card codecard" href="#/enforce"><span class="t">Enforcing a judgment</span><span class="c">creative lawyering after the writ</span><span class="small muted">The moves, the rules behind them, case files</span></a>
     <a class="card codecard" href="#/syllabus/recent"><span class="t">Recent jurisprudence, 2023–2026</span><span class="c">checked ${esc(rc.checked || '')}</span><span class="small muted">${nrec} rulings filed under the provisions they apply</span></a></div>`;
     return;
   }
@@ -1824,6 +1831,8 @@ async function aboutView() {
   <li><b>A memory model, not a fixed timetable.</b> Every rating updates an estimate of how well you would recall that provision today (the FSRS model). Each provision comes back on the day your recall would fall to your target, 90% by default. Under Progress you can see your average recall, what is slipping, what falls due over the next two weeks, and which provisions keep slipping. Those need a new picture, not more rereading.</li>
   <li><b>Eight fields in one building.</b> The House of Law is a memory palace drawn after the Supreme Court’s building on Padre Faura, Manila: its four columns, three doors and seven marble steps, with the Court’s motto, <i>Batas at Bayan</i>, carved above. Each field has a fixed place in it, from the pediment down to the steps, and each topic inside a field is one object at that place. Fixed places give you somewhere to look when you forget.</li>
   <li><b>A short path in each field.</b> Start here, then the core, then deeper only when you need it. A code page offers five provisions at a time.</li>
+  <li><b>Why the law changed.</b> Where the Supreme Court abandoned its own rule, “How the doctrine changed” sets the old rule beside the new, lists the cases in order, gives the Court’s reasons and the dissents, and ends with a question. The change also shows on the provision itself, in its Cases tab.</li>
+  <li><b>Winning after you win.</b> “Enforcing a judgment” is a playbook for the stage after the decision: securing assets early, the first 72 hours with a writ, answering the debtor’s defenses, finding hidden assets, special debtors such as the government, and the five- and ten-year clocks. Each move names its rule, and ten case files test it.</li>
   <li><b>Four steps on each provision.</b> Read the verbatim text. Understand it by taking it apart and making your own picture. Recall it with the text hidden. Connect it to cases. Then rate yourself, and Review brings it back just before you would forget it.</li>
   <li><b>The law in force comes first.</b> Where a later law restated a provision, the amended text is what you read, take apart and recall; the text as enacted and the amending law, verbatim, sit under “How the text read before”. Repealed or superseded provisions are marked, so you do not memorize dead law.</li>
   <li><b>See how it evolved.</b> Each provision shows its history in order: where the text came from (for the Civil Code, the article of the Spanish Civil Code of 1889 that its source note names), every amending law with its year, the rules and issuances that implement it, and the decisions that interpreted it — ending with the text in force today. Older cases and many examination questions were decided under the older layers.</li>
@@ -1844,6 +1853,9 @@ async function aboutView() {
   <li><b>Write it the way you will be tested.</b> The Bar answer mode practises the Answer–Legal basis–Application–Conclusion form, graded against the provision’s own elements, conditions and exceptions: practising the retrieval you will need on the exam transfers best (transfer-appropriate processing; Morris, Bransford and Franks, 1977).</li>
   <li><b>A comfortable line.</b> Study text is kept to about 65 characters a line. On screen, moderate lines have been linked with better comprehension than very long ones (Dyson and Haselgrove, 2001).</li></ul>
   <p class="small muted">These are general findings about memory, not studies of this app. The pictures suggested for each topic are our own inventions; replace any that do not stick with your own. A place you know well works even better: use “Use a place you know” on the Today screen.</p>
+  <h2>How complete are the cases?</h2>
+  <p class="small">No study tool can attach every decision: the Supreme Court decides thousands of cases a year, and most provisions are never construed at all. This shows, for each core code, how many provisions in force have at least one case attached here (from your textbooks’ indexes, digests, your syllabi, the 2023–2026 rulings, the doctrinal shifts and the enforcement playbook). Where the bar is short, read the annotated textbook alongside.</p>
+  ${CAT.cov ? `<div class="card flat small" style="overflow-x:auto"><table class="table covt">${Object.entries(CAT.cov).sort((x, y) => y[1][1] / y[1][0] - x[1][1] / x[1][0]).map(([c, [l, n]]) => `<tr><td>${esc((meta(c) || {}).short || c)}</td><td style="width:45%"><div class="thin"><i style="width:${(n / l * 100).toFixed(1)}%"></i></div></td><td class="tiny">${n.toLocaleString()} of ${l.toLocaleString()}</td></tr>`).join('')}</table></div>` : ''}
   <h2>Sources</h2>
   <ul class="explain small"><li>Most statutes: The LawPhil Project (Arellano Law Foundation), as mirrored by LawCodex. LawPhil is a free, unofficial library.</li>
   <li>Labor Code: DOLE, <i>The Labor Code of the Philippines, Renumbered</i> (2022). Footnotes are DOLE’s.</li>
@@ -1859,6 +1871,134 @@ async function aboutView() {
     <b>Open numbering notes</b><ul>${Object.entries(pr.numbering).filter(([, v]) => v.length).map(([k, v]) => `<li>${esc(meta(k)?.short || k)}: ${esc(v.join('; '))}</li>`).join('')}</ul></div>` : ''}
   <h2 style="margin-top:20px">Your data</h2><p class="small">Progress, notes and bookmarks stay in this browser. Nothing is sent anywhere unless you use the optional AI tutor, which sends only the provision you are viewing and your question.</p>
   <p class="small muted">Built ${esc(CAT.built)} · ${CAT.total.toLocaleString()} provisions ${/claude|anthropic/.test(location.hostname) ? '' : '· <a href="legacy/">Open the previous Sinag Learning Studio</a>'}</p></div>`;
+}
+
+/* ------------------------------------------------------------------ doctrine shifts */
+let SHF = null, ENF = null;
+async function loadShifts() {
+  if (!SHF) {
+    SHF = await getJSON('data/shifts.json?v=' + (CAT.xhash || CAT.built)).catch(() => ({ shifts: [] }));
+    SHF.byId = {}; SHF.byLink = {};
+    SHF.shifts.forEach(s => { SHF.byId[s.id] = s; s.links.forEach(l => (SHF.byLink[l] = SHF.byLink[l] || []).push(s)); });
+  }
+  return SHF;
+}
+async function loadEnforce() {
+  if (!ENF) {
+    ENF = await getJSON('data/enforce.json?v=' + (CAT.ehash || CAT.built)).catch(() => ({ stages: [], moves: [], day1: [], guard: [], drills: [], note: '' }));
+    ENF.byId = {}; ENF.byLink = {}; ENF.stageById = {};
+    ENF.stages.forEach(s => { ENF.stageById[s.id] = s; });
+    ENF.moves.forEach(m => { ENF.byId[m.id] = m; m.basis.forEach(b => { if (!b.c) return; const k = ck(b.c, b.i); const a = ENF.byLink[k] = ENF.byLink[k] || []; if (!a.includes(m)) a.push(m); }); });
+  }
+  return ENF;
+}
+const ROLE = { old: ['Old rule', 'bad'], refine: ['Refined', 'blue'], new: ['New rule', 'ok'] };
+const fieldName = id => (CUR.byId[id] || {}).name || '';
+const stageName = id => { const st = ENF && ENF.stageById[id]; return st ? `Stage ${st.n} · ${st.title}` : ''; };
+function basisHTML(b) { return b.c ? `<a class="chip blue" href="#/p/${b.c}/${b.i}">${esc(b.t)}</a>` : `<span class="chip">${esc(b.t)}</span>`; }
+function shiftSpan(s) { const ys = s.timeline.map(t => t.y).filter(y => /^\d{4}$/.test(y)).sort(); return ys.length ? (ys[0] === ys[ys.length - 1] ? ys[0] : `${ys[0]}–${ys[ys.length - 1]}`) : ''; }
+function thenNow(s, sm) { return `<div class="thennow${sm ? ' sm' : ''}"><div class="tn then"><b>Then</b>${esc(s.then)}</div><div class="tn now"><b>Now</b>${esc(s.now)}</div></div>`; }
+function shiftCard(s) {
+  return `<div class="shiftmini"><div class="row"><span class="chip violet">Doctrine changed · ${esc(shiftSpan(s))}</span><span class="spacer"></span><a class="small" href="#/shifts/${s.id}">Full analysis →</a></div><div class="sm-t">${esc(s.title)}</div>${thenNow(s, 1)}</div>`;
+}
+function moveCard(m, label) { return `<a class="movecard" href="#/enforce/${m.id}">${label ? `<span class="eyebrow">${esc(label)}</span>` : ''}<span class="mt">${esc(m.title)}</span><span class="mh">${esc(m.hook)}</span></a>`; }
+function quizHTML(id, t) { return `<div class="card quiz" id="${id}"><p class="explain" style="margin-top:0">${esc(t.q)}</p><div class="opts">${t.options.map((o, i) => `<button class="opt" data-o="${i}">${esc(o)}</button>`).join('')}</div><div class="qres"></div></div>`; }
+function wireQuiz(id, t, done, extra) {
+  const box = $('#' + id);
+  $$('.opt', box).forEach(b => b.onclick = () => {
+    const o = +b.dataset.o, ok = o === t.a;
+    $$('.opt', box).forEach((x, i) => { x.disabled = true; x.classList.toggle('right', i === t.a); x.classList.toggle('wrong', i === o && !ok); });
+    $('.qres', box).innerHTML = `<div class="note ${ok ? '' : 'bad'}" style="margin-top:10px"><b>${ok ? 'Right.' : 'Not quite.'}</b> ${esc(t.why)}</div>${extra ? extra(ok) : ''}`;
+    done(ok);
+  });
+}
+async function shiftsView(id) {
+  setNav('syllabus');
+  await loadShifts();
+  if (!id) {
+    const by = {}; SHF.shifts.forEach(s => (by[s.field] = by[s.field] || []).push(s));
+    const ok = SHF.shifts.filter(s => (S.shift[s.id] || {}).ok).length;
+    main.innerHTML = `<span class="eyebrow">Jurisprudence</span><h1>How the doctrine changed</h1>
+    <p class="lead">Where the Supreme Court abandoned or rewrote its own rule. For each change: the old rule and the new, the cases in order, why the Court changed course, who disagreed and why, and the rule that governs now. Read the dissents as arguments you may one day have to make.</p>
+    <div class="row small muted" style="margin:8px 0 0"><span>${SHF.shifts.length} changes of course</span><span>·</span><span>${ok} answered correctly</span><span class="spacer"></span><a href="#/enforce">Enforcing a judgment →</a></div>
+    ${CUR.fields.filter(f => by[f.id]).map(f => `<div class="sect"><h2>${esc(f.name)}</h2></div><div class="grid g2">${by[f.id].map(s => `<a class="card shiftcard f-${f.id}" href="#/shifts/${s.id}"><span class="row"><span class="chip violet">${esc(shiftSpan(s))}</span>${(S.shift[s.id] || {}).ok ? '<span class="chip ok">✓ answered</span>' : ''}</span><span class="t">${esc(s.title)}</span><span class="small muted">${esc(s.q)}</span></a>`).join('')}</div>`).join('')}
+    <p class="tiny muted" style="margin-top:18px">Analysis in our own words. Each citation was checked against the decision or the Supreme Court E-Library. Read the decision itself before you cite it.</p>`;
+    return;
+  }
+  const s = SHF.byId[id]; if (!s) return shiftsView();
+  const ix = SHF.shifts.indexOf(s), prev = SHF.shifts[ix - 1], next = SHF.shifts[ix + 1];
+  await Promise.all([...new Set(s.links.map(l => l.split('|')[0]))].map(c => loadCode(c).catch(() => 0)));
+  const plink = l => { const [c, pid] = l.split('|'); const d = CODES[c]; const pr = d && d.byId[pid]; return `<a class="chip blue" href="#/p/${c}/${pid}">${esc((meta(c) || {}).short || c)} ${esc(pr ? pr.l : pid)}</a>`; };
+  main.innerHTML = `<p class="small"><a href="#/shifts">← How the doctrine changed</a></p>
+  <article class="shiftv f-${s.field}"><span class="eyebrow">${esc(fieldName(s.field))} · ${esc(shiftSpan(s))}</span><h1>${esc(s.title)}</h1>
+  <p class="lead"><b>The question.</b> ${esc(s.q)}</p>
+  ${s.links.length ? `<div class="row" style="margin:6px 0 4px">${s.links.map(plink).join('')}</div>` : ''}
+  ${thenNow(s)}
+  <h2>The cases, in order</h2>
+  <ol class="tl">${s.timeline.map(e => `<li class="r-${e.role}"><span class="ty">${esc(e.y)}</span><div><div class="row"><span class="tc">${esc(e.case)}</span><span class="chip ${ROLE[e.role][1]}">${ROLE[e.role][0]}</span></div><div class="tiny muted">${esc(e.cite)}</div><p>${esc(e.rule)}</p></div></li>`).join('')}</ol>
+  <h2>Why the Court changed course</h2><ol class="explain">${s.why.map(x => `<li>${esc(x)}</li>`).join('')}</ol>
+  <h2>The other side</h2><p class="small muted" style="margin-top:-4px">Dissents and competing views. Today’s dissent is sometimes tomorrow’s majority.</p><ul class="explain">${s.competing.map(x => `<li>${esc(x)}</li>`).join('')}</ul>
+  <div class="note blue"><b>On the exam.</b> ${esc(s.exam)}</div>
+  <h2>Test yourself</h2>${quizHTML('sq', s.test)}
+  <div class="pn">${prev ? `<a class="btn" href="#/shifts/${prev.id}">← Previous</a>` : '<span></span>'}${next ? `<a class="btn primary" href="#/shifts/${next.id}">Next: ${esc(next.title)} →</a>` : `<a class="btn primary" href="#/shifts">All changes of course</a>`}</div></article>`;
+  wireQuiz('sq', s.test, ok => { if (!(S.shift[id] || {}).ok) S.shift[id] = { ok, at: Date.now() }; save(); });
+}
+
+/* ------------------------------------------------------------------ enforcing a judgment */
+async function enforceView(parts, q) {
+  setNav('syllabus');
+  await loadEnforce();
+  S.enf = S.enf || { day1: {}, best: null }; S.enf.day1 = S.enf.day1 || {};
+  const [id] = parts;
+  if (id === 'drills') return enforceDrills(q);
+  if (!id) {
+    const done = ENF.day1.filter((_, i) => S.enf.day1[i]).length;
+    main.innerHTML = `<span class="eyebrow">Creative lawyering</span><h1>Enforcing a judgment</h1>
+    <p class="lead">A judgment is paper until it is paid. Winners often lose at this stage: the debtor moves the money, the sheriff waits, the five years run out. These are the moves that work, stage by stage, each tied to the rule that allows it.</p>
+    <nav class="stagepath" aria-label="Stages">${ENF.stages.map(st => `<button data-go="${st.id}" title="${esc(st.title)}"><b>${st.n}</b><span>${esc(st.short)}</span></button>`).join('')}</nav>
+    <div class="grid g2" style="margin-top:16px">
+      <div class="card"><div class="row"><h3 style="margin:0">The writ is out: the first 72 hours</h3><span class="spacer"></span><span class="chip ${done === ENF.day1.length ? 'ok' : ''}" id="d1c">${done}/${ENF.day1.length}</span></div>
+        <ol class="day1">${ENF.day1.map((x, i) => `<li><label><input type="checkbox" data-d="${i}" ${S.enf.day1[i] ? 'checked' : ''}><span>${esc(x)}</span></label></li>`).join('')}</ol>
+        <button class="btn sm ghost" id="d1r">Clear for a new case</button></div>
+      <div class="card"><h3 style="margin-top:0">Guardrails</h3><ul class="guard">${ENF.guard.map(g => `<li><b>${esc(g.t)}.</b> ${esc(g.x)} ${g.l ? basisHTML(g.l) : ''}</li>`).join('')}</ul>
+        <div class="row"><a class="btn primary" href="#/enforce/drills">Work the ${ENF.drills.length} case files</a>${S.enf.best != null ? `<span class="small muted">Best so far: ${S.enf.best}/${ENF.drills.length}</span>` : ''}</div></div>
+    </div>
+    ${ENF.stages.map(st => `<section class="stage" id="${st.id}"><div class="sect"><span class="stn">${st.n}</span><h2>${esc(st.title)}</h2></div><p class="small muted" style="margin:-4px 0 10px;max-width:70ch">${esc(st.goal)}</p><div class="grid g3">${ENF.moves.filter(m => m.stage === st.id).map(m => moveCard(m)).join('')}</div></section>`).join('')}
+    <p class="tiny muted" style="margin-top:18px">${esc(ENF.note)}</p>`;
+    $$('.stagepath button').forEach(b => b.onclick = () => document.getElementById(b.dataset.go).scrollIntoView({ behavior: 'smooth', block: 'start' }));
+    $$('[data-d]').forEach(c => c.onchange = () => { S.enf.day1[c.dataset.d] = c.checked; save(); const n = ENF.day1.filter((_, i) => S.enf.day1[i]).length; $('#d1c').textContent = `${n}/${ENF.day1.length}`; $('#d1c').classList.toggle('ok', n === ENF.day1.length); });
+    $('#d1r').onclick = () => { S.enf.day1 = {}; save(); enforceView([]); };
+    return;
+  }
+  const m = ENF.byId[id]; if (!m) return enforceView([]);
+  const ix = ENF.moves.indexOf(m), prev = ENF.moves[ix - 1], next = ENF.moves[ix + 1];
+  const dr = ENF.drills.filter(d => d.m.includes(m.id));
+  main.innerHTML = `<p class="small"><a href="#/enforce">← Enforcing a judgment</a></p>
+  <article class="movev"><span class="eyebrow">${esc(stageName(m.stage))}</span><h1>${esc(m.title)}</h1><p class="lead">${esc(m.hook)}</p>
+  <div class="note blue"><b>When.</b> ${esc(m.when)}</div>
+  <h2>The moves</h2><ol class="explain">${m.steps.map(x => `<li>${esc(x)}</li>`).join('')}</ol>
+  <h2>Legal basis</h2><div class="row">${m.basis.map(basisHTML).join('')}</div>
+  ${m.cases.length ? `<h2>Cases</h2>${m.cases.map(c => `<div class="case"><div class="cn">${esc(c.n)}</div><div class="cc">${esc(c.cite)}</div><div class="dg"><div>${esc(c.held)}</div></div></div>`).join('')}` : ''}
+  ${m.traps.length ? `<h2>Watch out</h2><ul class="explain">${m.traps.map(x => `<li>${esc(x)}</li>`).join('')}</ul>` : ''}
+  ${dr.length ? `<div class="row" style="margin-top:14px"><a class="btn" href="#/enforce/drills?only=${dr.map(d => d.id).join(',')}">Try the case file${dr.length > 1 ? 's' : ''} on this move</a></div>` : ''}
+  <div class="pn">${prev ? `<a class="btn" href="#/enforce/${prev.id}">← ${esc(prev.title)}</a>` : '<span></span>'}${next ? `<a class="btn primary" href="#/enforce/${next.id}">${esc(next.title)} →</a>` : `<a class="btn primary" href="#/enforce/drills">Case files</a>`}</div></article>`;
+}
+function enforceDrills(q) {
+  const only = ((q && q.get('only')) || '').split(',').filter(Boolean);
+  const list = only.length ? ENF.drills.filter(d => only.includes(d.id)) : ENF.drills;
+  let i = 0, score = 0;
+  const draw = () => {
+    if (i >= list.length) {
+      if (!only.length) { S.enf.best = Math.max(S.enf.best || 0, score); save(); }
+      main.innerHTML = `<p class="small"><a href="#/enforce">← Enforcing a judgment</a></p><div class="reviewcard card"><h1>${score} of ${list.length}</h1><p class="muted">${score === list.length ? 'Every case file solved.' : 'Open the moves you missed, read the steps once more, and try again tomorrow.'}</p><div class="row"><a class="btn primary" href="#/enforce">Back to the playbook</a><button class="btn" id="again">Again</button></div></div>`;
+      $('#again').onclick = () => { i = 0; score = 0; draw(); };
+      return;
+    }
+    const d = list[i];
+    main.innerHTML = `<p class="small"><a href="#/enforce">← Enforcing a judgment</a></p><span class="eyebrow">Case file ${i + 1} of ${list.length}</span>${quizHTML('dq', d)}`;
+    wireQuiz('dq', d, ok => { if (ok) score++; $('#nx').onclick = () => { i++; draw(); window.scrollTo(0, 0); }; }, () => `<div class="row" style="margin-top:10px">${d.m.map(x => ENF.byId[x]).filter(Boolean).map(mv => `<a class="btn sm" href="#/enforce/${mv.id}">${esc(mv.title)}</a>`).join('')}<span class="spacer"></span><button class="btn primary" id="nx">${i + 1 < list.length ? 'Next case file' : 'See your score'}</button></div>`);
+  };
+  draw();
 }
 
 /* ------------------------------------------------------------------ router */
@@ -1887,6 +2027,8 @@ async function route() {
     else if (parts[0] === 'search') await searchView(q);
     else if (parts[0] === 'progress') progressView();
     else if (parts[0] === 'syllabus') await syllabusView(parts[1], q);
+    else if (parts[0] === 'shifts') await shiftsView(parts[1]);
+    else if (parts[0] === 'enforce') await enforceView(parts.slice(1), q);
     else if (parts[0] === 'about') await aboutView();
     else await home();
     if (!['search'].includes(parts[0])) window.scrollTo(0, 0);
