@@ -81,7 +81,7 @@ HEADS = [
     (re.compile(r'^(?:C[hn]?[auo]p?[pt]?[eEr]?[rRn]?|CHAPTER|Cuaprer|Cuarren|CHarren|CHarteR|Cnarrer|Craprern|Cuaprre|CuaprerR|CHaPren|Carter|Cuarrer|Cuapter|Cuaprer|Cuaptsr|Cuarter|Cuarpter|Chapter)\s+(\d+)\s*[—–-]+\s*(.*)$'), 3, 'Chapter'),
 ]
 INTRO = re.compile(r'^INTRODUCTORY PROVISIONS')
-SEC = re.compile(r'^(?:SECTION|Section|Sec|Src|Szc|Sxc|SEc|Smc|Snc|Seo|Sre|Bec|Sco|S8c|Ssc|8ec|Sue|Suc|SEC)[.,]?\s*(\d{1,3})[.,]\s*(.*)$')
+SEC = re.compile(r'^(?:S[Ee][Cc][Tt][Ii][Oo][Nn]|Sec|Src|Szc|Sxc|SEc|Smc|Snc|Seo|Sre|Bec|Sco|S8c|Ssc|8ec|Sue|Suc|SEC|Sc(?=,))[.,]?\s*(\d{1,3})(?:[.,]\s*|\s+(?=[A-Z][a-z]+ [A-Za-z]))(.*)$')
 NOISE = re.compile(r'^[\W\d_]{0,4}$|^[a-zA-Z]{1,2}$')
 
 import difflib
@@ -90,10 +90,19 @@ ROMAN = re.compile(r'^[IVXLl1|\[\]{}!]+$')
 def roman_fix(t):
     t = t.replace('l', 'I').replace('1', 'I').replace('|', 'I').replace('[', 'I').replace(']', 'I').replace('{', 'I').replace('}', 'I').replace('!', 'I')
     return t
+TITLE_NAMES = {'POWERS OF THE PRESIDENT': 'I', 'ORGANIZATION': 'II', 'FUNCTIONS': 'III', 'FOREIGN AFFAIRS': 'I', 'FINANCE': 'II', 'JUSTICE': 'III',
+    'AGRICULTURE': 'IV', 'PUBLIC WORKS AND HIGHWAYS': 'V', 'EDUCATION, CULTURE AND SPORTS': 'VI', 'LABOR AND EMPLOYMENT': 'VII', 'NATIONAL DEFENSE': 'VIII',
+    'HEALTH': 'IX', 'TRADE AND INDUSTRY': 'X', 'AGRARIAN REFORM': 'XI', 'LOCAL GOVERNMENT': 'XII', 'TOURISM': 'XIII', 'ENVIRONMENT AND NATURAL RESOURCES': 'XIV',
+    'TRANSPORTATION AND COMMUNICATIONS': 'XV', 'SOCIAL WELFARE AND DEVELOPMENT': 'XVI', 'BUDGET AND MANAGEMENT': 'XVII', 'SCIENCE AND TECHNOLOGY': 'XVIII',
+    'CONSTITUTIONAL COMMISSIONS': 'I', 'OTHER BODIES': 'II'}
 def fuzzy_head(l):
     if re.match(r'^BOOK\s+\S{1,4}$', l): return (0, 'BOOK', 'X', '')
-    m = re.match(r'^([A-Za-z]{3,9})[.,]?\s+([IVXLlI1|\[\]{}!]{1,6}|\d{1,2}|[A-H])(?:\s*[—–~\-]+\s*(.*)|\s*)$', l)
+    m = re.match(r'^([A-Za-z]{3,9})[.,]?\s+([IVXLlI1|\[\]{}!TJN]{1,6}|\d{1,2}|[A-H])(?:\s*[—–~\-]+\s*(.*)|\s*)$', l)
     if not m: return None
+    # Title numerals the OCR garbled ("TitLe ITJ—JUSTICE", "Tirte ITX—HEALTH"): the title's name fixes its number
+    nm = re.sub(r'[^A-Z ,]', '', (m.group(3) or '').upper()).strip(' ,')
+    if nm in TITLE_NAMES and difflib.SequenceMatcher(None, m.group(1).upper(), 'TITLE').ratio() >= 0.55:
+        return (1, 'Title', TITLE_NAMES[nm], m.group(3).strip())
     word = m.group(1).upper()
     best = max(KW, key=lambda k: difflib.SequenceMatcher(None, word, k[0]).ratio())
     r = difflib.SequenceMatcher(None, word, best[0]).ratio()
@@ -101,7 +110,7 @@ def fuzzy_head(l):
     if word in ('SUBJECT', 'SECTION', 'BOOKS', 'TITLES', 'CHAPTERS'): return None
     num = m.group(2)
     if best[0] == 'CHAPTER':
-        num = num if num.isdigit() else None
+        num = num if num.isdigit() else {'I': '1', 'l': '1', 'I1': '2', 'II': '2', 'Il': '2', '1I': '2', 'III': '3'}.get(num)
         if num is None: return None
     elif best[0] == 'SUBTITLE':
         num = num if re.match(r'^[A-H]$', num) else roman_fix(num)
@@ -119,6 +128,7 @@ for pn, half, txt in pages:
     for raw in txt.split('\n'):
         l = raw.strip().strip('|').strip()
         l = re.sub(r'^[;:’‘\'.,|]+\s*', '', l)
+        l = re.sub(r'^[*)(\-–—•»«~_]+\s*(?=(?:S[Ee][Cc][Tt][Ii][Oo][Nn]|SEC|Sec|Src|Szc|Sxc|SEc|Smc|Snc|Seo|Sre|Bec|Sco|S8c|Ssc|8ec|Sue|Suc|Sc(?=,))[.,]?\s*\d)', '', l)
         if not start:
             if INTRO.match(l) and pn > 4:
                 start = True
@@ -140,6 +150,7 @@ for l in lines:
     out.append(l)
 
 divisions, provisions, stack, cur = [], [], [], None
+DROPPED = []
 pending = None
 paras = []
 def flush_para():
@@ -173,12 +184,23 @@ for l in out:
         divisions.append({'t': f'{m.group(1)} — {m.group(2)}', 'lvl': lvl, 'parent': stack[-1] if stack else None})
         stack.append(len(divisions) - 1); cur = None; continue
     sm = SEC.match(l2)
+    if sm and sm.group(2) and sm.group(2)[0].islower():
+        sm = None   # "Section 46, for appropriate action": a cross-reference at the start of a line, not a new section
+    if not sm:
+        # the shaded inner margin cut "Sec." down to "¢." or "ic." on a few pages (e.g. Book IV, Title XII, Secs. 15-16)
+        tm = re.match(r'^(?:¢|c|ic|ec|Ec)[.,]\s*(\d{1,3})\.\s*([A-Z][a-z]+(?: [A-Za-z]+){0,6}\.\s*[—–-].*)$', l2)
+        if tm: sm = tm
     if sm:
         pending = None
         cur = {'kind': 'section', 'n': sm.group(1), 'div': stack[-1] if stack else None, 'paras': [sm.group(2)]}
         provisions.append(cur)
         continue
     if cur is None:
+        if pending is not None and len(l2) < 70 and not re.search(r'[.;:]$', l2):
+            # second line of a heading set in italics ("Chapter 7—Regular Holidays and Nationwide / Special Days")
+            divisions[pending]['t'] += ' ' + l2.rstrip(' :.’\'Nl').strip()
+            continue
+        DROPPED.append(l2)
         continue
     if re.match(r'^\(?\d{1,2}\)|^\([a-z]\)', l2) and cur['paras'] and cur['paras'][-1] != '':
         cur['paras'].append('')
@@ -255,6 +277,8 @@ for dv in divisions:
     dv['t'] = head + (' — ' + rest if rest else '')
 HEADMODE[0] = False
 print('books', bk)
+print('dropped lines (no section open):', len(DROPPED))
+json.dump(DROPPED, open('/home/claude/work/admin/dropped.json', 'w'), ensure_ascii=False, indent=0)
 # label scopes: section numbers restart within titles of Books IV and V
 json.dump({'meta': {}, 'title': 'Administrative Code of 1987', 'pre': [], 'divisions': divisions, 'provisions': provisions, 'closing': []},
           open('/home/claude/work/admin/admin.json', 'w'), ensure_ascii=False, indent=1)

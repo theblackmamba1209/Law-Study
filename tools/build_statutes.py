@@ -352,14 +352,24 @@ print('study library linked', len(study))
 
 # ------------------------------------------------------------------ write
 os.makedirs(OUT, exist_ok=True)
-for f in os.listdir(OUT):
-    os.remove(os.path.join(OUT, f))
+# keep the previous files: one whose content is unchanged is not rewritten, so its bytes (and the hash the app
+# caches against) stay the same from build to build; stale files are removed at the end
+PREV = {f: open(os.path.join(OUT, f)).read() for f in os.listdir(OUT)}
+WRITTEN = set()
 def numkey(l):
     m = re.match(r'(\d+)', l['n'] or '0'); return (int(m.group(1)) if m else 0, l['n'], l['id'])
 import base64
 def write_z(path, obj):
     # gzip, then base64 so the file is plain text the host will serve (.txt); the browser reverses both steps
-    raw = gzip.compress(json.dumps(obj, ensure_ascii=False, separators=(',', ':')).encode('utf-8'), compresslevel=9)
+    body = json.dumps(obj, ensure_ascii=False, separators=(',', ':')).encode('utf-8')
+    name = os.path.basename(path); WRITTEN.add(name)
+    if name in PREV:
+        try:
+            if gzip.decompress(base64.b64decode(PREV[name])) == body:
+                open(path, 'w').write(PREV[name]); return
+        except Exception:
+            pass
+    raw = gzip.compress(body, compresslevel=9, mtime=0)
     open(path, 'w').write(base64.b64encode(raw).decode('ascii'))
 def read_z(path):
     return json.loads(gzip.decompress(base64.b64decode(open(path).read())))
@@ -382,6 +392,8 @@ flush()
 write_z(f'{OUT}/idx.txt', {'rows': rows, 'study': study, 'built': 'LawCodex ' + os.popen(f'git -C {ROOT} log -1 --format=%cs').read().strip(),
                'counts': {s: sum(1 for r in rows if r[1] == s) for s in ORDER}})
 tot = sum(os.path.getsize(os.path.join(OUT, f)) for f in os.listdir(OUT))
+for f in set(PREV) - WRITTEN:
+    os.remove(os.path.join(OUT, f))
 print(f'chunks {ci} · index rows {len(rows)} · {tot / 1e6:.1f} MB gzip')
 # catalog hash for cache busting
 import hashlib

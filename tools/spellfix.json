@@ -1,0 +1,1949 @@
+{
+ "_about": "Spelling and transcription slips in the source texts (LawPhil transcriptions, PDF text layers), corrected word for word. Each entry is a whole-word (or whole-phrase) replacement within one code; build_data.py applies them to the text, captions, amendment texts and headings, logs each in the proofreading report and notes it on the provision.",
+ "rcc": [
+  {
+   "f": "Philipines",
+   "t": "Philippines"
+  },
+  {
+   "f": "hsall",
+   "t": "shall"
+  },
+  {
+   "f": "coroporate",
+   "t": "corporate"
+  },
+  {
+   "f": "condict",
+   "t": "conduct"
+  },
+  {
+   "f": "posseses",
+   "t": "possesses"
+  },
+  {
+   "f": "consituting",
+   "t": "constituting"
+  },
+  {
+   "f": "Contaracts",
+   "t": "Contracts"
+  },
+  {
+   "f": "membrs",
+   "t": "members"
+  },
+  {
+   "f": "statemments",
+   "t": "statements"
+  },
+  {
+   "f": "requirments",
+   "t": "requirements"
+  },
+  {
+   "f": "notwithsatnding",
+   "t": "notwithstanding"
+  },
+  {
+   "f": "wuthin",
+   "t": "within"
+  },
+  {
+   "f": "differnce",
+   "t": "difference"
+  },
+  {
+   "f": "trsutees",
+   "t": "trustees"
+  },
+  {
+   "f": "perios",
+   "t": "period"
+  },
+  {
+   "f": "restictions",
+   "t": "restrictions"
+  },
+  {
+   "f": "tansfer",
+   "t": "transfer"
+  },
+  {
+   "f": "transfeer",
+   "t": "transfer"
+  },
+  {
+   "f": "Nowithstanding",
+   "t": "Notwithstanding"
+  },
+  {
+   "f": "canot",
+   "t": "cannot"
+  },
+  {
+   "f": "themeselves",
+   "t": "themselves"
+  },
+  {
+   "f": "donomination",
+   "t": "denomination"
+  },
+  {
+   "f": "obejection",
+   "t": "objection"
+  },
+  {
+   "f": "Righs",
+   "t": "Rights"
+  },
+  {
+   "f": "buisness",
+   "t": "business"
+  },
+  {
+   "f": "Rsident",
+   "t": "Resident"
+  },
+  {
+   "f": "abosrbed",
+   "t": "absorbed"
+  },
+  {
+   "f": "Philippin",
+   "t": "Philippine"
+  },
+  {
+   "f": "knwoledge",
+   "t": "knowledge"
+  },
+  {
+   "f": "Secondarr",
+   "t": "Secondary"
+  },
+  {
+   "f": "priviledges",
+   "t": "privileges"
+  },
+  {
+   "f": "echange",
+   "t": "exchange"
+  },
+  {
+   "f": "similar purposes. like trade industry",
+   "t": "similar purposes, like trade, industry"
+  },
+  {
+   "f": "stockholders. members, officers",
+   "t": "stockholders, members, officers"
+  },
+  {
+   "f": "a meeting of he corporation",
+   "t": "a meeting of the corporation"
+  },
+  {
+   "f": "issued of transferred",
+   "t": "issued or transferred"
+  },
+  {
+   "f": "Effects if Issuance or Transfer",
+   "t": "Effects of Issuance or Transfer"
+  },
+  {
+   "f": "shall file with he Commission",
+   "t": "shall file with the Commission"
+  },
+  {
+   "f": "inconsistent with he provisions",
+   "t": "inconsistent with the provisions"
+  },
+  {
+   "f": "That the number if directors",
+   "t": "That the number of directors"
+  },
+  {
+   "f": "stating in such notice he names",
+   "t": "stating in such notice the names"
+  }
+ ],
+ "nirc": [
+  {
+   "f": "echange",
+   "t": "exchange"
+  },
+  {
+   "f": "ofice",
+   "t": "office"
+  },
+  {
+   "f": "i.mposed",
+   "t": "imposed"
+  },
+  {
+   "f": "witholding",
+   "t": "withholding"
+  },
+  {
+   "f": "Jocally",
+   "t": "locally"
+  },
+  {
+   "f": "freeoort",
+   "t": "freeport"
+  },
+  {
+   "f": "herevy",
+   "t": "hereby"
+  },
+  {
+   "f": "utlity",
+   "t": "utility"
+  },
+  {
+   "f": "yechnical",
+   "t": "technical"
+  },
+  {
+   "f": "reportotial",
+   "t": "reportorial"
+  },
+  {
+   "f": "misrepesentation",
+   "t": "misrepresentation"
+  },
+  {
+   "f": "Subdection",
+   "t": "Subsection"
+  },
+  {
+   "f": "carmarked",
+   "t": "earmarked"
+  },
+  {
+   "f": "Royaties",
+   "t": "Royalties"
+  },
+  {
+   "f": "8ubsection",
+   "t": "Subsection"
+  },
+  {
+   "f": "gusets",
+   "t": "guests"
+  },
+  {
+   "f": "aoods",
+   "t": "goods"
+  },
+  {
+   "f": "technicai",
+   "t": "technical"
+  },
+  {
+   "f": "rsident",
+   "t": "resident"
+  },
+  {
+   "f": "inidrectly",
+   "t": "indirectly"
+  },
+  {
+   "f": "exemp",
+   "t": "exempt"
+  },
+  {
+   "f": "intermediaties",
+   "t": "intermediaries"
+  },
+  {
+   "f": "liue",
+   "t": "lieu"
+  },
+  {
+   "f": "manintain",
+   "t": "maintain"
+  },
+  {
+   "f": "Reveenue",
+   "t": "Revenue"
+  },
+  {
+   "f": "suvbject",
+   "t": "subject"
+  },
+  {
+   "f": "P rovided",
+   "t": "Provided"
+  },
+  {
+   "f": "slaes",
+   "t": "sales"
+  },
+  {
+   "f": "arnings",
+   "t": "earnings"
+  },
+  {
+   "f": "eletronically",
+   "t": "electronically"
+  },
+  {
+   "f": "accordane",
+   "t": "accordance"
+  },
+  {
+   "f": "cirucmstances",
+   "t": "circumstances"
+  },
+  {
+   "f": "consfiscated",
+   "t": "confiscated"
+  },
+  {
+   "f": "indlude",
+   "t": "include"
+  },
+  {
+   "f": "classifcation",
+   "t": "classification"
+  },
+  {
+   "f": "particuIar",
+   "t": "particular"
+  },
+  {
+   "f": "transforting",
+   "t": "transporting"
+  },
+  {
+   "f": "succintly",
+   "t": "succinctly"
+  },
+  {
+   "f": "sugac",
+   "t": "sugar"
+  },
+  {
+   "f": "intermedieries",
+   "t": "intermediaries"
+  },
+  {
+   "f": "Commisssioner",
+   "t": "Commissioner"
+  },
+  {
+   "f": "hunderd",
+   "t": "hundred"
+  },
+  {
+   "f": "unsurpation",
+   "t": "usurpation"
+  },
+  {
+   "f": "crative",
+   "t": "creative"
+  },
+  {
+   "f": "assigneee",
+   "t": "assignee"
+  },
+  {
+   "f": "The3term",
+   "t": "The term"
+  },
+  {
+   "f": "high0risk",
+   "t": "high-risk"
+  },
+  {
+   "f": "B1R",
+   "t": "BIR"
+  },
+  {
+   "f": "crirninal1y",
+   "t": "criminally"
+  },
+  {
+   "f": "vo1ume",
+   "t": "volume"
+  },
+  {
+   "f": "D0H",
+   "t": "DOH"
+  },
+  {
+   "f": "tbe",
+   "t": "the"
+  },
+  {
+   "f": "yea.r",
+   "t": "year"
+  },
+  {
+   "f": "into law, medium , and",
+   "t": "into low, medium, and"
+  },
+  {
+   "f": "Shares of stock. bonds",
+   "t": "Shares of stock, bonds"
+  },
+  {
+   "f": "trust funds and. similar",
+   "t": "trust funds and similar"
+  },
+  {
+   "f": "upon the the amount",
+   "t": "upon the amount"
+  },
+  {
+   "f": "allowed a a deduction",
+   "t": "allowed as a deduction"
+  },
+  {
+   "f": "shown the the income",
+   "t": "shown that the income"
+  },
+  {
+   "f": "his entir net estate",
+   "t": "his entire net estate"
+  },
+  {
+   "f": "not latter than January 31st",
+   "t": "not later than January 31st"
+  },
+  {
+   "f": "and each each calendar thereafter",
+   "t": "and each calendar year thereafter"
+  },
+  {
+   "f": "quarter or quarters. any input tax",
+   "t": "quarter or quarters. Any input tax"
+  },
+  {
+   "f": "amounts necessary. to insure",
+   "t": "amounts necessary to insure"
+  },
+  {
+   "f": "exempt from. excise tax",
+   "t": "exempt from excise tax"
+  },
+  {
+   "f": "under this Section. shall be criminally",
+   "t": "under this Section shall be criminally"
+  },
+  {
+   "f": "revenue officer shall. from the assessment",
+   "t": "revenue officer shall, from the assessment"
+  },
+  {
+   "f": "the required data. the Bureau shall",
+   "t": "the required data, the Bureau shall"
+  },
+  {
+   "f": "overt or covert. act",
+   "t": "overt or covert act"
+  },
+  {
+   "f": "determined by he Secretary",
+   "t": "determined by the Secretary"
+  },
+  {
+   "f": "liable to pay he duties",
+   "t": "liable to pay the duties"
+  },
+  {
+   "f": "under he expanded foreign",
+   "t": "under the expanded foreign"
+  },
+  {
+   "f": "the Philippines be every individual",
+   "t": "the Philippines by every individual"
+  },
+  {
+   "f": "cigarettes of fraction thereof",
+   "t": "cigarettes or fraction thereof"
+  },
+  {
+   "f": "as brewer of importer",
+   "t": "as brewer or importer"
+  },
+  {
+   "f": "derived from properly received",
+   "t": "derived from property received"
+  },
+  {
+   "f": "domestic products form place of production",
+   "t": "domestic products from place of production"
+  }
+ ],
+ "act2137": [
+  {
+   "f": "negotiablr",
+   "t": "negotiable"
+  },
+  {
+   "f": "neqotiable",
+   "t": "negotiable"
+  },
+  {
+   "f": "ivilhout",
+   "t": "without"
+  },
+  {
+   "f": "upon the face Duplicate receipts. of which",
+   "t": "upon the face of which"
+  },
+  {
+   "f": "lawfully sold to Effect of sale. satisfy",
+   "t": "lawfully sold to satisfy"
+  },
+  {
+   "f": "mortgage, or pledge. shall have",
+   "t": "mortgage, or pledge, shall have"
+  },
+  {
+   "f": "meaning of this Act. when it is",
+   "t": "meaning of this Act when it is"
+  }
+ ],
+ "act496": [
+  {
+   "f": "pituate",
+   "t": "situate"
+  },
+  {
+   "f": "paye",
+   "t": "page"
+  },
+  {
+   "f": "relcase",
+   "t": "release"
+  },
+  {
+   "f": "provisions of this Act. and shall carefully",
+   "t": "provisions of this Act, and shall carefully"
+  },
+  {
+   "f": "cut off or extinguished. by the registration",
+   "t": "cut off or extinguished by the registration"
+  },
+  {
+   "f": "may surrender it. with the approval",
+   "t": "may surrender it, with the approval"
+  },
+  {
+   "f": "new certificate to him. and the application",
+   "t": "new certificate to him, and the application"
+  },
+  {
+   "f": "this Act, the. officials",
+   "t": "this Act, the officials"
+  },
+  {
+   "f": "not registered under this Act. without covenants",
+   "t": "not registered under this Act, without covenants"
+  },
+  {
+   "f": "his heirs and. assigns",
+   "t": "his heirs and assigns"
+  },
+  {
+   "f": "to be performed, an the case may be",
+   "t": "to be performed, as the case may be"
+  }
+ ],
+ "ca613": [
+  {
+   "f": "Commisisoner",
+   "t": "Commissioner"
+  },
+  {
+   "f": "justfiable",
+   "t": "justifiable"
+  },
+  {
+   "f": "iaws",
+   "t": "laws"
+  },
+  {
+   "f": "vsiting",
+   "t": "visiting"
+  },
+  {
+   "f": "eonstrued",
+   "t": "construed"
+  },
+  {
+   "f": "Notwitstanding",
+   "t": "Notwithstanding"
+  },
+  {
+   "f": "Insofar as the the activities",
+   "t": "Insofar as the activities"
+  },
+  {
+   "f": "as i'he case may be",
+   "t": "as the case may be"
+  }
+ ],
+ "carl": [
+  {
+   "f": "fanners",
+   "t": "farmers"
+  },
+  {
+   "f": "distributed collectively. to the worker-beneficiaries",
+   "t": "distributed collectively to the worker-beneficiaries"
+  },
+  {
+   "f": "effectivity of this Act. in the case of new farms",
+   "t": "effectivity of this Act. In the case of new farms"
+  },
+  {
+   "f": "than ander the compulsoory coverage",
+   "t": "than under the compulsory coverage"
+  },
+  {
+   "f": "official foreign. aid grants",
+   "t": "official foreign aid grants"
+  },
+  {
+   "f": "fishpond development. in such case",
+   "t": "fishpond development. In such case"
+  },
+  {
+   "f": "shall be allowed. in these cases",
+   "t": "shall be allowed. In these cases"
+  },
+  {
+   "f": "regulatory bodies. and existing regulations",
+   "t": "regulatory bodies, and existing regulations"
+  },
+  {
+   "f": "nature of the land. the change in crop",
+   "t": "nature of the land. The change in crop"
+  }
+ ],
+ "coop": [
+  {
+   "f": "reserach",
+   "t": "research"
+  },
+  {
+   "f": "partonage",
+   "t": "patronage"
+  },
+  {
+   "f": "bubsiness",
+   "t": "business"
+  },
+  {
+   "f": "aggreements",
+   "t": "agreements"
+  },
+  {
+   "f": "barrowings",
+   "t": "borrowings"
+  },
+  {
+   "f": "Separabilty",
+   "t": "Separability"
+  },
+  {
+   "f": "Democrative Member Control",
+   "t": "Democratic Member Control"
+  },
+  {
+   "f": "duly elected an qualified, or until duly removed for caused.",
+   "t": "duly elected and qualified, or until duly removed for cause."
+  }
+ ],
+ "fire": [
+  {
+   "f": "practitiones",
+   "t": "practitioners"
+  },
+  {
+   "f": "facilites",
+   "t": "facilities"
+  },
+  {
+   "f": "(l) Removing. destroying",
+   "t": "(l) Removing, destroying"
+  },
+  {
+   "f": "summary abatement. failure to comply",
+   "t": "summary abatement. Failure to comply"
+  }
+ ],
+ "fisheries": [
+  {
+   "f": "loating",
+   "t": "floating"
+  },
+  {
+   "f": "submerged land. in which",
+   "t": "submerged land) in which"
+  },
+  {
+   "f": "(a. skeletons",
+   "t": "(a) skeletons"
+  },
+  {
+   "f": "(b. skeletons",
+   "t": "(b) skeletons"
+  },
+  {
+   "f": "(c. ordinary",
+   "t": "(c) ordinary"
+  },
+  {
+   "f": "(e.g. one year. on a sustainable",
+   "t": "(e.g. one year) on a sustainable"
+  },
+  {
+   "f": "activities an/or other",
+   "t": "activities and/or other"
+  }
+ ],
+ "insurance": [
+  {
+   "f": "circuation",
+   "t": "circulation"
+  }
+ ],
+ "irrlabor": [
+  {
+   "f": "authorit y",
+   "t": "authority"
+  },
+  {
+   "f": "holida ys",
+   "t": "holidays"
+  },
+  {
+   "f": "m odified",
+   "t": "modified"
+  },
+  {
+   "f": "Secretar y",
+   "t": "Secretary"
+  }
+ ],
+ "lgc": [
+  {
+   "f": "devided",
+   "t": "divided"
+  },
+  {
+   "f": "a a",
+   "t": "a"
+  },
+  {
+   "f": "municipal officials. and forty-five",
+   "t": "municipal officials, and forty-five"
+  },
+  {
+   "f": "election registrar. or his",
+   "t": "election registrar or his"
+  },
+  {
+   "f": "rye, hay. coconuts",
+   "t": "rye, hay, coconuts"
+  },
+  {
+   "f": "Agricultural implements. equipment",
+   "t": "Agricultural implements, equipment"
+  },
+  {
+   "f": "certificate. or permit",
+   "t": "certificate, or permit"
+  },
+  {
+   "f": "ascertain. assess,",
+   "t": "ascertain, assess,"
+  },
+  {
+   "f": "Provided, That. taxes",
+   "t": "Provided, That taxes"
+  },
+  {
+   "f": "hydrothermal. geothermal",
+   "t": "hydrothermal, geothermal"
+  },
+  {
+   "f": "included in. or covered by",
+   "t": "included in, or covered by"
+  },
+  {
+   "f": "order functions. the punong barangay",
+   "t": "order functions, the punong barangay"
+  },
+  {
+   "f": "region or country. mayors of",
+   "t": "region or country. Mayors of"
+  },
+  {
+   "f": "conduct of programs. projects",
+   "t": "conduct of programs, projects"
+  },
+  {
+   "f": "developed barangays. serves as",
+   "t": "developed barangays, serves as"
+  },
+  {
+   "f": "provided in such Act. the plebiscite",
+   "t": "provided in such Act, the plebiscite"
+  },
+  {
+   "f": "city government. and in this connection",
+   "t": "city government, and in this connection"
+  },
+  {
+   "f": "manholes. live wires",
+   "t": "manholes, live wires"
+  },
+  {
+   "f": "may stay they proceedings",
+   "t": "may stay the proceedings"
+  }
+ ],
+ "milk": [
+  {
+   "f": "Servicesl",
+   "t": "Services"
+  }
+ ],
+ "nil": [
+  {
+   "f": "A signature by uration. \"procuration\" operates",
+   "t": "A signature by \"procuration\" operates"
+  },
+  {
+   "f": "bound only in ease the agent",
+   "t": "bound only in case the agent"
+  },
+  {
+   "f": "constitutcs",
+   "t": "constitutes"
+  },
+  {
+   "f": "srich",
+   "t": "such"
+  },
+  {
+   "f": "nonaceeptance",
+   "t": "nonacceptance"
+  },
+  {
+   "f": "must paymen be made",
+   "t": "must be made"
+  },
+  {
+   "f": "Chech defined",
+   "t": "Check defined"
+  },
+  {
+   "f": "An instrument negotiable character. negOyable in its origin",
+   "t": "An instrument negotiable in its origin"
+  },
+  {
+   "f": "until it has been' restrictively",
+   "t": "until it has been restrictively"
+  },
+  {
+   "f": "Continuation of negotiable; presumption",
+   "t": "Continuation of negotiable character"
+  },
+  {
+   "f": "Where construction. the language",
+   "t": "Where the language"
+  },
+  {
+   "f": "infirmity in. the instrument",
+   "t": "infirmity in the instrument"
+  },
+  {
+   "f": "among themselves. and may enforce",
+   "t": "among themselves, and may enforce"
+  },
+  {
+   "f": "Where Payable at bank. the instrument",
+   "t": "Where the instrument"
+  }
+ ],
+ "notarial": [
+  {
+   "f": "ccpy",
+   "t": "copy"
+  },
+  {
+   "f": "lmposition",
+   "t": "Imposition"
+  },
+  {
+   "f": "NoticeoiFees",
+   "t": "Notice of Fees"
+  },
+  {
+   "f": "instrument or. document",
+   "t": "instrument or document"
+  }
+ ],
+ "oec": [
+  {
+   "f": "fortwith",
+   "t": "forthwith"
+  },
+  {
+   "f": "terrorism of interference",
+   "t": "terrorism or interference"
+  }
+ ],
+ "pd1083": [
+  {
+   "f": "Norht",
+   "t": "North"
+  },
+  {
+   "f": "Antiuqe",
+   "t": "Antique"
+  },
+  {
+   "f": "Neuva",
+   "t": "Nueva"
+  },
+  {
+   "f": "Mindor",
+   "t": "Mindoro"
+  },
+  {
+   "f": "talag",
+   "t": "talaq"
+  },
+  {
+   "f": "wagf",
+   "t": "waqf"
+  },
+  {
+   "f": "marad-ul-mault",
+   "t": "marad-ul-maut"
+  },
+  {
+   "f": "gabul",
+   "t": "qabul"
+  },
+  {
+   "f": "talaq bain lubra",
+   "t": "talaq bain kubra"
+  },
+  {
+   "f": "tahrimjbin-nasab",
+   "t": "tahrim-bin-nasab"
+  },
+  {
+   "f": "Shari'a District Court of Shari'a Circuit Court",
+   "t": "Shari'a District Court or Shari'a Circuit Court"
+  },
+  {
+   "f": "the properly relations",
+   "t": "the property relations"
+  },
+  {
+   "f": "are compiled with",
+   "t": "are complied with"
+  },
+  {
+   "f": "permitting a Muslim to have more than one wife but one wife unless",
+   "t": "permitting a Muslim to have more than one wife but not more than four at a time, no Muslim male can have more than one wife unless"
+  },
+  {
+   "f": "THE SAHRI'A COURTS",
+   "t": "THE SHARI'A COURTS"
+  },
+  {
+   "f": "estate of a descendent",
+   "t": "estate of a decedent"
+  },
+  {
+   "f": "leave neither descendent",
+   "t": "leave neither descendant"
+  }
+ ],
+ "pd1529": [
+  {
+   "f": "bankcruptcy",
+   "t": "bankruptcy"
+  },
+  {
+   "f": "administratory",
+   "t": "administrator"
+  }
+ ],
+ "pd851": [
+  {
+   "f": "accomodate",
+   "t": "accommodate"
+  }
+ ],
+ "ra10022": [
+  {
+   "f": "miliatry",
+   "t": "military"
+  },
+  {
+   "f": "rerad",
+   "t": "read"
+  },
+  {
+   "f": "Replublic",
+   "t": "Republic"
+  },
+  {
+   "f": "herof",
+   "t": "hereof"
+  }
+ ],
+ "ra10142": [
+  {
+   "f": "Iien",
+   "t": "lien"
+  },
+  {
+   "f": "ommencement",
+   "t": "commencement"
+  },
+  {
+   "f": "subbsisting",
+   "t": "subsisting"
+  },
+  {
+   "f": "1fthe",
+   "t": "If the"
+  },
+  {
+   "f": "Requiremen5ts",
+   "t": "Requirements"
+  },
+  {
+   "f": "otI1er",
+   "t": "other"
+  },
+  {
+   "f": "with the. approval of the court",
+   "t": "with the approval of the court"
+  },
+  {
+   "f": "motu proprio. or upon motion of any creditor. or as may",
+   "t": "motu proprio or upon motion of any creditor, or as may"
+  },
+  {
+   "f": "any reason whatsoever. the court",
+   "t": "any reason whatsoever, the court"
+  },
+  {
+   "f": "qualified nominees. or any other",
+   "t": "qualified nominees or any other"
+  },
+  {
+   "f": "management of the debtor. upon clear",
+   "t": "management of the debtor upon clear"
+  },
+  {
+   "f": "mismanagement of the debtor. or fraud",
+   "t": "mismanagement of the debtor, or fraud"
+  },
+  {
+   "f": "this Act by. existing management",
+   "t": "this Act by existing management"
+  },
+  {
+   "f": "management of the debtor. the court may:",
+   "t": "management of the debtor, the court may:"
+  },
+  {
+   "f": "subject to any action. claim or demand",
+   "t": "subject to any action, claim or demand"
+  },
+  {
+   "f": "or interest owner. order the conveyance",
+   "t": "or interest owner, order the conveyance"
+  },
+  {
+   "f": "quasi-reorganization. dacion en pago",
+   "t": "quasi-reorganization, dacion en pago"
+  },
+  {
+   "f": "in order to enhance its rehabilitation. may:",
+   "t": "in order to enhance its rehabilitation, may:"
+  }
+ ],
+ "ra10175": [
+  {
+   "f": "PhPl",
+   "t": "PhP1"
+  },
+  {
+   "f": "the recipient to reject. receipt",
+   "t": "the recipient to reject receipt"
+  },
+  {
+   "f": "PhPl00,000.00",
+   "t": "PhP100,000.00"
+  },
+  {
+   "f": "provisions of this Act. including any violation",
+   "t": "provisions of this Act, including any violation"
+  }
+ ],
+ "ra10667": [
+  {
+   "f": "advocac",
+   "t": "advocacy"
+  },
+  {
+   "f": "the penalty of. imprisonment",
+   "t": "the penalty of imprisonment"
+  }
+ ],
+ "ra10931": [
+  {
+   "f": "eduaction",
+   "t": "education"
+  },
+  {
+   "f": "Eduaction",
+   "t": "Education"
+  },
+  {
+   "f": "cirrently",
+   "t": "currently"
+  },
+  {
+   "f": "rentention",
+   "t": "retention"
+  },
+  {
+   "f": "replealed",
+   "t": "repealed"
+  },
+  {
+   "f": "Gazzette",
+   "t": "Gazette"
+  },
+  {
+   "f": "not not",
+   "t": "not"
+  },
+  {
+   "f": "StudentFinancial",
+   "t": "Student Financial"
+  }
+ ],
+ "ra10963": [
+  {
+   "f": "A1tlan",
+   "t": "Aklan"
+  },
+  {
+   "f": "Ak1an",
+   "t": "Aklan"
+  },
+  {
+   "f": "crirninal1y",
+   "t": "criminally"
+  },
+  {
+   "f": "of the NIRC, as amended. is hereby",
+   "t": "of the NIRC, as amended, is hereby"
+  },
+  {
+   "f": "Secretary of Finance shall. upon the recommendation",
+   "t": "Secretary of Finance shall, upon the recommendation"
+  },
+  {
+   "f": "VAT exemption is concerned. of RA 7366",
+   "t": "VAT exemption is concerned, of RA 7366"
+  },
+  {
+   "f": "witholding",
+   "t": "withholding"
+  },
+  {
+   "f": "Jocally",
+   "t": "locally"
+  },
+  {
+   "f": "freeoort",
+   "t": "freeport"
+  },
+  {
+   "f": "trust funds and. similar",
+   "t": "trust funds and similar"
+  },
+  {
+   "f": "exempt from. excise tax",
+   "t": "exempt from excise tax"
+  },
+  {
+   "f": "under this Section. shall be criminally",
+   "t": "under this Section shall be criminally"
+  },
+  {
+   "f": "revenue officer shall. from the assessment",
+   "t": "revenue officer shall, from the assessment"
+  },
+  {
+   "f": "the required data. the Bureau shall",
+   "t": "the required data, the Bureau shall"
+  },
+  {
+   "f": "overt or covert. act",
+   "t": "overt or covert act"
+  }
+ ],
+ "ra11032": [
+  {
+   "f": "Sreamlined",
+   "t": "Streamlined"
+  }
+ ],
+ "ra11036": [
+  {
+   "f": "lega;",
+   "t": "legal;"
+  },
+  {
+   "f": "fucntion",
+   "t": "function"
+  },
+  {
+   "f": "Memebrs",
+   "t": "Members"
+  },
+  {
+   "f": "Conucil",
+   "t": "Council"
+  },
+  {
+   "f": "Reasearch",
+   "t": "Research"
+  },
+  {
+   "f": "Departmnent",
+   "t": "Department"
+  },
+  {
+   "f": "limitted",
+   "t": "limited"
+  },
+  {
+   "f": "idetntify",
+   "t": "identify"
+  },
+  {
+   "f": "Expediture",
+   "t": "Expenditure"
+  },
+  {
+   "f": "copmpetent",
+   "t": "competent"
+  },
+  {
+   "f": "The CHR may. motu propio, file",
+   "t": "The CHR may, motu propio, file"
+  },
+  {
+   "f": "conditions and. if found",
+   "t": "conditions and, if found"
+  },
+  {
+   "f": "repealed accordingly. accordingly.",
+   "t": "repealed accordingly."
+  }
+ ],
+ "ra11053": [
+  {
+   "f": "denomintaed",
+   "t": "denominated"
+  },
+  {
+   "f": "sthe",
+   "t": "the"
+  },
+  {
+   "f": "Miltary",
+   "t": "Military"
+  },
+  {
+   "f": "cacellation",
+   "t": "cancellation"
+  },
+  {
+   "f": "correcional",
+   "t": "correccional"
+  },
+  {
+   "f": "perssistent",
+   "t": "persistent"
+  },
+  {
+   "f": "anby",
+   "t": "any"
+  },
+  {
+   "f": "inserted in he same Act",
+   "t": "inserted in the same Act"
+  }
+ ],
+ "ra11165": [
+  {
+   "f": "sata protection",
+   "t": "data protection"
+  }
+ ],
+ "ra11199": [
+  {
+   "f": "thie",
+   "t": "the"
+  },
+  {
+   "f": "mohthly",
+   "t": "monthly"
+  },
+  {
+   "f": "seif-empioyed",
+   "t": "self-employed"
+  },
+  {
+   "f": "Towards this end. the State",
+   "t": "Towards this end, the State"
+  },
+  {
+   "f": "passage of this Act. institute",
+   "t": "passage of this Act, institute"
+  },
+  {
+   "f": "under this Act. or under an agreement",
+   "t": "under this Act, or under an agreement"
+  },
+  {
+   "f": "to pay the. same",
+   "t": "to pay the same"
+  }
+ ],
+ "ra11479": [
+  {
+   "f": "consaguinity",
+   "t": "consanguinity"
+  },
+  {
+   "f": "aginst",
+   "t": "against"
+  },
+  {
+   "f": "accussed",
+   "t": "accused"
+  },
+  {
+   "f": "listened to. intercepted",
+   "t": "listened to, intercepted"
+  },
+  {
+   "f": "organizations is conformity with",
+   "t": "organizations in conformity with"
+  }
+ ],
+ "ra11534": [
+  {
+   "f": "Invetment",
+   "t": "Investment"
+  },
+  {
+   "f": "Bataas",
+   "t": "Bataan"
+  },
+  {
+   "f": "which which",
+   "t": "which"
+  },
+  {
+   "f": "ofice",
+   "t": "office"
+  },
+  {
+   "f": "i.mposed",
+   "t": "imposed"
+  },
+  {
+   "f": "yea.r",
+   "t": "year"
+  },
+  {
+   "f": "herevy",
+   "t": "hereby"
+  },
+  {
+   "f": "utlity",
+   "t": "utility"
+  },
+  {
+   "f": "yechnical",
+   "t": "technical"
+  },
+  {
+   "f": "reportotial",
+   "t": "reportorial"
+  },
+  {
+   "f": "misrepesentation",
+   "t": "misrepresentation"
+  }
+ ],
+ "ra11576": [
+  {
+   "f": "effectivty",
+   "t": "effectivity"
+  }
+ ],
+ "ra11930": [
+  {
+   "f": "Prohibitng",
+   "t": "Prohibiting"
+  },
+  {
+   "f": "Wlefare",
+   "t": "Welfare"
+  },
+  {
+   "f": "underRepublic",
+   "t": "under Republic"
+  }
+ ],
+ "ra12009": [
+  {
+   "f": "pruchase",
+   "t": "purchase"
+  },
+  {
+   "f": "it it",
+   "t": "it"
+  },
+  {
+   "f": "the the",
+   "t": "the"
+  },
+  {
+   "f": "a a",
+   "t": "a"
+  },
+  {
+   "f": "must be similar on related",
+   "t": "must be similar or related"
+  }
+ ],
+ "ra6975": [
+  {
+   "f": "Heraldy",
+   "t": "Heraldry"
+  }
+ ],
+ "ra7877": [
+  {
+   "f": "joint1y",
+   "t": "jointly"
+  }
+ ],
+ "ra8371": [
+  {
+   "f": "coersion",
+   "t": "coercion"
+  },
+  {
+   "f": "in a language an process",
+   "t": "in a language and process"
+  }
+ ],
+ "ra8749": [
+  {
+   "f": "efectivity",
+   "t": "effectivity"
+  }
+ ],
+ "ra8791": [
+  {
+   "f": "Sental",
+   "t": "Central"
+  },
+  {
+   "f": "l3a",
+   "t": "13a"
+  },
+  {
+   "f": "ratios, ceilings. and limitations",
+   "t": "ratios, ceilings, and limitations"
+  }
+ ],
+ "ra9003": [
+  {
+   "f": "Departmen",
+   "t": "Department"
+  },
+  {
+   "f": "waste generated, an other source",
+   "t": "waste generated, and other source"
+  }
+ ],
+ "ra9160": [
+  {
+   "f": "Actr",
+   "t": "Act"
+  },
+  {
+   "f": "theeby",
+   "t": "thereby"
+  },
+  {
+   "f": "preperty",
+   "t": "property"
+  },
+  {
+   "f": "Cout",
+   "t": "Court"
+  },
+  {
+   "f": "pesonnel",
+   "t": "personnel"
+  },
+  {
+   "f": "shall shall",
+   "t": "shall"
+  }
+ ],
+ "ra9184": [
+  {
+   "f": "faci9lities",
+   "t": "facilities"
+  },
+  {
+   "f": "sho0rter",
+   "t": "shorter"
+  },
+  {
+   "f": "kind and nature than contain false",
+   "t": "kind and nature that contain false"
+  }
+ ],
+ "ra9225": [
+  {
+   "f": "solemny",
+   "t": "solemnly"
+  },
+  {
+   "f": "affrim",
+   "t": "affirm"
+  },
+  {
+   "f": "surffrage",
+   "t": "suffrage"
+  },
+  {
+   "f": "the the",
+   "t": "the"
+  }
+ ],
+ "ra9262": [
+  {
+   "f": "Barangy",
+   "t": "Barangay"
+  },
+  {
+   "f": "wiithout",
+   "t": "without"
+  },
+  {
+   "f": "mon4ey",
+   "t": "money"
+  },
+  {
+   "f": "the nature, extend and causes",
+   "t": "the nature, extent and causes"
+  },
+  {
+   "f": "unduly influence he applicant",
+   "t": "unduly influence the applicant"
+  }
+ ],
+ "ra9275": [
+  {
+   "f": "Pemits",
+   "t": "Permits"
+  },
+  {
+   "f": "Promote. and encourage",
+   "t": "Promote and encourage"
+  },
+  {
+   "f": "government agencies. and in consultation",
+   "t": "government agencies, and in consultation"
+  },
+  {
+   "f": "subject to. any requirement",
+   "t": "subject to any requirement"
+  }
+ ],
+ "ra9285": [
+  {
+   "f": "injuction",
+   "t": "injunction"
+  },
+  {
+   "f": "appealant court",
+   "t": "appellate court"
+  },
+  {
+   "f": "arbitration arbitration",
+   "t": "arbitration"
+  }
+ ],
+ "ra9344": [
+  {
+   "f": "fiied",
+   "t": "filed"
+  },
+  {
+   "f": "1evels",
+   "t": "levels"
+  },
+  {
+   "f": "Confedentiality",
+   "t": "Confidentiality"
+  },
+  {
+   "f": "Offenees",
+   "t": "Offenses"
+  }
+ ],
+ "ra9485": [
+  {
+   "f": "responden",
+   "t": "respondent"
+  }
+ ],
+ "ra9829": [
+  {
+   "f": "Pllipinas",
+   "t": "Pilipinas"
+  },
+  {
+   "f": "Iiabilities",
+   "t": "liabilities"
+  },
+  {
+   "f": "their respective. meanings;",
+   "t": "their respective meanings;"
+  },
+  {
+   "f": "name of the company. institute",
+   "t": "name of the company, institute"
+  }
+ ],
+ "ra9851": [
+  {
+   "f": "by expultion by expulsion",
+   "t": "by expulsion"
+  },
+  {
+   "f": "Interntional Human Humanitarian Law",
+   "t": "International Humanitarian Law"
+  },
+  {
+   "f": "Convensions",
+   "t": "Conventions"
+  },
+  {
+   "f": "indespensable",
+   "t": "indispensable"
+  },
+  {
+   "f": "unecessary",
+   "t": "unnecessary"
+  },
+  {
+   "f": "commision",
+   "t": "commission"
+  },
+  {
+   "f": "Genava",
+   "t": "Geneva"
+  }
+ ],
+ "rpc": [
+  {
+   "f": "ohter",
+   "t": "other"
+  },
+  {
+   "f": "commisison",
+   "t": "commission"
+  },
+  {
+   "f": "penalites",
+   "t": "penalties"
+  },
+  {
+   "f": "bave",
+   "t": "have"
+  },
+  {
+   "f": "ot the",
+   "t": "of the"
+  },
+  {
+   "f": "accounts accounts",
+   "t": "accounts"
+  },
+  {
+   "f": "insignia insignia",
+   "t": "insignia"
+  },
+  {
+   "f": "latvs",
+   "t": "laws"
+  },
+  {
+   "f": "No felony shall be imposed. be punishable",
+   "t": "No felony shall be punishable"
+  },
+  {
+   "f": "ranging from 200 mittee, and refusal to to 1,000 pesos",
+   "t": "ranging from 200 to 1,000 pesos"
+  },
+  {
+   "f": "persons criminally liable, criminally liable and",
+   "t": "persons criminally liable and"
+  },
+  {
+   "f": "the crime treason. to commit of treason shall",
+   "t": "the crime of treason shall"
+  },
+  {
+   "f": "pri-vate",
+   "t": "private"
+  },
+  {
+   "f": "his profession or office. shall cooperate",
+   "t": "his profession or office, shall cooperate"
+  },
+  {
+   "f": "denomination or sect, ny. or civil",
+   "t": "denomination or sect, or civil"
+  },
+  {
+   "f": "not of a serious nature. the penalty",
+   "t": "not of a serious nature, the penalty"
+  },
+  {
+   "f": "as libelous is. true",
+   "t": "as libelous is true"
+  }
+ ],
+ "sanitation": [
+  {
+   "f": "desimeters",
+   "t": "decimeters"
+  },
+  {
+   "f": "rabbish",
+   "t": "rubbish"
+  },
+  {
+   "f": "menance",
+   "t": "menace"
+  },
+  {
+   "f": "Code Code",
+   "t": "Code"
+  }
+ ],
+ "water": [
+  {
+   "f": "substerranean",
+   "t": "subterranean"
+  }
+ ],
+ "act1508": [
+  {
+   "f": "tho",
+   "t": "the"
+  },
+  {
+   "f": "................................................, a. resident",
+   "t": " ................................................, a resident"
+  },
+  {
+   "f": "class, swx, ago, knots",
+   "t": "class, sex, age, knots"
+  },
+  {
+   "f": "cowlicks. and other marks of . ownership as described and sot forth",
+   "t": "cowlicks, and other marks of ownership as described and set forth"
+  }
+ ],
+ "admincode": [
+  {
+   "f": "th",
+   "t": "the"
+  },
+  {
+   "f": "Th",
+   "t": "The"
+  }
+ ],
+ "act3135": [
+  {
+   "f": "the debtor, his. successors",
+   "t": "the debtor, his successors"
+  }
+ ],
+ "bp129": [
+  {
+   "f": "original appointment. and his service",
+   "t": "original appointment, and his service"
+  },
+  {
+   "f": "twenty-three (23) divisions. each composed",
+   "t": "twenty-three (23) divisions, each composed"
+  },
+  {
+   "f": "places ;as the Supreme Court may determine. for the purpose of hearing and deciding. cases",
+   "t": "places as the Supreme Court may determine, for the purpose of hearing and deciding cases"
+  },
+  {
+   "f": "Nueve Ecija",
+   "t": "Nueva Ecija"
+  }
+ ],
+ "civil": [
+  {
+   "f": "that may be recovered. by the owner",
+   "t": "that may be recovered by the owner"
+  },
+  {
+   "f": "in the absence if stipulation",
+   "t": "in the absence of stipulation"
+  }
+ ],
+ "cmta": [
+  {
+   "f": "deficiencies in. duties",
+   "t": "deficiencies in duties"
+  },
+  {
+   "f": "international hest practices",
+   "t": "international best practices"
+  }
+ ],
+ "ipcode": [
+  {
+   "f": "Transfer Bureau. the decisions",
+   "t": "Transfer Bureau. The decisions"
+  },
+  {
+   "f": "subject to license. the person",
+   "t": "subject to license. The person"
+  }
+ ],
+ "pd1152": [
+  {
+   "f": "rivers and streams. lakes throughout",
+   "t": "rivers and streams, lakes throughout"
+  }
+ ],
+ "ra10951": [
+  {
+   "f": "his profession or office. shall cooperate",
+   "t": "his profession or office, shall cooperate"
+  },
+  {
+   "f": "not of a serious nature. the penalty",
+   "t": "not of a serious nature, the penalty"
+  }
+ ],
+ "ra11223": [
+  {
+   "f": "reporting the. matter",
+   "t": "reporting the matter"
+  }
+ ],
+ "ra8042": [
+  {
+   "f": "herof",
+   "t": "hereof"
+  }
+ ],
+ "ra9653": [
+  {
+   "f": "Section 4 of this Act. the Housing",
+   "t": "Section 4 of this Act, the Housing"
+  },
+  {
+   "f": "Notwithstanding he lapse",
+   "t": "Notwithstanding the lapse"
+  }
+ ],
+ "ra9710": [
+  {
+   "f": "policy formulation. planning",
+   "t": "policy formulation, planning"
+  },
+  {
+   "f": "shall include. but are not limited to",
+   "t": "shall include, but are not limited to"
+  },
+  {
+   "f": "indigenous women. particularly access",
+   "t": "indigenous women, particularly access"
+  }
+ ],
+ "ra8792": [
+  {
+   "f": "set fourth in subparagraph s (i)",
+   "t": "set forth in subparagraphs (i)"
+  }
+ ],
+ "ra7610": [
+  {
+   "f": "sexual intercourse of lascivious conduct",
+   "t": "sexual intercourse or lascivious conduct"
+  }
+ ],
+ "ra10591": [
+  {
+   "f": "rebellion of insurrection",
+   "t": "rebellion or insurrection"
+  }
+ ],
+ "src": [
+  {
+   "f": "deems its necessary",
+   "t": "deems it necessary"
+  },
+  {
+   "f": "certified public accountant, an a management",
+   "t": "certified public accountant, and a management"
+  }
+ ],
+ "ra7394": [
+  {
+   "f": "other than these enumerated in Article 50",
+   "t": "other than those enumerated in Article 50"
+  }
+ ],
+ "ra11642": [
+  {
+   "f": "application from for the foster case or adoption",
+   "t": "application form for the foster care or adoption"
+  }
+ ]
+}

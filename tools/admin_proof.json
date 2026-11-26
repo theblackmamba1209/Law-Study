@@ -1,0 +1,3680 @@
+{
+ "_about": "Proofreading of the Administrative Code (EO 292) after the OCR witness vote: OCR debris removed, garbled words read from the scan or the LawPhil text, headings that leaked into sections restored as headings, and misprints in the printed copy corrected with a note. Applied by build_data.py (admin_proof).",
+ "leaks": {
+  "D—Presidential ASSISTANTS/ADVISERS SysTEM": "D — Presidential Assistants/Advisers System",
+  ") Cuaprer 3—Department Services": "Chapter 3 — Department Services",
+  "L Cuapter 4—Budget Authorization": "Chapter 4 — Budget Authorization",
+  "§ Cuaprer 2—Rules and Regulations": "Chapter 2 — Rules and Regulations"
+ },
+ "divtitles": {
+  "Chapter 6 — Official Gazette in": "Chapter 6 — Official Gazette",
+  "Chapter 9 — General Principles Governing . Public Officers": "Chapter 9 — General Principles Governing Public Officers",
+  "B — Tue Executive Office": "B — The Executive Office",
+  "C — Common Starr Support System": "C — Common Staff Support System",
+  "Chapter 14 — Wmiscellaneous Provisions": "Chapter 14 — Miscellaneous Provisions",
+  "Chapter 2 — Deparitmenit Proper": "Chapter 2 — Department Proper",
+  "Chapter 4 — Bureaus ;": "Chapter 4 — Bureaus",
+  "Chapter 6 — Atiached Agencies": "Chapter 6 — Attached Agencies",
+  "Chapter 8 — Atiached Agencies": "Chapter 8 — Attached Agencies",
+  "Chapter 6 — Aittached Agencies": "Chapter 6 — Attached Agencies",
+  "Chapter 4 — Aftiached Agencies": "Chapter 4 — Attached Agencies",
+  "Chapter 3 — Deparimeni Services": "Chapter 3 — Department Services",
+  "Chapter 1 — General Provisions '": "Chapter 1 — General Provisions",
+  "Chapter 2 — Department Proper _": "Chapter 2 — Department Proper",
+  "Chapter 4 — Offices and Bureaus .": "Chapter 4 — Offices and Bureaus",
+  "Chapter 3 — Office of the Undersecretary for": "Chapter 3 — Office of the Undersecretary for Domestic Trade",
+  "Chapter 5 — Office of the Undersecretary": "Chapter 5 — Office of the Undersecretary for Industry and Investments",
+  "Chapter 4 — Bureaus :": "Chapter 4 — Bureaus",
+  "Chapter 4 — Bureau and Offices Q": "Chapter 4 — Bureau and Offices",
+  "Chapter 4 — Regional Offices R": "Chapter 4 — Regional Offices",
+  "Chapter 1 — General Provisions ;": "Chapter 1 — General Provisions",
+  "Chapter 6 — Provincial/city Offices": "Chapter 6 — Provincial/City Offices",
+  "Chapter 4 — Interdepariment Relations !": "Chapter 4 — Interdepartment Relations",
+  "Chapter 10 — Miscellaneous Provisions ;": "Chapter 10 — Miscellaneous Provisions",
+  "Chapter 2 — Neda Board": "Chapter 2 — NEDA Board",
+  "Chapter 3 — Neda Secretariat": "Chapter 3 — NEDA Secretariat"
+ },
+ "edits": [
+  {
+   "i": "book-i-sec-20",
+   "f": "ambiguity, omission.or mistake,",
+   "t": "ambiguity, omission or mistake,"
+  },
+  {
+   "i": "book-i-sec-37",
+   "f": "by @ subpoena",
+   "t": "by a subpoena"
+  },
+  {
+   "i": "book-ii-sec-9",
+   "f": "upon @ vote",
+   "t": "upon a vote"
+  },
+  {
+   "i": "book-iii-sec-2",
+   "f": "permanent character-in implementation",
+   "t": "permanent character in implementation"
+  },
+  {
+   "i": "book-iv-ch-4-sec-18",
+   "f": "and efféactive performance",
+   "t": "and effective performance"
+  },
+  {
+   "i": "book-iv-ch-4-sec-19",
+   "f": "have a’separate administrative",
+   "t": "have a separate administrative"
+  },
+  {
+   "i": "book-iv-ch-6-sec-30",
+   "f": "Service © Law.",
+   "t": "Service Law."
+  },
+  {
+   "i": "book-iv-ch-6-sec-31",
+   "f": "inconsistent with-the performance",
+   "t": "inconsistent with the performance"
+  },
+  {
+   "i": "book-iv-ch-6-sec-32",
+   "f": "of a-bureau or",
+   "t": "of a bureau or"
+  },
+  {
+   "i": "book-iv-ch-7-sec-38",
+   "f": "decisions of.subordinate officials",
+   "t": "decisions of subordinate officials"
+  },
+  {
+   "i": "book-iv-ch-7-sec-38",
+   "f": "shall } subject",
+   "t": "shall be subject"
+  },
+  {
+   "i": "book-iv-ch-8-sec-40",
+   "f": "be ! necessary",
+   "t": "be necessary"
+  },
+  {
+   "i": "book-iv-ch-8-sec-40",
+   "f": "in y accordance",
+   "t": "in accordance"
+  },
+  {
+   "i": "book-iv-ch-13-sec-61",
+   "f": "or sentrelind corporations",
+   "t": "or controlled corporations"
+  },
+  {
+   "i": "book-iv-title-i-sec-30",
+   "f": "Employees _",
+   "t": "Employees"
+  },
+  {
+   "i": "book-iv-title-i-sec-49",
+   "f": "application b denied.",
+   "t": "application be denied."
+  },
+  {
+   "i": "book-iv-title-i-sec-54",
+   "f": "official ] duties",
+   "t": "official duties"
+  },
+  {
+   "i": "book-iv-title-i-sec-55",
+   "f": "return > passage",
+   "t": "return passage"
+  },
+  {
+   "i": "book-iv-title-i-sec-55",
+   "f": "of hig e family,",
+   "t": "of his family,"
+  },
+  {
+   "i": "book-iv-title-i-sec-56",
+   "f": "and \" Maintenance",
+   "t": "and Maintenance"
+  },
+  {
+   "i": "book-iv-title-i-sec-56",
+   "f": "the y discretion",
+   "t": "the discretion"
+  },
+  {
+   "i": "book-iv-title-ii-sec-3",
+   "f": "in ‘ activities",
+   "t": "in activities"
+  },
+  {
+   "i": "book-iv-title-ii-sec-3",
+   "f": "finance, trade.and investment;",
+   "t": "finance, trade and investment;"
+  },
+  {
+   "i": "book-iv-title-ii-sec-13",
+   "f": "the } operating",
+   "t": "the operating"
+  },
+  {
+   "i": "book-iv-title-ii-sec-13",
+   "f": "the ! general",
+   "t": "the general"
+  },
+  {
+   "i": "book-iv-title-ii-sec-17",
+   "f": "against perauan of",
+   "t": "against personnel of"
+  },
+  {
+   "i": "book-iv-title-ii-sec-25",
+   "f": "9. )",
+   "t": "9."
+  },
+  {
+   "i": "book-iv-title-ii-sec-26",
+   "f": "Customs ' Revenue",
+   "t": "Customs Revenue"
+  },
+  {
+   "i": "book-iv-title-ii-sec-34",
+   "f": "Government ) Finance",
+   "t": "Government Finance"
+  },
+  {
+   "i": "book-iv-title-ii-sec-34",
+   "f": "Office; ) (2)",
+   "t": "Office; (2)"
+  },
+  {
+   "i": "book-iv-title-ii-sec-39",
+   "f": "Finance ) Attache",
+   "t": "Finance Attache"
+  },
+  {
+   "i": "book-iv-title-ii-sec-40",
+   "f": "headed by-a Regional",
+   "t": "headed by a Regional"
+  },
+  {
+   "i": "book-iv-title-iii-sec-7",
+   "f": "the ) Secretary",
+   "t": "the Secretary"
+  },
+  {
+   "i": "book-iv-title-iii-sec-7",
+   "f": "minor ) officials",
+   "t": "minor officials"
+  },
+  {
+   "i": "book-iv-title-iii-sec-13",
+   "f": "and ) to",
+   "t": "and to"
+  },
+  {
+   "i": "book-iv-title-iii-sec-19",
+   "f": "assisted ! by",
+   "t": "assisted by"
+  },
+  {
+   "i": "book-iv-title-iii-sec-24",
+   "f": "work. _ (2)",
+   "t": "work. (2)"
+  },
+  {
+   "i": "book-iv-title-iii-sec-24",
+   "f": "necessary to-enable them",
+   "t": "necessary to enable them"
+  },
+  {
+   "i": "book-iv-title-iii-sec-35",
+   "f": "in ) which",
+   "t": "in which"
+  },
+  {
+   "i": "book-iv-title-iii-sec-35",
+   "f": "official ! capacity",
+   "t": "official capacity"
+  },
+  {
+   "i": "book-iv-title-iv-sec-9",
+   "f": "of the-seven (7)",
+   "t": "of the seven (7)"
+  },
+  {
+   "i": "book-iv-title-iv-sec-19",
+   "f": "of ’ farm",
+   "t": "of farm"
+  },
+  {
+   "i": "book-iv-title-iv-sec-19",
+   "f": "regulations to.the Secretary",
+   "t": "regulations to the Secretary"
+  },
+  {
+   "i": "book-iv-title-iv-sec-20",
+   "f": "the ” same.",
+   "t": "the same."
+  },
+  {
+   "i": "book-iv-title-iv-sec-26",
+   "f": "Secretary. © At",
+   "t": "Secretary. At"
+  },
+  {
+   "i": "book-iv-title-iv-sec-27",
+   "f": "of plar.ts by",
+   "t": "of plants by"
+  },
+  {
+   "i": "book-iv-title-v-sec-10",
+   "f": "feasibility and_consistency with",
+   "t": "feasibility and consistency with"
+  },
+  {
+   "i": "book-iv-title-v-sec-13",
+   "f": "and human_resources management;",
+   "t": "and human resources management;"
+  },
+  {
+   "i": "book-iv-title-v-sec-16",
+   "f": "the / Secretary",
+   "t": "the Secretary"
+  },
+  {
+   "i": "book-iv-title-v-sec-20",
+   "f": "the } Department",
+   "t": "the Department"
+  },
+  {
+   "i": "book-iv-title-v-sec-20",
+   "f": "and { responsibilities",
+   "t": "and responsibilities"
+  },
+  {
+   "i": "book-iv-title-v-sec-23",
+   "f": "head. ¢ Within",
+   "t": "head. Within"
+  },
+  {
+   "i": "book-iv-title-v-sec-23",
+   "f": "operations: @ including",
+   "t": "operations: including"
+  },
+  {
+   "i": "book-iv-title-v-sec-25",
+   "f": "Manila * Flood",
+   "t": "Manila Flood"
+  },
+  {
+   "i": "book-iv-title-v-sec-25",
+   "f": "shall _ be",
+   "t": "shall be"
+  },
+  {
+   "i": "book-iv-title-vi-sec-2",
+   "f": "implementation } and",
+   "t": "implementation and"
+  },
+  {
+   "i": "book-iv-title-vi-sec-3",
+   "f": "planning, ! implementing",
+   "t": "planning, implementing"
+  },
+  {
+   "i": "book-iv-title-vi-sec-7",
+   "f": "and = effective",
+   "t": "and effective"
+  },
+  {
+   "i": "book-iv-title-vi-sec-9",
+   "f": "various ' components",
+   "t": "various components"
+  },
+  {
+   "i": "book-iv-title-vi-sec-17",
+   "f": "and _ (5)",
+   "t": "and (5)"
+  },
+  {
+   "i": "book-iv-title-vi-sec-28",
+   "f": "the \\ Secretary",
+   "t": "the Secretary"
+  },
+  {
+   "i": "book-iv-title-vii-sec-11",
+   "f": "relation to-the development",
+   "t": "relation to the development"
+  },
+  {
+   "i": "book-iv-title-vii-sec-12",
+   "f": "management ! improvement",
+   "t": "management improvement"
+  },
+  {
+   "i": "book-iv-title-vii-sec-13",
+   "f": "provide { legal",
+   "t": "provide legal"
+  },
+  {
+   "i": "book-iv-title-vii-sec-15",
+   "f": "the Départment’s policies,",
+   "t": "the Department's policies,"
+  },
+  {
+   "i": "book-iv-title-vii-sec-16",
+   "f": "on the.registration and",
+   "t": "on the registration and"
+  },
+  {
+   "i": "book-iv-title-vii-sec-17",
+   "f": "work ~ permit",
+   "t": "work permit"
+  },
+  {
+   "i": "book-iv-title-vii-sec-21",
+   "f": "to } enhance",
+   "t": "to enhance"
+  },
+  {
+   "i": "book-iv-title-vii-sec-21",
+   "f": "in \\ national",
+   "t": "in national"
+  },
+  {
+   "i": "book-iv-title-vii-sec-23",
+   "f": "shall establish.as many",
+   "t": "shall establish as many"
+  },
+  {
+   "i": "book-iv-title-viii-sec-5",
+   "f": "and _ efficiently",
+   "t": "and efficiently"
+  },
+  {
+   "i": "book-iv-title-viii-sec-7",
+   "f": "permanent } Secretariat",
+   "t": "permanent Secretariat"
+  },
+  {
+   "i": "book-iv-title-viii-sec-20",
+   "f": "the ' Secretary;",
+   "t": "the Secretary;"
+  },
+  {
+   "i": "book-iv-title-viii-sec-40",
+   "f": "of } operations",
+   "t": "of operations"
+  },
+  {
+   "i": "book-iv-title-viii-sec-40",
+   "f": "strategic war*plans, tasks,",
+   "t": "strategic war plans, tasks,"
+  },
+  {
+   "i": "book-iv-title-viii-sec-41",
+   "f": "AFP. }",
+   "t": "AFP."
+  },
+  {
+   "i": "book-iv-title-viii-sec-42",
+   "f": "may | = extend.",
+   "t": "may extend."
+  },
+  {
+   "i": "book-iv-title-viii-sec-44",
+   "f": "tenure shall-be determined",
+   "t": "tenure shall be determined"
+  },
+  {
+   "i": "book-iv-title-viii-sec-49",
+   "f": "to the“army for",
+   "t": "to the army for"
+  },
+  {
+   "i": "book-iv-title-viii-sec-57",
+   "f": "unable ! to",
+   "t": "unable to"
+  },
+  {
+   "i": "book-iv-title-viii-sec-60",
+   "f": "other } resource",
+   "t": "other resource"
+  },
+  {
+   "i": "book-iv-title-viii-sec-60",
+   "f": "and ’ evaluating",
+   "t": "and evaluating"
+  },
+  {
+   "i": "book-iv-title-ix-sec-3",
+   "f": "functions } are",
+   "t": "functions are"
+  },
+  {
+   "i": "book-iv-title-ix-sec-10",
+   "f": "the ' Department",
+   "t": "the Department"
+  },
+  {
+   "i": "book-iv-title-ix-sec-12",
+   "f": "by ' the",
+   "t": "by the"
+  },
+  {
+   "i": "book-iv-title-ix-sec-13",
+   "f": "and ~ advisory",
+   "t": "and advisory"
+  },
+  {
+   "i": "book-iv-title-ix-sec-14",
+   "f": "programs, } policies,",
+   "t": "programs, policies,"
+  },
+  {
+   "i": "book-iv-title-ix-sec-18",
+   "f": "medical { centers,",
+   "t": "medical centers,"
+  },
+  {
+   "i": "book-iv-title-ix-sec-18",
+   "f": "except { those",
+   "t": "except those"
+  },
+  {
+   "i": "book-iv-title-x-sec-1",
+   "f": "trade malpracticés and",
+   "t": "trade malpractices and"
+  },
+  {
+   "i": "book-iv-title-x-sec-2",
+   "f": "catalyst } for",
+   "t": "catalyst for"
+  },
+  {
+   "i": "book-iv-title-x-sec-2",
+   "f": "comprehensive { industrial",
+   "t": "comprehensive industrial"
+  },
+  {
+   "i": "book-iv-title-x-sec-3",
+   "f": "the \" intent",
+   "t": "the intent"
+  },
+  {
+   "i": "book-iv-title-x-sec-4",
+   "f": "entities. !",
+   "t": "entities."
+  },
+  {
+   "i": "book-iv-title-x-sec-6",
+   "f": "supervision over’the offices,",
+   "t": "supervision over the offices,"
+  },
+  {
+   "i": "book-iv-title-x-sec-10",
+   "f": "Gazette. _ (4)",
+   "t": "Gazette. (4)"
+  },
+  {
+   "i": "book-iv-title-x-sec-10",
+   "f": "for purposes‘of product",
+   "t": "for purposes of product"
+  },
+  {
+   "i": "book-iv-title-x-sec-12",
+   "f": "functions on.import transactions",
+   "t": "functions on import transactions"
+  },
+  {
+   "i": "book-iv-title-x-sec-13",
+   "f": "hereof. It'shall be",
+   "t": "hereof. It shall be"
+  },
+  {
+   "i": "book-iv-title-x-sec-15",
+   "f": "export { licenses,",
+   "t": "export licenses,"
+  },
+  {
+   "i": "book-iv-title-xi-sec-1",
+   "f": "landless t own",
+   "t": "landless to own"
+  },
+  {
+   "i": "book-iv-title-xi-sec-1",
+   "f": "through ! adequate",
+   "t": "through adequate"
+  },
+  {
+   "i": "book-iv-title-xi-sec-3",
+   "f": "of its.orders, and",
+   "t": "of its orders, and"
+  },
+  {
+   "i": "book-iv-title-xi-sec-13",
+   "f": "judiciously settle‘agrarian problems:",
+   "t": "judiciously settle agrarian problems:"
+  },
+  {
+   "i": "book-iv-title-xi-sec-15",
+   "f": "prescribe ‘ standards,",
+   "t": "prescribe standards,"
+  },
+  {
+   "i": "book-iv-title-xi-sec-15",
+   "f": "projects; ~ (11)",
+   "t": "projects; (11)"
+  },
+  {
+   "i": "book-iv-title-xi-sec-16",
+   "f": "on } farmer",
+   "t": "on farmer"
+  },
+  {
+   "i": "book-iv-title-xi-sec-16",
+   "f": "programs { and",
+   "t": "programs and"
+  },
+  {
+   "i": "book-iv-title-xi-sec-18",
+   "f": "and _ (16)",
+   "t": "and (16)"
+  },
+  {
+   "i": "book-iv-title-xi-sec-19",
+   "f": "to actual:tillers, including",
+   "t": "to actual tillers, including"
+  },
+  {
+   "i": "book-iv-title-xi-sec-20",
+   "f": "administrative cases,;and other",
+   "t": "administrative cases, and other"
+  },
+  {
+   "i": "book-iv-title-xii-sec-1",
+   "f": "taxes ) and",
+   "t": "taxes and"
+  },
+  {
+   "i": "book-iv-title-xii-sec-3",
+   "f": "government units.and on",
+   "t": "government units and on"
+  },
+  {
+   "i": "book-iv-title-xii-sec-6",
+   "f": "who ) shall",
+   "t": "who shall"
+  },
+  {
+   "i": "book-iv-title-xii-sec-12",
+   "f": "the Secretary-in the",
+   "t": "the Secretary in the"
+  },
+  {
+   "i": "book-iv-title-xii-sec-13",
+   "f": "local } government",
+   "t": "local government"
+  },
+  {
+   "i": "book-iv-title-xii-sec-13",
+   "f": "and f ojec designed",
+   "t": "and projects designed"
+  },
+  {
+   "i": "book-iv-title-xii-sec-13",
+   "f": "to loe government",
+   "t": "to local government"
+  },
+  {
+   "i": "book-iv-title-xii-sec-14",
+   "f": "the modernizat f and",
+   "t": "the modernization and"
+  },
+  {
+   "i": "book-iv-title-xii-sec-14",
+   "f": "operationalization } the",
+   "t": "operationalization of the"
+  },
+  {
+   "i": "book-iv-title-xii-sec-14",
+   "f": "of f Department;",
+   "t": "of the Department;"
+  },
+  {
+   "i": "book-iv-title-xii-sec-14",
+   "f": "implement q administrative",
+   "t": "implement the administrative"
+  },
+  {
+   "i": "book-iv-title-xii-sec-14",
+   "f": "and } projects",
+   "t": "and projects"
+  },
+  {
+   "i": "book-iv-title-xii-sec-14",
+   "f": "the ' effective",
+   "t": "the effective"
+  },
+  {
+   "i": "book-iv-title-xii-sec-19",
+   "f": "Pambansang [ Katipunan",
+   "t": "Pambansang Katipunan"
+  },
+  {
+   "i": "book-iv-title-xiii-sec-19",
+   "f": "of ' the",
+   "t": "of the"
+  },
+  {
+   "i": "book-iv-title-xiii-sec-19",
+   "f": "as thay be",
+   "t": "as may be"
+  },
+  {
+   "i": "book-iv-title-xiii-sec-19",
+   "f": "the ( Philippines",
+   "t": "the Philippines"
+  },
+  {
+   "i": "book-iv-title-xiv-sec-4",
+   "f": "raw } materials",
+   "t": "raw materials"
+  },
+  {
+   "i": "book-iv-title-xiv-sec-4",
+   "f": "of } service",
+   "t": "of service"
+  },
+  {
+   "i": "book-iv-title-xiv-sec-13",
+   "f": "Pollution » Control",
+   "t": "Pollution Control"
+  },
+  {
+   "i": "book-iv-title-xiv-sec-13",
+   "f": "of P. D. 984.",
+   "t": "of P.D. 984."
+  },
+  {
+   "i": "book-iv-title-xiv-sec-14",
+   "f": "and ! the",
+   "t": "and the"
+  },
+  {
+   "i": "book-iv-title-xiv-sec-14",
+   "f": "were { abolished",
+   "t": "were abolished"
+  },
+  {
+   "i": "book-iv-title-xiv-sec-14",
+   "f": "line ) functions",
+   "t": "line functions"
+  },
+  {
+   "i": "book-iv-title-xiv-sec-14",
+   "f": "the ! effective",
+   "t": "the effective"
+  },
+  {
+   "i": "book-iv-title-xiv-sec-14",
+   "f": "ensure [ continuous",
+   "t": "ensure continuous"
+  },
+  {
+   "i": "book-iv-title-xiv-sec-16",
+   "f": "and ' geology;",
+   "t": "and geology;"
+  },
+  {
+   "i": "book-iv-title-xiv-sec-18",
+   "f": "research } program",
+   "t": "research program"
+  },
+  {
+   "i": "book-iv-title-xv-sec-3",
+   "f": "land ! transportation",
+   "t": "land transportation"
+  },
+  {
+   "i": "book-iv-title-xv-sec-3",
+   "f": "driving ) schools;",
+   "t": "driving schools;"
+  },
+  {
+   "i": "book-iv-title-xv-sec-3",
+   "f": "Telecommunications ] Training",
+   "t": "Telecommunications Training"
+  },
+  {
+   "i": "book-iv-title-xv-sec-3",
+   "f": "be { provided",
+   "t": "be provided"
+  },
+  {
+   "i": "book-iv-title-xv-sec-5",
+   "f": "The ) Investigation,",
+   "t": "The Investigation,"
+  },
+  {
+   "i": "book-iv-title-xv-sec-7",
+   "f": "the ) respective",
+   "t": "the respective"
+  },
+  {
+   "i": "book-iv-title-xv-sec-9",
+   "f": "Air } Transportation.",
+   "t": "Air Transportation."
+  },
+  {
+   "i": "book-iv-title-xv-sec-14",
+   "f": "Director. ] The",
+   "t": "Director. The"
+  },
+  {
+   "i": "book-iv-title-xv-sec-14",
+   "f": "following { functions:",
+   "t": "following functions:"
+  },
+  {
+   "i": "book-iv-title-xv-sec-14",
+   "f": "line ! supervision",
+   "t": "line supervision"
+  },
+  {
+   "i": "book-iv-title-xv-sec-21",
+   "f": "rank, » salary",
+   "t": "rank, salary"
+  },
+  {
+   "i": "book-iv-title-xv-sec-24",
+   "f": "the ) respective",
+   "t": "the respective"
+  },
+  {
+   "i": "book-iv-title-xvi-sec-1",
+   "f": "committed ‘ to",
+   "t": "committed to"
+  },
+  {
+   "i": "book-iv-title-xvi-sec-1",
+   "f": "individuals, { families",
+   "t": "individuals, families"
+  },
+  {
+   "i": "book-iv-title-xvi-sec-2",
+   "f": "importantly at-the stage",
+   "t": "importantly at the stage"
+  },
+  {
+   "i": "book-iv-title-xvi-sec-2",
+   "f": "such _ strategy,",
+   "t": "such strategy,"
+  },
+  {
+   "i": "book-iv-title-xvi-sec-9",
+   "f": "Regional ) Offices;",
+   "t": "Regional Offices;"
+  },
+  {
+   "i": "book-iv-title-xvi-sec-10",
+   "f": "licensing _ and",
+   "t": "licensing and"
+  },
+  {
+   "i": "book-iv-title-xvi-sec-10",
+   "f": "media ) materials",
+   "t": "media materials"
+  },
+  {
+   "i": "book-iv-title-xvi-sec-11",
+   "f": "self-sufficiency. ‘",
+   "t": "self-sufficiency."
+  },
+  {
+   "i": "book-iv-title-xvi-sec-13",
+   "f": "region; / (4)",
+   "t": "region; (4)"
+  },
+  {
+   "i": "book-iv-title-xvi-sec-17",
+   "f": "development ! efforts.",
+   "t": "development efforts."
+  },
+  {
+   "i": "book-iv-title-xvi-sec-18",
+   "f": "a { Municipal/District",
+   "t": "a Municipal/District"
+  },
+  {
+   "i": "book-iv-title-xvi-sec-18",
+   "f": "city } district",
+   "t": "city district"
+  },
+  {
+   "i": "book-iv-title-xviii-sec-2",
+   "f": "and ) needs",
+   "t": "and needs"
+  },
+  {
+   "i": "book-iv-title-xviii-sec-2",
+   "f": "the ) country’s",
+   "t": "the country’s"
+  },
+  {
+   "i": "book-iv-title-xviii-sec-3",
+   "f": "its ) mandate,",
+   "t": "its mandate,"
+  },
+  {
+   "i": "book-iv-title-xviii-sec-3",
+   "f": "the ) recommendation",
+   "t": "the recommendation"
+  },
+  {
+   "i": "book-iv-title-xviii-sec-3",
+   "f": "employed; ) (3)",
+   "t": "employed; (3)"
+  },
+  {
+   "i": "book-iv-title-xviii-sec-3",
+   "f": "public ‘ and",
+   "t": "public and"
+  },
+  {
+   "i": "book-iv-title-xviii-sec-11",
+   "f": "companies n the",
+   "t": "companies in the"
+  },
+  {
+   "i": "book-iv-title-xviii-sec-14",
+   "f": "eight _ (8)",
+   "t": "eight (8)"
+  },
+  {
+   "i": "book-iv-title-xviii-sec-29",
+   "f": "presence is-considered necessary,",
+   "t": "presence is considered necessary,"
+  },
+  {
+   "i": "book-iv-title-xviii-sec-33",
+   "f": "privileges: / ) (a)",
+   "t": "privileges: (a)"
+  },
+  {
+   "i": "book-iv-title-xviii-sec-33",
+   "f": "participation ‘ in",
+   "t": "participation in"
+  },
+  {
+   "i": "book-iv-title-xviii-sec-34",
+   "f": "Science ‘ and",
+   "t": "Science and"
+  },
+  {
+   "i": "book-iv-title-xviii-sec-35",
+   "f": "business ‘ economic",
+   "t": "business economic"
+  },
+  {
+   "i": "book-v-title-i-subtitle-a-sec-12",
+   "f": "the ) government",
+   "t": "the government"
+  },
+  {
+   "i": "book-v-title-i-subtitle-a-sec-16",
+   "f": "be _ appealed",
+   "t": "be appealed"
+  },
+  {
+   "i": "book-v-title-i-subtitle-a-sec-46",
+   "f": "Insubordination; \\ (26)",
+   "t": "Insubordination; (26)"
+  },
+  {
+   "i": "book-v-title-i-subtitle-a-sec-50",
+   "f": "Commission. )",
+   "t": "Commission."
+  },
+  {
+   "i": "book-v-sec-56",
+   "f": "by law*‘nor accept",
+   "t": "by law nor accept"
+  },
+  {
+   "i": "book-v-sec-59",
+   "f": "in © violation",
+   "t": "in violation"
+  },
+  {
+   "i": "book-v-title-i-subtitle-b-sec-2",
+   "f": "convertible to'money, receivables,",
+   "t": "convertible to money, receivables,"
+  },
+  {
+   "i": "book-v-title-i-subtitle-b-sec-7",
+   "f": "for a-comprehensive training",
+   "t": "for a comprehensive training"
+  },
+  {
+   "i": "book-v-title-i-subtitle-b-sec-7",
+   "f": "functions as-may be",
+   "t": "functions as may be"
+  },
+  {
+   "i": "book-v-title-i-subtitle-b-sec-8",
+   "f": "to the’region; and",
+   "t": "to the region; and"
+  },
+  {
+   "i": "book-v-title-i-subtitle-b-sec-10",
+   "f": "laws. ‘",
+   "t": "laws."
+  },
+  {
+   "i": "book-v-title-i-subtitle-b-sec-13",
+   "f": "determined by.the appropriate",
+   "t": "determined by the appropriate"
+  },
+  {
+   "i": "book-v-title-i-subtitle-b-sec-15",
+   "f": "entity to.render audit",
+   "t": "entity to render audit"
+  },
+  {
+   "i": "book-v-title-i-subtitle-b-sec-22",
+   "f": "the ) penalties",
+   "t": "the penalties"
+  },
+  {
+   "i": "book-v-title-i-subtitle-b-sec-22",
+   "f": "utility ) concerned",
+   "t": "utility concerned"
+  },
+  {
+   "i": "book-v-title-i-subtitle-b-sec-23",
+   "f": "as _ for",
+   "t": "as for"
+  },
+  {
+   "i": "book-v-title-i-subtitle-b-sec-24",
+   "f": "for resolution,.issue subpoena",
+   "t": "for resolution, issue subpoena"
+  },
+  {
+   "i": "book-v-title-i-subtitle-b-sec-26",
+   "f": "shall submit‘to the",
+   "t": "shall submit to the"
+  },
+  {
+   "i": "book-v-title-i-subtitle-b-sec-29",
+   "f": "property or-supplies of",
+   "t": "property or supplies of"
+  },
+  {
+   "i": "book-v-title-i-subtitle-b-sec-46",
+   "f": "obligations _ is",
+   "t": "obligations is"
+  },
+  {
+   "i": "book-v-title-i-subtitle-c-sec-3",
+   "f": "the _ Central",
+   "t": "the Central"
+  },
+  {
+   "i": "book-v-title-i-subtitle-c-sec-8",
+   "f": "(5) Serve-as deputy",
+   "t": "(5) Serve as deputy"
+  },
+  {
+   "i": "book-v-title-ii-subtitle-c-sec-3",
+   "f": "official ' development",
+   "t": "official development"
+  },
+  {
+   "i": "book-vi-sec-12",
+   "f": "actual ) or",
+   "t": "actual or"
+  },
+  {
+   "i": "book-vi-sec-22",
+   "f": "to the-Congress without",
+   "t": "to the Congress without"
+  },
+  {
+   "i": "book-vi-sec-29",
+   "f": "borrowings _shall-be included",
+   "t": "borrowings shall be included"
+  },
+  {
+   "i": "book-vi-sec-31",
+   "f": "unauthorized revision’in any",
+   "t": "unauthorized revision of any"
+  },
+  {
+   "i": "book-vi-sec-32",
+   "f": "activities, projects'and programs",
+   "t": "activities, projects and programs"
+  },
+  {
+   "i": "book-vi-sec-43",
+   "f": "shall / be",
+   "t": "shall be"
+  },
+  {
+   "i": "book-vi-sec-44",
+   "f": "the _ Government",
+   "t": "the Government"
+  },
+  {
+   "i": "book-vi-sec-46",
+   "f": "requirements. '",
+   "t": "requirements."
+  },
+  {
+   "i": "book-vi-sec-58",
+   "f": "by the-regular staff",
+   "t": "by the regular staff"
+  },
+  {
+   "i": "book-vi-sec-70",
+   "f": "the Government-shall be",
+   "t": "the Government shall be"
+  },
+  {
+   "i": "book-vii-sec-2",
+   "f": "or interprets_a law,",
+   "t": "or interprets a law,"
+  },
+  {
+   "i": "book-vii-sec-2",
+   "f": "party, in-any agency",
+   "t": "party, in any agency"
+  },
+  {
+   "i": "book-i-sec-14",
+   "f": "_ Seal,",
+   "t": "Seal,"
+  },
+  {
+   "i": "book-ii-sec-21",
+   "f": "() A Judicial and Bar Council is hereby created",
+   "t": "(1) A Judicial and Bar Council is hereby created"
+  },
+  {
+   "i": "book-iv-ch-1-sec-5",
+   "f": "_ or",
+   "t": "or"
+  },
+  {
+   "i": "book-iv-title-ii-sec-6",
+   "f": "} hereof",
+   "t": "hereof"
+  },
+  {
+   "i": "book-iv-title-ii-sec-27",
+   "f": "} and",
+   "t": "and"
+  },
+  {
+   "i": "book-iv-title-ii-sec-36",
+   "f": ") (5)",
+   "t": "(5)"
+  },
+  {
+   "i": "book-iv-title-iii-sec-12",
+   "f": "_ The",
+   "t": "The"
+  },
+  {
+   "i": "book-iv-title-iii-sec-30",
+   "f": "_ Muntinlupa.",
+   "t": "Muntinlupa."
+  },
+  {
+   "i": "book-iv-title-iii-sec-35",
+   "f": "tasks. _",
+   "t": "tasks."
+  },
+  {
+   "i": "book-iv-title-iv-sec-39",
+   "f": "_ recommendation",
+   "t": "recommendation"
+  },
+  {
+   "i": "book-iv-title-iv-sec-47",
+   "f": "Administration f",
+   "t": "Administration"
+  },
+  {
+   "i": "book-iv-title-v-sec-3",
+   "f": "_ country",
+   "t": "country"
+  },
+  {
+   "i": "book-iv-title-v-sec-10",
+   "f": "_ thereof;",
+   "t": "thereof;"
+  },
+  {
+   "i": "book-iv-title-vi-sec-7",
+   "f": "_ project",
+   "t": "project"
+  },
+  {
+   "i": "book-iv-title-vi-sec-9",
+   "f": "education; t",
+   "t": "education;"
+  },
+  {
+   "i": "book-iv-title-vi-sec-20",
+   "f": "Board; [",
+   "t": "Board;"
+  },
+  {
+   "i": "book-iv-title-vi-sec-28",
+   "f": "circulation. '",
+   "t": "circulation."
+  },
+  {
+   "i": "book-iv-title-vii-sec-2",
+   "f": "_ for",
+   "t": "for"
+  },
+  {
+   "i": "book-iv-title-vii-sec-25",
+   "f": "and j",
+   "t": "and"
+  },
+  {
+   "i": "book-iv-title-viii-sec-14",
+   "f": "consideration. t",
+   "t": "consideration."
+  },
+  {
+   "i": "book-iv-title-viii-sec-30",
+   "f": "‘",
+   "t": ""
+  },
+  {
+   "i": "book-iv-title-viii-sec-32",
+   "f": "and y",
+   "t": "and"
+  },
+  {
+   "i": "book-iv-title-viii-sec-40",
+   "f": "mobilization; }",
+   "t": "mobilization;"
+  },
+  {
+   "i": "book-iv-title-viii-sec-40",
+   "f": "Services; “t",
+   "t": "Services;"
+  },
+  {
+   "i": "book-iv-title-viii-sec-51",
+   "f": "and \"",
+   "t": "and"
+  },
+  {
+   "i": "book-iv-title-viii-sec-53",
+   "f": "_ seas",
+   "t": "seas"
+  },
+  {
+   "i": "book-iv-title-viii-sec-53",
+   "f": "_ revenues,",
+   "t": "revenues,"
+  },
+  {
+   "i": "book-iv-title-viii-sec-66",
+   "f": "fires; }",
+   "t": "fires;"
+  },
+  {
+   "i": "book-iv-title-ix-sec-13",
+   "f": "services; q",
+   "t": "services;"
+  },
+  {
+   "i": "book-iv-title-ix-sec-13",
+   "f": "control: '",
+   "t": "control:"
+  },
+  {
+   "i": "book-iv-title-ix-sec-15",
+   "f": "/ functions.",
+   "t": "functions."
+  },
+  {
+   "i": "book-iv-title-x-sec-3",
+   "f": "]",
+   "t": ""
+  },
+  {
+   "i": "book-iv-title-x-sec-10",
+   "f": "_ of",
+   "t": "of"
+  },
+  {
+   "i": "book-iv-title-x-sec-11",
+   "f": "_ positions",
+   "t": "positions"
+  },
+  {
+   "i": "book-iv-title-xi-sec-3",
+   "f": "_ conflicts",
+   "t": "conflicts"
+  },
+  {
+   "i": "book-iv-title-xi-sec-8",
+   "f": "functions: ‘",
+   "t": "functions:"
+  },
+  {
+   "i": "book-iv-title-xi-sec-13",
+   "f": "publication; }",
+   "t": "publication;"
+  },
+  {
+   "i": "book-iv-title-xi-sec-16",
+   "f": "_ (2)",
+   "t": "(2)"
+  },
+  {
+   "i": "book-iv-title-xi-sec-18",
+   "f": "clientele; '",
+   "t": "clientele;"
+  },
+  {
+   "i": "book-iv-title-xi-sec-19",
+   "f": "_ Landowner’s",
+   "t": "Landowner’s"
+  },
+  {
+   "i": "book-iv-title-xi-sec-20",
+   "f": "_ (12)",
+   "t": "(12)"
+  },
+  {
+   "i": "book-iv-title-xii-sec-12",
+   "f": "autonomy; '",
+   "t": "autonomy;"
+  },
+  {
+   "i": "book-iv-title-xiii-sec-3",
+   "f": "industry; {",
+   "t": "industry;"
+  },
+  {
+   "i": "book-iv-title-xiii-sec-16",
+   "f": "implementation; '",
+   "t": "implementation;"
+  },
+  {
+   "i": "book-iv-title-xiv-sec-4",
+   "f": "development; j",
+   "t": "development;"
+  },
+  {
+   "i": "book-iv-title-xiv-sec-4",
+   "f": "regulations; '",
+   "t": "regulations;"
+  },
+  {
+   "i": "book-iv-title-xiv-sec-4",
+   "f": "_ domain",
+   "t": "domain"
+  },
+  {
+   "i": "book-iv-title-xiv-sec-4",
+   "f": "_ of",
+   "t": "of"
+  },
+  {
+   "i": "book-iv-title-xiv-sec-8",
+   "f": "resources; !",
+   "t": "resources;"
+  },
+  {
+   "i": "book-iv-title-xiv-sec-18",
+   "f": "shall: F",
+   "t": "shall:"
+  },
+  {
+   "i": "book-iv-title-xv-sec-12",
+   "f": "_ punishable",
+   "t": "punishable"
+  },
+  {
+   "i": "book-iv-title-xv-sec-14",
+   "f": "Department. \\",
+   "t": "Department."
+  },
+  {
+   "i": "book-iv-title-xv-sec-17",
+   "f": "_ The",
+   "t": "The"
+  },
+  {
+   "i": "book-iv-title-xv-sec-19",
+   "f": "_ in",
+   "t": "in"
+  },
+  {
+   "i": "book-iv-title-xviii-sec-3",
+   "f": "]",
+   "t": ""
+  },
+  {
+   "i": "book-iv-title-xviii-sec-25",
+   "f": "_ and/or",
+   "t": "and/or"
+  },
+  {
+   "i": "book-iv-title-xviii-sec-31",
+   "f": "_ Philippine",
+   "t": "Philippine"
+  },
+  {
+   "i": "book-iv-title-xviii-sec-33",
+   "f": "_ each",
+   "t": "each"
+  },
+  {
+   "i": "book-v-title-i-subtitle-a-sec-16",
+   "f": "Commission. )",
+   "t": "Commission."
+  },
+  {
+   "i": "book-v-title-i-subtitle-a-sec-16",
+   "f": "services. =",
+   "t": "services."
+  },
+  {
+   "i": "book-v-title-i-subtitle-a-sec-18",
+   "f": "_ the",
+   "t": "the"
+  },
+  {
+   "i": "book-v-title-i-subtitle-a-sec-23",
+   "f": "_ places",
+   "t": "places"
+  },
+  {
+   "i": "book-v-title-i-subtitle-a-sec-45",
+   "f": "_ of",
+   "t": "of"
+  },
+  {
+   "i": "book-v-title-i-subtitle-b-sec-28",
+   "f": "and §",
+   "t": "and"
+  },
+  {
+   "i": "book-v-title-i-subtitle-c-sec-2",
+   "f": "Commission; ‘",
+   "t": "Commission;"
+  },
+  {
+   "i": "book-v-title-ii-subtitle-b-sec-2",
+   "f": "_ person,",
+   "t": "person,"
+  },
+  {
+   "i": "book-vi-sec-12",
+   "f": "* contained",
+   "t": "contained"
+  },
+  {
+   "i": "book-vi-sec-58",
+   "f": "contracted )",
+   "t": "contracted"
+  },
+  {
+   "i": "book-vii-sec-24",
+   "f": "cases. \\",
+   "t": "cases."
+  },
+  {
+   "i": "book-i-sec-41",
+   "f": "and lieutenant-governments, city",
+   "t": "and lieutenant-governors, city"
+  },
+  {
+   "i": "book-iv-title-i-sec-34",
+   "f": "a no-career basis.",
+   "t": "a non-career basis."
+  },
+  {
+   "i": "book-iv-title-xvi-sec-16",
+   "f": "operational, filed-level plans",
+   "t": "operational, field-level plans"
+  },
+  {
+   "i": "book-iv-title-x-sec-11",
+   "f": "or deregulate-export-import procedures",
+   "t": "or deregulate export-import procedures"
+  },
+  {
+   "i": "book-iv-title-xiv-sec-13",
+   "f": "pollution cases-under Republic",
+   "t": "pollution cases under Republic"
+  },
+  {
+   "i": "book-iv-title-xiv-sec-13",
+   "f": "(g), G@), (k),",
+   "t": "(g), (j), (k),"
+  },
+  {
+   "i": "book-iv-title-xiv-sec-13",
+   "f": "in meen. with",
+   "t": "in accordance with"
+  },
+  {
+   "i": "book-iv-title-xiv-sec-13",
+   "f": "Environment i Management",
+   "t": "Environment Management"
+  },
+  {
+   "i": "book-iv-title-iii-sec-35",
+   "f": "when Punoaited by",
+   "t": "when requested by"
+  },
+  {
+   "i": "book-iv-title-vii-sec-20",
+   "f": "provided — by law.. @",
+   "t": "provided by law."
+  },
+  {
+   "i": "book-iv-title-viii-sec-52",
+   "f": "Chief of } Staff. -,",
+   "t": "Chief of Staff."
+  },
+  {
+   "i": "book-iv-title-xi-sec-15",
+   "f": "working arrange- i ments or",
+   "t": "working arrangements or"
+  },
+  {
+   "i": "book-iv-title-xi-sec-15",
+   "f": "aimed at } ensuring",
+   "t": "aimed at ensuring"
+  },
+  {
+   "i": "book-v-title-i-subtitle-a-sec-12",
+   "f": "Such decisions,-orders, or",
+   "t": "Such decisions, orders, or"
+  },
+  {
+   "i": "book-v-title-i-subtitle-a-sec-13",
+   "f": "Subject'to policies",
+   "t": "Subject to policies"
+  },
+  {
+   "i": "book-v-title-i-subtitle-b-sec-10",
+   "f": "the pro-aulee of",
+   "t": "the promulgation of"
+  },
+  {
+   "i": "book-v-title-i-subtitle-c-sec-3",
+   "f": "effective enforce-nent of",
+   "t": "effective enforcement of"
+  },
+  {
+   "i": "book-v-title-i-subtitle-a-sec-26",
+   "f": "(5) Reemployment,—Names",
+   "t": "(5) Reemployment.—Names"
+  },
+  {
+   "i": "section-2",
+   "f": "(14) “Officer\"-—as",
+   "t": "(14) “Officer”—as"
+  },
+  {
+   "i": "book-iv-title-i-sec-5",
+   "f": "(1) Foreign.Service Institute.—The",
+   "t": "(1) Foreign Service Institute.—The"
+  },
+  {
+   "i": "book-iv-title-viii-sec-54",
+   "f": "Guard shall.remain as",
+   "t": "Guard shall remain as"
+  },
+  {
+   "i": "book-v-title-i-subtitle-a-sec-9",
+   "f": "staff (s);",
+   "t": "staff(s);"
+  },
+  {
+   "i": "book-iv-title-xi-sec-20",
+   "f": "program/project implemei:tation;",
+   "t": "program/project implementation;"
+  },
+  {
+   "i": "book-ii-sec-18",
+   "f": "the Rule -ourt may provide",
+   "t": "the Rules of Court may provide"
+  },
+  {
+   "i": "book-ii-sec-18",
+   "f": "in which th constitutionality or validity of any treaty ternat scutive agreement",
+   "t": "in which the constitutionality or validity of any treaty, international or executive agreement"
+  },
+  {
+   "i": "book-ii-sec-18",
+   "f": "(b) All cases in ng ity of any tax, impost, assessment, or toll ANY ] y imposed",
+   "t": "(b) All cases involving the legality of any tax, impost, assessment, or toll, or any penalty imposed"
+  },
+  {
+   "i": "book-ii-sec-18",
+   "f": "(c) All cases who he jurisdiction",
+   "t": "(c) All cases in which the jurisdiction"
+  },
+  {
+   "i": "book-iv-ch-2-sec-7",
+   "f": ") (4) Promulgate",
+   "t": "(4) Promulgate"
+  },
+  {
+   "i": "book-iv-ch-2-sec-7",
+   "f": "NLD SSPESASSSESS—S CS SS itl and for proper",
+   "t": "and for proper"
+  },
+  {
+   "i": "book-iv-title-i-sec-29",
+   "f": "Policy.To enable",
+   "t": "To enable"
+  },
+  {
+   "i": "book-iv-title-i-sec-31",
+   "f": "Foreign Service Officer ! including",
+   "t": "Foreign Service Officer including"
+  },
+  {
+   "i": "book-iv-title-i-sec-31",
+   "f": "Head of Office.:",
+   "t": "Head of Office."
+  },
+  {
+   "i": "book-iv-title-ii-sec-24",
+   "f": "Enforcement and Security Service. ~ -",
+   "t": "Enforcement and Security Service."
+  },
+  {
+   "i": "book-iv-title-ii-sec-26",
+   "f": "appropriate functions —",
+   "t": "appropriate functions"
+  },
+  {
+   "i": "book-iv-title-ii-sec-26",
+   "f": "given -by the Commissioner",
+   "t": "given by the Commissioner"
+  },
+  {
+   "i": "book-iv-title-iv-sec-27",
+   "f": "113 ‘ living plants",
+   "t": "living plants"
+  },
+  {
+   "i": "book-iv-title-vi-sec-3",
+   "f": "international education; > if",
+   "t": "international education;"
+  },
+  {
+   "i": "book-iv-title-vii-sec-15",
+   "f": "148 ) programs",
+   "t": "programs"
+  },
+  {
+   "i": "book-iv-title-viii-sec-42",
+   "f": "basic | & services",
+   "t": "basic services"
+  },
+  {
+   "i": "book-iv-title-viii-sec-42",
+   "f": "his assignment. _(3) The",
+   "t": "his assignment.\n\n(3) The"
+  },
+  {
+   "i": "book-iv-title-viii-sec-45",
+   "f": "another Deputy Chief or Staff of General",
+   "t": "another Deputy Chief of Staff of General"
+  },
+  {
+   "i": "book-iv-title-viii-sec-62",
+   "f": "_ (8) Authority",
+   "t": "(3) Authority"
+  },
+  {
+   "i": "book-iv-title-viii-sec-62",
+   "f": "respective positions.:",
+   "t": "respective positions."
+  },
+  {
+   "i": "book-iv-title-x-sec-9",
+   "f": "and j investment..",
+   "t": "and investment."
+  },
+  {
+   "i": "book-iv-title-x-sec-11",
+   "f": "bonded manu-. _ facturing facilities",
+   "t": "bonded manufacturing facilities"
+  },
+  {
+   "i": "book-iv-title-xi-sec-20",
+   "f": "socio- } economic",
+   "t": "socio-economic"
+  },
+  {
+   "i": "book-iv-title-xii-sec-13",
+   "f": "{ focal development",
+   "t": "local development"
+  },
+  {
+   "i": "book-iv-title-xiii-sec-9",
+   "f": "disburse- ments",
+   "t": "disbursements"
+  },
+  {
+   "i": "book-iv-title-xvi-sec-11",
+   "f": "social ee, disorganization",
+   "t": "social disorganization"
+  },
+  {
+   "i": "book-iv-title-xvi-sec-11",
+   "f": "displaced persons;.",
+   "t": "displaced persons;"
+  },
+  {
+   "i": "book-iv-title-xviii-sec-12",
+   "f": "as follows: secretary of Agriculture",
+   "t": "as follows: Secretary of Agriculture"
+  },
+  {
+   "i": "book-iv-title-xviii-sec-12",
+   "f": "successors shall] have",
+   "t": "successors shall have"
+  },
+  {
+   "i": "book-v-title-i-subtitle-a-sec-7",
+   "f": "performing heb ema kegs or proprietary",
+   "t": "performing governmental or proprietary"
+  },
+  {
+   "i": "book-v-sec-65",
+   "f": "officers _ 80 liable",
+   "t": "officers so liable"
+  },
+  {
+   "i": "book-v-sec-66",
+   "f": "from the ) salary",
+   "t": "from the salary"
+  },
+  {
+   "i": "book-v-title-i-subtitle-b-sec-2",
+   "f": "context ~ otherwise",
+   "t": "context otherwise"
+  },
+  {
+   "i": "book-v-title-i-subtitle-b-sec-19",
+   "f": "$I TTT, channels",
+   "t": "channels"
+  },
+  {
+   "i": "book-v-title-i-subtitle-b-sec-23",
+   "f": "any other ) government",
+   "t": "any other government"
+  },
+  {
+   "i": "book-v-title-i-subtitle-c-sec-6",
+   "f": "the Rules ies ~ of Court",
+   "t": "the Rules of Court"
+  },
+  {
+   "i": "book-v-title-ii-subtitle-b-sec-2",
+   "f": "as well as. of",
+   "t": "as well as of"
+  },
+  {
+   "i": "book-v-title-ii-subtitle-b-sec-2",
+   "f": "in the. discharge",
+   "t": "in the discharge"
+  },
+  {
+   "i": "book-v-title-ii-sec-12",
+   "f": "The Dire¢tor General",
+   "t": "The Director-General"
+  },
+  {
+   "i": "book-vi-sec-2",
+   "f": "Constitutional * Commission.",
+   "t": "Constitutional Commission."
+  },
+  {
+   "i": "book-vi-sec-12",
+   "f": "Proposed ap- Propriations",
+   "t": "Proposed appropriations"
+  },
+  {
+   "i": "book-vi-sec-33",
+   "f": "Authorized aperepe shots shall",
+   "t": "Authorized appropriations shall"
+  },
+  {
+   "i": "book-iv-title-viii-sec-40",
+   "f": "those plans; - (4) Prepare integrated plans for military mobilization;",
+   "t": "those plans;\n\n(4) Prepare integrated plans for military mobilization;"
+  },
+  {
+   "i": "book-iv-title-xi-sec-13",
+   "f": "relation thereto;. - (5) Provide legal information and prepare materials for publication;",
+   "t": "relation thereto;\n\n(5) Provide legal information and prepare materials for publication;"
+  },
+  {
+   "i": "book-iv-title-xvi-sec-3",
+   "f": "providing disaster; relief; i",
+   "t": "providing disaster relief;"
+  },
+  {
+   "i": "book-iv-title-xvi-sec-3",
+   "f": "the disabled,; the aging",
+   "t": "the disabled, the aging"
+  },
+  {
+   "i": "book-iv-title-viii-sec-14",
+   "f": "National Security; Director",
+   "t": "National Security Director"
+  },
+  {
+   "i": "book-iv-title-viii-sec-14",
+   "f": "for. consideration.",
+   "t": "for consideration."
+  },
+  {
+   "i": "book-iv-title-x-sec-2",
+   "f": "(d) policies: to protect",
+   "t": "(d) policies to protect"
+  },
+  {
+   "i": "book-iv-title-xi-sec-12",
+   "f": "procurement: services",
+   "t": "procurement services"
+  },
+  {
+   "i": "book-iv-title-vii-sec-13",
+   "f": "administrative. bodies",
+   "t": "administrative bodies"
+  },
+  {
+   "i": "book-iv-title-ix-sec-18",
+   "f": "following functions::",
+   "t": "following functions:"
+  },
+  {
+   "i": "book-iv-title-xiv-sec-14",
+   "f": "to the: regional field office..",
+   "t": "to the regional field office."
+  },
+  {
+   "i": "book-iv-title-iii-sec-31",
+   "f": "headed by a Commissioner assisted appointed by the President upon the recommendation of two Associate Commissioners, all of whom shall be the Secretary.",
+   "t": "headed by a Commissioner assisted by two Associate Commissioners, all of whom shall be appointed by the President upon the recommendation of the Secretary.",
+   "why": "Your printed copy has two lines out of order in this sentence (“…assisted / appointed by the President upon the recommendation of two / Associate Commissioners, all of whom shall be the / Secretary”); the sentence is restored to its evident order, which is also how the LawPhil text reads."
+  },
+  {
+   "i": "book-ii-sec-19",
+   "f": "undermines the security of its Members",
+   "t": "undermines the security of tenure of its Members",
+   "why": "Your printed copy reads “the security of its Members”, dropping “tenure of”. The LawPhil text and the identical sentence in Article VIII, Section 2 of the 1987 Constitution read “the security of tenure of its Members”."
+  },
+  {
+   "i": "book-iv-ch-10-sec-46",
+   "f": "upon the nomination of the Department concerned",
+   "t": "upon the nomination of the Secretary of the Department concerned",
+   "why": "Your printed copy reads “upon the nomination of the Department concerned”; the LawPhil text reads “of the Secretary of the Department concerned”, which is the sense of the rule (a department nominates through its Secretary). Read your copy with this in mind."
+  },
+  {
+   "i": "book-iv-title-iv-sec-23",
+   "f": "nonagricultural cooperatives par. c; Proposed Amendment to Exec. Order No. 116 (1987)",
+   "t": "nonagricultural cooperatives.",
+   "why": "Your printed copy adds a bracketed reference after this sentence (“par. c; Proposed Amendment to Exec. Order No. 116 (1987)”). It is the publisher’s annotation, not text of the Code, and is left out of the text."
+  },
+  {
+   "i": "book-iv-title-xi-sec-11",
+   "f": "Service.—The Finance",
+   "t": "The Finance"
+  },
+  {
+   "i": "section-2",
+   "f": "specific ‘constitutional policies",
+   "t": "specific constitutional policies"
+  },
+  {
+   "i": "book-i-sec-24",
+   "f": "There ‘shall be",
+   "t": "There shall be"
+  },
+  {
+   "i": "book-iii-sec-13",
+   "f": "shall direct. the",
+   "t": "shall direct the"
+  },
+  {
+   "i": "book-iii-sec-14",
+   "f": "by such. proclamation",
+   "t": "by such proclamation"
+  },
+  {
+   "i": "book-iv-ch-6-sec-31",
+   "f": "required by: law",
+   "t": "required by law"
+  },
+  {
+   "i": "book-iv-ch-6-sec-31",
+   "f": "to his. duties,",
+   "t": "to his duties,"
+  },
+  {
+   "i": "book-iv-ch-6-sec-33",
+   "f": "absence or. disability",
+   "t": "absence or disability"
+  },
+  {
+   "i": "book-iv-ch-7-sec-38",
+   "f": "and program. coordination.",
+   "t": "and program coordination."
+  },
+  {
+   "i": "book-iv-ch-7-sec-38",
+   "f": "a system. of",
+   "t": "a system of"
+  },
+  {
+   "i": "book-iv-ch-10-sec-49",
+   "f": "excess ‘positions in",
+   "t": "excess positions in"
+  },
+  {
+   "i": "book-iv-ch-13-sec-64",
+   "f": "the conduct; of",
+   "t": "the conduct of"
+  },
+  {
+   "i": "book-iv-title-i-sec-3",
+   "f": "(ASEAN), and. other",
+   "t": "(ASEAN), and other"
+  },
+  {
+   "i": "book-iv-title-i-sec-7",
+   "f": "The Secretary. shall",
+   "t": "The Secretary shall"
+  },
+  {
+   "i": "book-iv-title-i-sec-41",
+   "f": "President upon. the",
+   "t": "President upon the"
+  },
+  {
+   "i": "book-iv-title-i-sec-48",
+   "f": "the holder: issued",
+   "t": "the holder issued"
+  },
+  {
+   "i": "book-iv-title-i-sec-50",
+   "f": "the court’ or",
+   "t": "the court or"
+  },
+  {
+   "i": "book-iv-title-i-sec-55",
+   "f": "the household: effects",
+   "t": "the household effects"
+  },
+  {
+   "i": "book-iv-title-iii-sec-3",
+   "f": "mandate, ‘the Department",
+   "t": "mandate, the Department"
+  },
+  {
+   "i": "book-iv-title-iii-sec-12",
+   "f": "Investigation, Technical,. Administrative",
+   "t": "Investigation, Technical, Administrative"
+  },
+  {
+   "i": "book-iv-title-iii-sec-31",
+   "f": "to the: provisions",
+   "t": "to the provisions"
+  },
+  {
+   "i": "book-iv-title-iii-sec-31",
+   "f": "as amended.; Subject",
+   "t": "as amended. Subject"
+  },
+  {
+   "i": "book-iv-title-iii-sec-35",
+   "f": "powers and; functions:",
+   "t": "powers and functions:"
+  },
+  {
+   "i": "book-iv-title-iii-sec-35",
+   "f": "be conducted: outside",
+   "t": "be conducted outside"
+  },
+  {
+   "i": "book-iv-title-iii-sec-35",
+   "f": "his intervention; is",
+   "t": "his intervention is"
+  },
+  {
+   "i": "book-iv-title-iii-sec-35",
+   "f": "public domain. and",
+   "t": "public domain and"
+  },
+  {
+   "i": "book-iv-title-iii-sec-35",
+   "f": "rules and: guidelines",
+   "t": "rules and guidelines"
+  },
+  {
+   "i": "book-iv-title-iii-sec-35",
+   "f": "provincial or; city",
+   "t": "provincial or city"
+  },
+  {
+   "i": "book-iv-title-iv-sec-2",
+   "f": "Department ‘are formulated",
+   "t": "Department are formulated"
+  },
+  {
+   "i": "book-iv-title-iv-sec-3",
+   "f": "systems to. serveé",
+   "t": "systems to serveé"
+  },
+  {
+   "i": "book-iv-title-iv-sec-3",
+   "f": "effective extension. services",
+   "t": "effective extension services"
+  },
+  {
+   "i": "book-iv-title-iv-sec-3",
+   "f": "and ‘development of",
+   "t": "and development of"
+  },
+  {
+   "i": "book-iv-title-iv-sec-7",
+   "f": "and cultural. community",
+   "t": "and cultural community"
+  },
+  {
+   "i": "book-iv-title-iv-sec-18",
+   "f": "as the. proper",
+   "t": "as the proper"
+  },
+  {
+   "i": "book-iv-title-iv-sec-25",
+   "f": "training and. extension",
+   "t": "training and extension"
+  },
+  {
+   "i": "book-iv-title-iv-sec-28",
+   "f": "the Department. who",
+   "t": "the Department who"
+  },
+  {
+   "i": "book-iv-title-iv-sec-36",
+   "f": "where the. same",
+   "t": "where the same"
+  },
+  {
+   "i": "book-iv-title-iv-sec-36",
+   "f": "unloading or; embarkation",
+   "t": "unloading or embarkation"
+  },
+  {
+   "i": "book-iv-title-iv-sec-36",
+   "f": "carrier carrying: the",
+   "t": "carrier carrying the"
+  },
+  {
+   "i": "book-iv-title-v-sec-9",
+   "f": "repository of; statistics",
+   "t": "repository of statistics"
+  },
+  {
+   "i": "book-iv-title-v-sec-11",
+   "f": "pursue formal. budget",
+   "t": "pursue formal budget"
+  },
+  {
+   "i": "book-iv-title-v-sec-15",
+   "f": "works and: highways;",
+   "t": "works and highways;"
+  },
+  {
+   "i": "book-iv-title-v-sec-23",
+   "f": "district operations: including",
+   "t": "district operations including"
+  },
+  {
+   "i": "book-iv-title-vi-sec-7",
+   "f": "assistance, information,. records,",
+   "t": "assistance, information, records,"
+  },
+  {
+   "i": "book-iv-title-vi-sec-7",
+   "f": "of technical. staff",
+   "t": "of technical staff"
+  },
+  {
+   "i": "book-iv-title-vi-sec-24",
+   "f": "(40) weeks; for",
+   "t": "(40) weeks for"
+  },
+  {
+   "i": "book-iv-title-vi-sec-28",
+   "f": "to public: censure",
+   "t": "to public censure"
+  },
+  {
+   "i": "book-iv-title-vi-sec-28",
+   "f": "join or. participate",
+   "t": "join or participate"
+  },
+  {
+   "i": "book-iv-title-vii-sec-12",
+   "f": "for providing; the",
+   "t": "for providing the"
+  },
+  {
+   "i": "book-iv-title-vii-sec-13",
+   "f": "Officers and; employees;",
+   "t": "Officers and employees;"
+  },
+  {
+   "i": "book-iv-title-vii-sec-22",
+   "f": "the conduct. of",
+   "t": "the conduct of"
+  },
+  {
+   "i": "book-iv-title-vii-sec-22",
+   "f": "“methodologies for",
+   "t": "methodologies for"
+  },
+  {
+   "i": "book-iv-title-vii-sec-23",
+   "f": "Conciliators-Mediators and. all",
+   "t": "Conciliators-Mediators and all"
+  },
+  {
+   "i": "book-iv-title-vii-sec-23",
+   "f": "with as. many",
+   "t": "with as many"
+  },
+  {
+   "i": "book-iv-title-viii-sec-12",
+   "f": "the President.,",
+   "t": "the President."
+  },
+  {
+   "i": "book-iv-title-viii-sec-22",
+   "f": "shall be. composed",
+   "t": "shall be composed"
+  },
+  {
+   "i": "book-iv-title-viii-sec-23",
+   "f": "Personal Staff: as",
+   "t": "Personal Staff as"
+  },
+  {
+   "i": "book-iv-title-viii-sec-29",
+   "f": "responsibilities of. civil",
+   "t": "responsibilities of civil"
+  },
+  {
+   "i": "book-iv-title-viii-sec-33",
+   "f": "Perform such’ other",
+   "t": "Perform such other"
+  },
+  {
+   "i": "book-iv-title-viii-sec-35",
+   "f": "and ‘commands of",
+   "t": "and commands of"
+  },
+  {
+   "i": "book-iv-title-viii-sec-37",
+   "f": "Armed Force. may",
+   "t": "Armed Force may"
+  },
+  {
+   "i": "book-iv-title-viii-sec-42",
+   "f": "may extend. such",
+   "t": "may extend such"
+  },
+  {
+   "i": "book-iv-title-viii-sec-55",
+   "f": "organized, trained. and",
+   "t": "organized, trained and"
+  },
+  {
+   "i": "book-iv-title-viii-sec-56",
+   "f": "be provided; by",
+   "t": "be provided by"
+  },
+  {
+   "i": "book-iv-title-viii-sec-57",
+   "f": "have police. jurisdiction",
+   "t": "have police jurisdiction"
+  },
+  {
+   "i": "book-iv-title-viii-sec-58",
+   "f": "who satisfactorily. complete",
+   "t": "who satisfactorily complete"
+  },
+  {
+   "i": "book-iv-title-viii-sec-60",
+   "f": "the various: academic",
+   "t": "the various academic"
+  },
+  {
+   "i": "book-iv-title-viii-sec-65",
+   "f": "shall be: the",
+   "t": "shall be the"
+  },
+  {
+   "i": "book-iv-title-viii-sec-69",
+   "f": "people of. the",
+   "t": "people of the"
+  },
+  {
+   "i": "book-iv-title-ix-sec-1",
+   "f": "appropriate health. manpower",
+   "t": "appropriate health manpower"
+  },
+  {
+   "i": "book-iv-title-ix-sec-10",
+   "f": "Service which; shall",
+   "t": "Service which shall"
+  },
+  {
+   "i": "book-iv-title-ix-sec-12",
+   "f": "disbursement, security,; custodial",
+   "t": "disbursement, security, custodial"
+  },
+  {
+   "i": "book-iv-title-ix-sec-18",
+   "f": "and for. providing",
+   "t": "and for providing"
+  },
+  {
+   "i": "book-iv-title-ix-sec-20",
+   "f": "Chief of. the",
+   "t": "Chief of the"
+  },
+  {
+   "i": "book-iv-title-x-sec-2",
+   "f": "promotive, facilitative. and",
+   "t": "promotive, facilitative and"
+  },
+  {
+   "i": "book-iv-title-x-sec-2",
+   "f": "It shall. promote",
+   "t": "It shall promote"
+  },
+  {
+   "i": "book-iv-title-x-sec-3",
+   "f": "such rules. and",
+   "t": "such rules and"
+  },
+  {
+   "i": "book-iv-title-x-sec-3",
+   "f": "Official Gazette., and",
+   "t": "Official Gazette; and"
+  },
+  {
+   "i": "book-iv-title-x-sec-5",
+   "f": "the Department's’ public",
+   "t": "the Department's public"
+  },
+  {
+   "i": "book-iv-title-x-sec-9",
+   "f": "and which; perform",
+   "t": "and which perform"
+  },
+  {
+   "i": "book-iv-title-x-sec-10",
+   "f": "products under: examination",
+   "t": "products under examination"
+  },
+  {
+   "i": "book-iv-title-x-sec-11",
+   "f": "regulatory, and. service",
+   "t": "regulatory, and service"
+  },
+  {
+   "i": "book-iv-title-x-sec-11",
+   "f": "plans, ‘and projects",
+   "t": "plans, and projects"
+  },
+  {
+   "i": "book-iv-title-x-sec-11",
+   "f": "promotion, ‘and expansion",
+   "t": "promotion, and expansion"
+  },
+  {
+   "i": "book-iv-title-x-sec-11",
+   "f": "products; prepare’ situation",
+   "t": "products; prepare situation"
+  },
+  {
+   "i": "book-iv-title-x-sec-11",
+   "f": "of such;. promote",
+   "t": "of such; promote"
+  },
+  {
+   "i": "book-iv-title-x-sec-12",
+   "f": "formulation and: implementation",
+   "t": "formulation and implementation"
+  },
+  {
+   "i": "book-iv-title-x-sec-12",
+   "f": "and submit. recommendations",
+   "t": "and submit recommendations"
+  },
+  {
+   "i": "book-iv-title-x-sec-13",
+   "f": "Department policies,. rigorous",
+   "t": "Department policies, rigorous"
+  },
+  {
+   "i": "book-iv-title-xi-sec-1",
+   "f": "and management. of",
+   "t": "and management of"
+  },
+  {
+   "i": "book-iv-title-xi-sec-3",
+   "f": "of government. policies",
+   "t": "of government policies"
+  },
+  {
+   "i": "book-iv-title-xi-sec-4",
+   "f": "Department shall; consist",
+   "t": "Department shall consist"
+  },
+  {
+   "i": "book-iv-title-xi-sec-10",
+   "f": "plans and; programs",
+   "t": "plans and programs"
+  },
+  {
+   "i": "book-iv-title-xi-sec-10",
+   "f": "by Bureaus,\" services,",
+   "t": "by Bureaus, services,"
+  },
+  {
+   "i": "book-iv-title-xi-sec-10",
+   "f": "support fund: releases",
+   "t": "support fund releases"
+  },
+  {
+   "i": "book-iv-title-xi-sec-12",
+   "f": "and guidelines. on",
+   "t": "and guidelines on"
+  },
+  {
+   "i": "book-iv-title-xi-sec-12",
+   "f": "Secretary may; assign.",
+   "t": "Secretary may assign."
+  },
+  {
+   "i": "book-iv-title-xi-sec-13",
+   "f": "for the. effective",
+   "t": "for the effective"
+  },
+  {
+   "i": "book-iv-title-xi-sec-15",
+   "f": "and distribution; of",
+   "t": "and distribution of"
+  },
+  {
+   "i": "book-iv-title-xi-sec-15",
+   "f": "for affected: landowners;",
+   "t": "for affected landowners;"
+  },
+  {
+   "i": "book-iv-title-xi-sec-17",
+   "f": "participation of. agrarian",
+   "t": "participation of agrarian"
+  },
+  {
+   "i": "book-iv-title-xi-sec-18",
+   "f": "Regional level. through",
+   "t": "Regional level through"
+  },
+  {
+   "i": "book-iv-title-xi-sec-19",
+   "f": "farming, agro-industrial. estates",
+   "t": "farming, agro-industrial estates"
+  },
+  {
+   "i": "book-iv-title-xi-sec-20",
+   "f": "of landownership; to",
+   "t": "of landownership to"
+  },
+  {
+   "i": "book-iv-title-xi-sec-20",
+   "f": "farmer-landowner’s identification,, i",
+   "t": "farmer-landowner’s identification, i"
+  },
+  {
+   "i": "book-iv-title-xi-sec-20",
+   "f": "development of; agrarian",
+   "t": "development of agrarian"
+  },
+  {
+   "i": "book-iv-title-xi-sec-20",
+   "f": "the registration: of",
+   "t": "the registration of"
+  },
+  {
+   "i": "book-iv-title-xii-sec-4",
+   "f": "Department, shall; be",
+   "t": "Department, shall be"
+  },
+  {
+   "i": "book-iv-title-xii-sec-13",
+   "f": "enhance the: administrative,",
+   "t": "enhance the administrative,"
+  },
+  {
+   "i": "book-iv-title-xii-sec-19",
+   "f": "shall be; transferred",
+   "t": "shall be transferred"
+  },
+  {
+   "i": "book-iv-title-xiii-sec-3",
+   "f": "and promotional: in",
+   "t": "and promotional in"
+  },
+  {
+   "i": "book-iv-title-xiii-sec-11",
+   "f": "in character,. each",
+   "t": "in character, each"
+  },
+  {
+   "i": "book-iv-title-xiii-sec-12",
+   "f": "tours to. increase",
+   "t": "tours to increase"
+  },
+  {
+   "i": "book-iv-title-xiii-sec-16",
+   "f": "for the. continuing",
+   "t": "for the continuing"
+  },
+  {
+   "i": "book-iv-title-xiii-sec-19",
+   "f": "and promotional; programs",
+   "t": "and promotional programs"
+  },
+  {
+   "i": "book-iv-title-xiii-sec-20",
+   "f": "in each. of",
+   "t": "in each of"
+  },
+  {
+   "i": "book-iv-title-xiii-sec-20",
+   "f": "under the. immediate",
+   "t": "under the immediate"
+  },
+  {
+   "i": "book-iv-title-xiv-sec-3",
+   "f": "use and: systematic",
+   "t": "use and systematic"
+  },
+  {
+   "i": "book-iv-title-xiv-sec-4",
+   "f": "regulation as. provided",
+   "t": "regulation as provided"
+  },
+  {
+   "i": "book-iv-title-xiv-sec-8",
+   "f": "proper use: of",
+   "t": "proper use of"
+  },
+  {
+   "i": "book-iv-title-xiv-sec-8",
+   "f": "in accordance; with",
+   "t": "in accordance with"
+  },
+  {
+   "i": "book-iv-title-xiv-sec-8",
+   "f": "be provided: by",
+   "t": "be provided by"
+  },
+  {
+   "i": "book-iv-title-xiv-sec-14",
+   "f": "forest plantations,, including",
+   "t": "forest plantations, including"
+  },
+  {
+   "i": "book-iv-title-xiv-sec-14",
+   "f": "and exploitation; of",
+   "t": "and exploitation of"
+  },
+  {
+   "i": "book-iv-title-xiv-sec-14",
+   "f": "to promote. the",
+   "t": "to promote the"
+  },
+  {
+   "i": "book-iv-title-xiv-sec-16",
+   "f": "Board which. are",
+   "t": "Board which are"
+  },
+  {
+   "i": "book-iv-title-xiv-sec-16",
+   "f": "of the. sea",
+   "t": "of the sea"
+  },
+  {
+   "i": "book-iv-title-xiv-sec-18",
+   "f": "of Philippine. ecosystems",
+   "t": "of Philippine ecosystems"
+  },
+  {
+   "i": "book-iv-title-xiv-sec-21",
+   "f": "(1) each. for",
+   "t": "(1) each for"
+  },
+  {
+   "i": "book-iv-title-xv-sec-1",
+   "f": "and communications. systems",
+   "t": "and communications systems"
+  },
+  {
+   "i": "book-iv-title-xv-sec-2",
+   "f": "of the; government",
+   "t": "of the government"
+  },
+  {
+   "i": "book-iv-title-xv-sec-2",
+   "f": "of transportation: and",
+   "t": "of transportation and"
+  },
+  {
+   "i": "book-iv-title-xv-sec-3",
+   "f": "implementation of; integrated",
+   "t": "implementation of integrated"
+  },
+  {
+   "i": "book-iv-title-xv-sec-3",
+   "f": "integrated programs. for",
+   "t": "integrated programs for"
+  },
+  {
+   "i": "book-iv-title-xv-sec-3",
+   "f": "public or. private,",
+   "t": "public or private,"
+  },
+  {
+   "i": "book-iv-title-xv-sec-3",
+   "f": "in cases. where",
+   "t": "in cases where"
+  },
+  {
+   "i": "book-iv-title-xv-sec-5",
+   "f": "Investigation, Security. and",
+   "t": "Investigation, Security and"
+  },
+  {
+   "i": "book-iv-title-xvi-sec-2",
+   "f": "and measures. addressing",
+   "t": "and measures addressing"
+  },
+  {
+   "i": "book-iv-title-xvi-sec-3",
+   "f": "strengthen people’s; organizations",
+   "t": "strengthen people’s organizations"
+  },
+  {
+   "i": "book-iv-title-xvi-sec-4",
+   "f": "The Department,. aside",
+   "t": "The Department, aside"
+  },
+  {
+   "i": "book-iv-title-xvi-sec-11",
+   "f": "or exploited; children",
+   "t": "or exploited children"
+  },
+  {
+   "i": "book-iv-title-xvi-sec-12",
+   "f": "is hereby: authorized",
+   "t": "is hereby authorized"
+  },
+  {
+   "i": "book-iv-title-xvi-sec-16",
+   "f": "Department is. hereby",
+   "t": "Department is hereby"
+  },
+  {
+   "i": "book-iv-title-xvi-sec-16",
+   "f": "appropriate department/agency; units",
+   "t": "appropriate department/agency units"
+  },
+  {
+   "i": "book-iv-title-xvi-sec-16",
+   "f": "units, and: communicate",
+   "t": "units, and communicate"
+  },
+  {
+   "i": "book-iv-title-xvi-sec-17",
+   "f": "over field. operations",
+   "t": "over field operations"
+  },
+  {
+   "i": "book-iv-title-xvi-sec-17",
+   "f": "authority to. recommend",
+   "t": "authority to recommend"
+  },
+  {
+   "i": "book-iv-title-xvi-sec-24",
+   "f": "social work: record",
+   "t": "social work record"
+  },
+  {
+   "i": "book-iv-title-xvi-sec-25",
+   "f": "it unfit: for",
+   "t": "it unfit for"
+  },
+  {
+   "i": "book-iv-title-xvii-sec-10",
+   "f": "for budget. preparation",
+   "t": "for budget preparation"
+  },
+  {
+   "i": "book-iv-title-xvii-sec-10",
+   "f": "work and; financial",
+   "t": "work and financial"
+  },
+  {
+   "i": "book-iv-title-xviii-sec-16",
+   "f": "Technology Information’ Institute;",
+   "t": "Technology Information Institute;"
+  },
+  {
+   "i": "book-v-title-i-subtitle-a-sec-9",
+   "f": "or confidential. staff;",
+   "t": "or confidential staff;"
+  },
+  {
+   "i": "book-v-title-i-subtitle-a-sec-12",
+   "f": "“personnel programs;",
+   "t": "personnel programs;"
+  },
+  {
+   "i": "book-v-title-i-subtitle-a-sec-16",
+   "f": "development; administer. service-wide",
+   "t": "development; administer service-wide"
+  },
+  {
+   "i": "book-v-title-i-subtitle-a-sec-16",
+   "f": "settlement 'of employee",
+   "t": "settlement of employee"
+  },
+  {
+   "i": "book-v-title-i-subtitle-a-sec-18",
+   "f": "the Department. concerned",
+   "t": "the Department concerned"
+  },
+  {
+   "i": "book-v-title-i-subtitle-a-sec-26",
+   "f": "his case’ to",
+   "t": "his case to"
+  },
+  {
+   "i": "book-v-title-i-subtitle-a-sec-35",
+   "f": "which shall. be",
+   "t": "which shall be"
+  },
+  {
+   "i": "book-v-title-i-subtitle-a-sec-46",
+   "f": "teachers or. school",
+   "t": "teachers or school"
+  },
+  {
+   "i": "book-v-title-i-subtitle-a-sec-48",
+   "f": "services of: counsel",
+   "t": "services of counsel"
+  },
+  {
+   "i": "book-v-title-i-subtitle-a-sec-48",
+   "f": "duces tecum.,",
+   "t": "duces tecum."
+  },
+  {
+   "i": "book-v-title-i-subtitle-a-sec-54",
+   "f": "or any; subdivision,",
+   "t": "or any subdivision,"
+  },
+  {
+   "i": "book-v-sec-61",
+   "f": "its exclusive. control.",
+   "t": "its exclusive control."
+  },
+  {
+   "i": "book-v-sec-61",
+   "f": "committees, special’ examiners",
+   "t": "committees, special examiners"
+  },
+  {
+   "i": "book-v-title-i-subtitle-b-sec-4",
+   "f": "the following. duties:",
+   "t": "the following duties:"
+  },
+  {
+   "i": "book-v-title-i-subtitle-b-sec-4",
+   "f": "or accounts. of",
+   "t": "or accounts of"
+  },
+  {
+   "i": "book-v-title-i-subtitle-b-sec-6",
+   "f": "the Commission. proper;",
+   "t": "the Commission proper;"
+  },
+  {
+   "i": "book-v-title-i-subtitle-b-sec-7",
+   "f": "\"respect to",
+   "t": "respect to"
+  },
+  {
+   "i": "book-v-title-i-subtitle-b-sec-7",
+   "f": "Prepare and. implement",
+   "t": "Prepare and implement"
+  },
+  {
+   "i": "book-v-title-i-subtitle-b-sec-7",
+   "f": "Commission, evaluate. and",
+   "t": "Commission, evaluate and"
+  },
+  {
+   "i": "book-v-title-i-subtitle-b-sec-17",
+   "f": "undertake the. study",
+   "t": "undertake the study"
+  },
+  {
+   "i": "book-v-title-i-subtitle-b-sec-20",
+   "f": "the remittances” to,",
+   "t": "the remittances to,"
+  },
+  {
+   "i": "book-v-title-i-subtitle-b-sec-23",
+   "f": "shall be’ a",
+   "t": "shall be a"
+  },
+  {
+   "i": "book-v-title-i-subtitle-b-sec-26",
+   "f": "or subsidiary. statements",
+   "t": "or subsidiary statements"
+  },
+  {
+   "i": "book-v-title-i-subtitle-b-sec-28",
+   "f": "with respect. thereto",
+   "t": "with respect thereto"
+  },
+  {
+   "i": "book-v-title-i-subtitle-b-sec-32",
+   "f": "not to. dispose",
+   "t": "not to dispose"
+  },
+  {
+   "i": "book-v-title-i-subtitle-b-sec-32",
+   "f": "said ‘accountable officer",
+   "t": "said accountable officer"
+  },
+  {
+   "i": "book-v-title-i-subtitle-c-sec-2",
+   "f": "election, to’ be",
+   "t": "election, to be"
+  },
+  {
+   "i": "book-v-title-i-subtitle-c-sec-12",
+   "f": "assistant regional. director,",
+   "t": "assistant regional director,"
+  },
+  {
+   "i": "book-vi-sec-3",
+   "f": "operations are; conducted",
+   "t": "operations are conducted"
+  },
+  {
+   "i": "book-vi-sec-31",
+   "f": "in addition. to",
+   "t": "in addition to"
+  },
+  {
+   "i": "book-vi-sec-37",
+   "f": "deficiency appropriations.: The",
+   "t": "deficiency appropriations. The"
+  },
+  {
+   "i": "book-vi-sec-49",
+   "f": "be approved. by",
+   "t": "be approved by"
+  },
+  {
+   "i": "book-vi-sec-49",
+   "f": "including burial: expenses",
+   "t": "including burial expenses"
+  },
+  {
+   "i": "book-vi-sec-52",
+   "f": "the Department. of",
+   "t": "the Department of"
+  },
+  {
+   "i": "book-vi-sec-54",
+   "f": "costs shall: be",
+   "t": "costs shall be"
+  },
+  {
+   "i": "book-vi-sec-58",
+   "f": "be for. specific",
+   "t": "be for specific"
+  },
+  {
+   "i": "book-vi-sec-61",
+   "f": "of national: government",
+   "t": "of national government"
+  },
+  {
+   "i": "book-vi-sec-68",
+   "f": "are actually: assigned",
+   "t": "are actually assigned"
+  },
+  {
+   "i": "section-72",
+   "f": "controlled corporations. shall",
+   "t": "controlled corporations shall"
+  },
+  {
+   "i": "book-vii-sec-9",
+   "f": "If not. otherwise",
+   "t": "If not otherwise"
+  },
+  {
+   "i": "book-vii-sec-13",
+   "f": "In ‘any contested",
+   "t": "In any contested"
+  },
+  {
+   "i": "book-vii-sec-13",
+   "f": "and other; pertinent",
+   "t": "and other pertinent"
+  },
+  {
+   "i": "book-iv-title-iv-sec-3",
+   "f": "serveé",
+   "t": "serve"
+  },
+  {
+   "i": "book-i-sec-14",
+   "f": "eight minor - and lesser rays",
+   "t": "eight minor and lesser rays"
+  },
+  {
+   "i": "book-vi-sec-71",
+   "f": "He such official or employee shall be entitled",
+   "t": "such official or employee shall be entitled"
+  },
+  {
+   "i": "book-v-title-i-subtitle-b-sec-3",
+   "f": "Commissioners. it shall sit",
+   "t": "Commissioners. It shall sit"
+  },
+  {
+   "i": "book-v-title-i-subtitle-a-sec-7",
+   "f": "Merit systems;",
+   "t": "merit systems;"
+  },
+  {
+   "i": "book-iv-title-ix-sec-12",
+   "f": "Management information systems for improved",
+   "t": "management information systems for improved"
+  },
+  {
+   "i": "book-iv-title-iv-sec-27",
+   "f": "the term “plants shall refer to",
+   "t": "the term “plants” shall refer to"
+  },
+  {
+   "i": "book-iv-title-viii-sec-50",
+   "f": "Chief of Staff. _%",
+   "t": "Chief of Staff."
+  },
+  {
+   "i": "book-iv-title-x-sec-14",
+   "f": "in the region; é (4)",
+   "t": "in the region; (4)"
+  },
+  {
+   "i": "book-iv-title-xi-sec-11",
+   "f": "systems on ° the disposition",
+   "t": "systems on the disposition"
+  },
+  {
+   "i": "book-iv-title-xii-sec-19",
+   "f": "promulgate the é necessary",
+   "t": "promulgate the necessary"
+  },
+  {
+   "i": "book-ii-sec-9",
+   "f": "upon @& petition",
+   "t": "upon a petition"
+  },
+  {
+   "i": "book-iv-title-vii-sec-19",
+   "f": "(J) Assist rural workers",
+   "t": "(1) Assist rural workers"
+  },
+  {
+   "i": "book-iv-title-viii-sec-52",
+   "f": "The Philippine Navy ! shall",
+   "t": "The Philippine Navy shall"
+  },
+  {
+   "i": "book-iv-title-ii-sec-13",
+   "f": "or } Department-wide programs",
+   "t": "or Department-wide programs"
+  },
+  {
+   "i": "section-2",
+   "f": "{12) Chartered institution",
+   "t": "(12) Chartered institution"
+  },
+  {
+   "i": "book-iv-title-ii-sec-41",
+   "f": "the DOF- RACO as",
+   "t": "the DOF-RACO as"
+  },
+  {
+   "i": "book-iv-title-iii-sec-24",
+   "f": "Deputy Admin- istrator shall",
+   "t": "Deputy Administrator shall"
+  },
+  {
+   "i": "book-iv-title-x-sec-7",
+   "f": "the day-to- day administration",
+   "t": "the day-to-day administration"
+  },
+  {
+   "i": "book-iv-ch-13-sec-64",
+   "f": "department/agency/ implementing Office",
+   "t": "department/agency/implementing Office"
+  },
+  {
+   "i": "book-iv-ch-13-sec-64",
+   "f": "department/office/agency/ implementing office",
+   "t": "department/office/agency/implementing office"
+  },
+  {
+   "i": "book-iv-ch-13-sec-64",
+   "f": "office/agency/ implementing office",
+   "t": "office/agency/implementing office"
+  },
+  {
+   "i": "book-iv-ch-13-sec-64",
+   "f": "office/ implementing office",
+   "t": "office/implementing office"
+  },
+  {
+   "i": "book-iv-title-ii-sec-17",
+   "f": "clearance by the ee! ea, Sel and corruption",
+   "t": "clearance by the Secretary, anti-graft and corruption"
+  },
+  {
+   "i": "book-iv-title-xii-sec-13",
+   "f": "assistant projects; é",
+   "t": "assistant projects;"
+  },
+  {
+   "i": "book-iv-title-xiv-sec-4",
+   "f": "complementary technologies;, :",
+   "t": "complementary technologies;"
+  },
+  {
+   "i": "book-v-title-i-subtitle-a-sec-3",
+   "f": "“ terms and conditions",
+   "t": "terms and conditions"
+  },
+  {
+   "i": "book-i-sec-48",
+   "f": "is Sa teal by",
+   "t": "is authorized by"
+  },
+  {
+   "i": "book-v-title-i-subtitle-a-sec-21",
+   "f": "I. em actually available",
+   "t": "actually available"
+  },
+  {
+   "i": "book-v-title-i-subtitle-a-sec-21",
+   "f": "considered for promotion. -",
+   "t": "considered for promotion."
+  },
+  {
+   "i": "book-iv-title-ix-sec-17",
+   "f": "189 i their services",
+   "t": "their services"
+  },
+  {
+   "i": "book-iv-title-ix-sec-17",
+   "f": "Rizal Medical; Center",
+   "t": "Rizal Medical Center"
+  },
+  {
+   "i": "book-iv-ch-5-sec-26",
+   "f": "mn Coordinate with local",
+   "t": "(d) Coordinate with local"
+  },
+  {
+   "i": "book-iv-title-i-sec-50",
+   "f": "he deems i necessary",
+   "t": "he deems it necessary"
+  },
+  {
+   "i": "book-iv-title-ix-sec-13",
+   "f": "dental diseases i and dental",
+   "t": "dental diseases and dental"
+  },
+  {
+   "i": "book-iv-title-xi-sec-20",
+   "f": "identification, i leasehold",
+   "t": "identification, leasehold"
+  },
+  {
+   "i": "book-iii-sec-27",
+   "f": "over che various",
+   "t": "over the various"
+  },
+  {
+   "i": "book-iv-ch-7-sec-38",
+   "f": "department; ar the corporation",
+   "t": "department; and the corporation"
+  },
+  {
+   "i": "book-iv-ch-8-sec-40",
+   "f": "authority to al enable",
+   "t": "authority to enable"
+  },
+  {
+   "i": "book-iv-ch-8-sec-41",
+   "f": "of a ye department",
+   "t": "of a department"
+  },
+  {
+   "i": "book-iv-ch-8-sec-41",
+   "f": "responsible se for",
+   "t": "responsible for"
+  },
+  {
+   "i": "book-iv-ch-13-sec-60",
+   "f": "purely oo consultancy",
+   "t": "purely consultancy"
+  },
+  {
+   "i": "book-iv-title-i-sec-52",
+   "f": "Secretary ma prescribe",
+   "t": "Secretary may prescribe"
+  },
+  {
+   "i": "book-iv-title-ii-sec-29",
+   "f": "perform a ea functions",
+   "t": "perform banking functions"
+  },
+  {
+   "i": "book-iv-title-ii-sec-37",
+   "f": "programming sn line",
+   "t": "programming in line"
+  },
+  {
+   "i": "book-iv-title-ii-sec-37",
+   "f": "capital flows; ay",
+   "t": "capital flows;"
+  },
+  {
+   "i": "book-iv-title-iii-sec-25",
+   "f": "assistants na other",
+   "t": "assistants and other"
+  },
+  {
+   "i": "book-iv-title-iv-sec-4",
+   "f": "grouped Tr as follows",
+   "t": "grouped as follows"
+  },
+  {
+   "i": "book-iv-title-vii-sec-9",
+   "f": "programming, yi development",
+   "t": "programming, project development"
+  },
+  {
+   "i": "book-iv-title-viii-sec-61",
+   "f": "upon ail its",
+   "t": "upon all its"
+  },
+  {
+   "i": "book-iv-title-xii-sec-13",
+   "f": "standards ai technical",
+   "t": "standards and technical"
+  },
+  {
+   "i": "book-iv-title-xii-sec-13",
+   "f": "strategies af approaches",
+   "t": "strategies and approaches"
+  },
+  {
+   "i": "book-iv-title-xii-sec-13",
+   "f": "procedures an guidelines",
+   "t": "procedures and guidelines"
+  },
+  {
+   "i": "book-iv-title-xii-sec-13",
+   "f": "self-help assistant projects",
+   "t": "self-help assistance projects"
+  },
+  {
+   "i": "book-iv-title-xii-sec-13",
+   "f": "wholistic and integral framework",
+   "t": "wholistic and integrated framework"
+  },
+  {
+   "i": "book-iv-title-xiv-sec-4",
+   "f": "tending tq cause",
+   "t": "tending to cause"
+  },
+  {
+   "i": "book-iv-title-xiv-sec-7",
+   "f": "immediate Hl staff",
+   "t": "immediate staff"
+  },
+  {
+   "i": "book-iv-title-xv-sec-3",
+   "f": "airports nd railways",
+   "t": "airports and railways"
+  },
+  {
+   "i": "book-iv-title-xv-sec-14",
+   "f": "shall have il three",
+   "t": "shall have three"
+  },
+  {
+   "i": "book-iv-title-xv-sec-14",
+   "f": "front line qt services",
+   "t": "front line services"
+  },
+  {
+   "i": "book-iv-title-xvi-sec-25",
+   "f": "not ina financial",
+   "t": "not in a financial"
+  },
+  {
+   "i": "book-iv-title-xviii-sec-3",
+   "f": "and wee Perform",
+   "t": "and\n\n(11) Perform"
+  },
+  {
+   "i": "book-iv-title-xviii-sec-33",
+   "f": "otherwise Tt designed",
+   "t": "otherwise designed"
+  },
+  {
+   "i": "book-iv-title-xviii-sec-33",
+   "f": "effort tf and achievement. a",
+   "t": "effort and achievement."
+  },
+  {
+   "i": "section-75",
+   "f": "employee tv administrative",
+   "t": "employee to administrative"
+  },
+  {
+   "i": "book-iv-title-xviii-sec-27",
+   "f": "sufficient datu for",
+   "t": "sufficient data for"
+  },
+  {
+   "i": "book-v-title-i-subtitle-a-sec-15",
+   "f": "a, shall likewise",
+   "t": "They shall likewise"
+  },
+  {
+   "i": "book-v-title-i-subtitle-a-sec-49",
+   "f": "Appeals, were allowable",
+   "t": "Appeals, where allowable"
+  },
+  {
+   "i": "book-v-sec-67",
+   "f": "intentional mis-presentation",
+   "t": "intentional misrepresentation"
+  },
+  {
+   "i": "book-iv-title-xiii-sec-3",
+   "f": "removal of necessary barriers",
+   "t": "removal of unnecessary barriers"
+  },
+  {
+   "i": "book-iv-title-xiv-sec-15",
+   "f": "for the sufficient and effective",
+   "t": "for the efficient and effective"
+  },
+  {
+   "i": "book-iv-title-xi-sec-9",
+   "f": "cases and under legal opinions",
+   "t": "cases and render legal opinions"
+  },
+  {
+   "i": "book-iv-title-x-sec-11",
+   "f": "generated base on",
+   "t": "generated based on"
+  },
+  {
+   "i": "book-ii-sec-9",
+   "f": "total petition of registered",
+   "t": "total number of registered"
+  },
+  {
+   "i": "book-ii-sec-21",
+   "f": "Integrated Bar, 4 professor of law",
+   "t": "Integrated Bar, a professor of law"
+  },
+  {
+   "i": "book-ii-sec-28",
+   "f": "upon the filling of the last",
+   "t": "upon the filing of the last"
+  },
+  {
+   "i": "book-iv-ch-5-sec-24",
+   "f": "line bureau cocéred.",
+   "t": "line bureau concerned."
+  },
+  {
+   "i": "book-iv-ch-7-sec-38",
+   "f": "(ce) Government-owned",
+   "t": "(c) Government-owned"
+  },
+  {
+   "i": "book-iv-ch-7-sec-38",
+   "f": "the Secretar, concerned",
+   "t": "the Secretary concerned"
+  },
+  {
+   "i": "book-iv-ch-7-sec-38",
+   "f": "until the financeé statements",
+   "t": "until the financial statements"
+  },
+  {
+   "i": "book-iv-ch-7-sec-38",
+   "f": "Should an government-owned",
+   "t": "Should any government-owned"
+  },
+  {
+   "i": "book-iv-title-i-sec-12",
+   "f": "the entir@ Department",
+   "t": "the entire Department"
+  },
+  {
+   "i": "book-iv-title-i-sec-47",
+   "f": "Alier Employee",
+   "t": "Alien Employee"
+  },
+  {
+   "i": "book-iv-title-i-sec-49",
+   "f": "when hi natural",
+   "t": "when his natural"
+  },
+  {
+   "i": "book-iv-title-iii-sec-1",
+   "f": "State to previse the",
+   "t": "State to provide the"
+  },
+  {
+   "i": "book-iv-title-iii-sec-1",
+   "f": "land sect system",
+   "t": "land titling system"
+  },
+  {
+   "i": "book-iv-title-iii-sec-35",
+   "f": "law, execute order",
+   "t": "law, executive order"
+  },
+  {
+   "i": "book-iv-title-iv-sec-1",
+   "f": "applying moder farming",
+   "t": "applying modern farming"
+  },
+  {
+   "i": "book-iv-title-iv-sec-13",
+   "f": "responsible for — personnel",
+   "t": "responsible for providing personnel"
+  },
+  {
+   "i": "book-iv-title-iv-sec-26",
+   "f": "Department of Agricultural is",
+   "t": "Department of Agriculture is"
+  },
+  {
+   "i": "book-iv-title-vi-sec-7",
+   "f": "administer a personal program",
+   "t": "administer a personnel program"
+  },
+  {
+   "i": "book-iv-title-vi-sec-23",
+   "f": "declared in See. 7,",
+   "t": "declared in Sec. 7,"
+  },
+  {
+   "i": "book-iv-title-vii-sec-18",
+   "f": "shall project the welfare",
+   "t": "shall protect the welfare"
+  },
+  {
+   "i": "book-iv-title-viii-sec-5",
+   "f": "security and instability of the nation",
+   "t": "security and stability of the nation"
+  },
+  {
+   "i": "book-iv-title-ix-sec-9",
+   "f": "provided from line services",
+   "t": "provided front line services"
+  },
+  {
+   "i": "book-i-sec-50",
+   "f": "as Fall be",
+   "t": "as shall be"
+  },
+  {
+   "i": "book-iv-title-xi-sec-3",
+   "f": "land forming cooperative",
+   "t": "land farming, cooperative"
+  },
+  {
+   "i": "book-v-title-i-subtitle-b-sec-28",
+   "f": "349; stubs of treasury",
+   "t": "stubs of treasury"
+  },
+  {
+   "i": "book-ii-sec-29",
+   "f": "Other Bodies There shall be in accordance with the Constitution. 25 Office",
+   "t": "There shall be in accordance with the Constitution, an Office"
+  },
+  {
+   "i": "book-iii-sec-30",
+   "f": "President —Agencies under",
+   "t": "Agencies under"
+  },
+  {
+   "i": "book-iv-ch-4-sec-20",
+   "f": "Line Bureau._(1) A Line bureau",
+   "t": "(1) A Line bureau"
+  },
+  {
+   "i": "book-iv-ch-9-sec-42",
+   "f": "Government-Owned or Controlled Corpora- tons —Government-owned",
+   "t": "Government-owned"
+  },
+  {
+   "i": "book-iv-title-ii-sec-43",
+   "f": "Functions of the Attached ii agencies attached",
+   "t": "The agencies attached"
+  },
+  {
+   "i": "book-iv-title-iii-sec-25",
+   "f": "Applicability of P.D. No. 968 as amended.— The Provisions",
+   "t": "The Provisions"
+  },
+  {
+   "i": "book-v-title-i-subtitle-a-sec-44",
+   "f": "Sole and Exclusive Employees’ Representatives.— (1) The duly",
+   "t": "(1) The duly"
+  },
+  {
+   "i": "book-v-sec-66",
+   "f": "Liability of Disbursing Officers Except as",
+   "t": "Except as"
+  },
+  {
+   "i": "book-v-title-i-subtitle-b-sec-11",
+   "f": "General Jurisdiction._({1) The Commission",
+   "t": "(1) The Commission"
+  },
+  {
+   "i": "book-vi-sec-57",
+   "f": "Failure to Submit Reports Failure on the part",
+   "t": "Failure on the part"
+  },
+  {
+   "i": "book-vi-sec-58",
+   "f": "Contracting of Activities Agencies may",
+   "t": "Agencies may"
+  },
+  {
+   "i": "book-iv-title-xiii-sec-7",
+   "f": "headed by a Service Chief. [(1987), Sec. 14]",
+   "t": "headed by a Service Chief.",
+   "why": "Your printed copy ends this section with a bracketed source reference (“[(1987), Sec. 14]”), the publisher’s annotation; it is left out of the text."
+  },
+  {
+   "i": "book-iv-title-xiii-sec-20",
+   "f": "of the Department; 1!",
+   "t": "of the Department;"
+  },
+  {
+   "i": "book-iv-title-viii-sec-20",
+   "f": "objectives and ~-policies",
+   "t": "objectives and policies"
+  },
+  {
+   "i": "book-v-title-i-subtitle-a-sec-19",
+   "f": "Chief personnel! officers",
+   "t": "Chief personnel officers"
+  },
+  {
+   "i": "book-v-title-i-subtitle-a-sec-52",
+   "f": "in ¢computing",
+   "t": "in computing"
+  },
+  {
+   "i": "book-vii-sec-9",
+   "f": "in a@ newspaper",
+   "t": "in a newspaper"
+  },
+  {
+   "i": "book-iv-title-vii-sec-22",
+   "f": "and éemployment",
+   "t": "and employment"
+  },
+  {
+   "i": "book-iv-title-xiv-sec-9",
+   "f": "- responsibility of other Undersecretaries;",
+   "t": "the responsibility of other Undersecretaries;"
+  },
+  {
+   "i": "book-iv-ch-13-sec-62",
+   "f": "through negotiation. shall only",
+   "t": "through negotiation shall only"
+  },
+  {
+   "i": "book-iv-title-i-sec-51",
+   "f": "provided the the application",
+   "t": "provided that the application"
+  },
+  {
+   "i": "book-iv-title-ii-sec-17",
+   "f": "control of the the Commissioner",
+   "t": "control of the Commissioner"
+  },
+  {
+   "i": "book-iv-title-v-sec-6",
+   "f": "responsibilities. within his",
+   "t": "responsibilities. Within his"
+  },
+  {
+   "i": "book-iv-title-x-sec-15",
+   "f": "export quotas and and the flow",
+   "t": "export quotas and the flow"
+  },
+  {
+   "i": "book-iv-title-xi-sec-18",
+   "f": "for the region on: a. land tenure development b. information and education c. land use management and land development d. legal services e. agrarian reform beneficiaries development",
+   "t": "for the region on:\n\na. land tenure development\n\nb. information and education\n\nc. land use management and land development\n\nd. legal services\n\ne. agrarian reform beneficiaries development"
+  },
+  {
+   "i": "book-iv-title-xii-sec-6",
+   "f": "respective functional. areas",
+   "t": "respective functional areas"
+  },
+  {
+   "i": "book-v-title-i-subtitle-b-sec-11",
+   "f": "the deficiencies. it shall keep",
+   "t": "the deficiencies. It shall keep"
+  },
+  {
+   "i": "book-v-title-i-subtitle-b-sec-16",
+   "f": "not in the the public service",
+   "t": "not in the public service"
+  },
+  {
+   "i": "book-vi-sec-3",
+   "f": "totality of. revenues",
+   "t": "totality of revenues"
+  },
+  {
+   "i": "book-vii-sec-17",
+   "f": "(2) Except is cases",
+   "t": "(2) Except in cases"
+  },
+  {
+   "i": "book-vi-sec-57",
+   "f": "they have compiled with",
+   "t": "they have complied with"
+  }
+ ],
+ "drop": [
+  {
+   "i": "book-iv-ch-7-sec-38",
+   "f": "EEE DO"
+  },
+  {
+   "i": "book-iv-title-vii-sec-3",
+   "f": "mm —_— LT"
+  },
+  {
+   "i": "book-iv-title-viii-sec-45",
+   "f": "/ 170"
+  },
+  {
+   "i": "book-iv-title-xi-sec-9",
+   "f": "213 }"
+  },
+  {
+   "i": "book-iv-title-xi-sec-19",
+   "f": "223 '"
+  },
+  {
+   "i": "book-iv-title-xiv-sec-6",
+   "f": "245 |}"
+  },
+  {
+   "i": "book-iv-title-xviii-sec-12",
+   "f": "—————— eee ee ee eS S 68"
+  },
+  {
+   "i": "book-iv-title-xviii-sec-18",
+   "f": "035680——_19"
+  },
+  {
+   "i": "book-v-title-i-subtitle-a-sec-8",
+   "f": "~~"
+  },
+  {
+   "i": "book-v-title-i-subtitle-a-sec-16",
+   "f": "S'?S*~=“‘ié‘“‘=‘=“‘i=@=XWr ll TTS"
+  },
+  {
+   "i": "book-v-title-i-subtitle-b-sec-8",
+   "f": "SSS ee Sie oe"
+  },
+  {
+   "i": "book-v-title-i-subtitle-b-sec-23",
+   "f": "OSSSSSSSSSSCSSzsgzg¢($ylh) Li"
+  },
+  {
+   "i": "book-v-title-i-subtitle-c-sec-11",
+   "f": "—_———"
+  },
+  {
+   "i": "book-v-title-ii-subtitle-b-sec-2",
+   "f": "BIIIISSSSSYSSS: sO OE"
+  },
+  {
+   "i": "section-73",
+   "f": "408 »"
+  },
+  {
+   "i": "book-iv-title-vi-sec-28",
+   "f": "143 i"
+  },
+  {
+   "i": "book-iv-title-xv-sec-13",
+   "f": "261 i"
+  },
+  {
+   "i": "book-iv-title-xi-sec-11",
+   "f": "Finance and Physical Assets Management"
+  },
+  {
+   "i": "book-iii-sec-30",
+   "f": "Functions of Agencies Under the Office of the"
+  },
+  {
+   "i": "book-v-title-i-subtitle-b-sec-46",
+   "f": "Appropriation Before Entering into Contract..—"
+  }
+ ],
+ "set": [
+  {
+   "i": "book-iv-title-xii-sec-14",
+   "p": [
+    "The Office of Public Affairs shall have the following functions:",
+    "(1) Provide technical assistance in the modernization and maintenance of a Department-wide micro-telecommunications systems;",
+    "(2) Provide mechanisms for the operationalization of the intent of the provisions of public information, coverages and documentation of the activities of the Department;",
+    "(3) Perform functional supervision over regional information centers in providing the citizenry with relevant information on the program of the Department and the Government’s thrust towards the participation of the citizens in the democratic processes;",
+    "(4) Formulate plans and programs to implement the administrative and technical capabilities of public officers and personnel both on the central and regional levels;",
+    "(5) Establish and prescribe guidelines in the administration of Information and Public Assistance Services;",
+    "(6) Extend consultation services and advice in the implementation of Regional Information Services;",
+    "(7) Assess information needs of the people through opinion polls and surveys;",
+    "(8) Provide assistance on various public programs of the Department;",
+    "(9) Establish and implement policies, plans, programs and projects to meet local emergencies arising from natural and man-made disasters; and",
+    "(10) Perform such other duties and responsibilities and projects assigned or delegated by the Secretary in the effective delivery of public services or as may be required by law."
+   ],
+   "why": "The OCR of this page of your scan was badly garbled (stray marks inside most lines). The section is given here in the LawPhil transcription, which follows the same ten items in the same order."
+  }
+ ],
+ "tables": [
+  {
+   "i": "book-iv-title-i-sec-31",
+   "from": "Home Office Diplomatic Consular Service Service",
+   "to": "Chief of Division Third Secretary Vice-Consul",
+   "table": {
+    "rows": [
+     [
+      "",
+      "Home Office",
+      "Diplomatic Service",
+      "Consular Service"
+     ],
+     [
+      "Class I",
+      "Chief of Division",
+      "First Secretary",
+      "Consul"
+     ],
+     [
+      "Class II",
+      "Chief of Division",
+      "Second Secretary",
+      "Consul"
+     ],
+     [
+      "Class III",
+      "Chief of Division",
+      "Third Secretary",
+      "Consul"
+     ],
+     [
+      "Class IV",
+      "Asst. Chief of Division",
+      "Third Secretary",
+      "Vice-Consul"
+     ]
+    ]
+   },
+   "why": "The table of class assignments was read line by line by the OCR; it is set out here as the table printed in your copy."
+  }
+ ],
+ "caps": [
+  {
+   "i": "book-iv-title-xi-sec-11",
+   "c": "Finance and Physical Assets Management Service"
+  },
+  {
+   "i": "book-iv-title-i-sec-29",
+   "c": "Policy"
+  },
+  {
+   "i": "book-iv-ch-5-sec-26",
+   "c": "Functions of a Regional Office"
+  },
+  {
+   "i": "book-ii-sec-29",
+   "c": "Other Bodies"
+  },
+  {
+   "i": "book-iii-sec-30",
+   "c": "Functions of Agencies Under the Office of the President"
+  },
+  {
+   "i": "book-iv-ch-4-sec-20",
+   "c": "Line Bureau"
+  },
+  {
+   "i": "book-iv-ch-9-sec-42",
+   "c": "Government-Owned or Controlled Corporations"
+  },
+  {
+   "i": "book-iv-title-ii-sec-43",
+   "c": "Functions of the Attached Agencies"
+  },
+  {
+   "i": "book-iv-title-iii-sec-25",
+   "c": "Applicability of P.D. No. 968, as amended"
+  },
+  {
+   "i": "book-v-title-i-subtitle-a-sec-44",
+   "c": "Sole and Exclusive Employees’ Representatives"
+  },
+  {
+   "i": "book-v-sec-66",
+   "c": "Liability of Disbursing Officers"
+  },
+  {
+   "i": "book-v-title-i-subtitle-b-sec-11",
+   "c": "General Jurisdiction"
+  },
+  {
+   "i": "book-v-title-i-subtitle-b-sec-46",
+   "c": "Appropriation Before Entering into Contract"
+  },
+  {
+   "i": "book-vi-sec-57",
+   "c": "Failure to Submit Reports"
+  },
+  {
+   "i": "book-vi-sec-58",
+   "c": "Contracting of Activities"
+  },
+  {
+   "i": "book-iv-title-ii-sec-17",
+   "c": "Economic Intelligence and Investigation Bureau"
+  },
+  {
+   "i": "book-v-title-i-subtitle-a-sec-48",
+   "c": "Procedures in Administrative Cases Against Non-Presidential Appointees"
+  },
+  {
+   "i": "book-v-title-i-subtitle-b-sec-19",
+   "c": "Collection of Indebtedness Due to the Government"
+  }
+ ],
+ "closing": {
+  "i": "book-vii-sec-29",
+  "from": "Done in the City of Manila, this 25th day of July, in the year of Our Lord, nineteen hundred and eighty-seven."
+ }
+}

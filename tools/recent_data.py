@@ -6,7 +6,7 @@ Every holding below is written in our own words. Each entry says how it was veri
                     full text before citing it in an exam or a pleading
 Output: data/recent.json  {"by": {"code|pid": [entry, ...]}, "general": [...], "checked": "..."}
 """
-import json, sys
+import json, os, sys
 
 SITE = sys.argv[1] if len(sys.argv) > 1 else '/home/claude/site/data'
 CHECKED = 'November 25, 2026'
@@ -29,8 +29,8 @@ def add(keys, e):
 # ---------------------------------------------------------------- Constitution: Bill of Rights
 add(['const1987|art-iii-sec-1'], E(
     'Deduro v. Vinoya', 'G.R. No. 254753', 'July 4, 2023', 'En Banc',
-    'Red-tagging, vilification and labelling by State agents can amount to a threat to a person’s life, liberty and security, which may justify the writ of amparo.',
-    'Due process protects life and liberty against State action; the Court recognised that labelling a person an enemy of the State can itself endanger those rights.',
+    'Red-tagging, vilification and labeling by State agents can amount to a threat to a person’s life, liberty and security, which may justify the writ of amparo.',
+    'Due process protects life and liberty against State action; the Court recognized that labeling a person an enemy of the State can itself endanger those rights.',
     'report', [{'t': 'SC decision (as reported)'}], ['amparo', 'red-tagging']))
 
 add(['const1987|art-iii-sec-2'], E(
@@ -110,10 +110,10 @@ add(['rpc|article-248'], E(
     'Treachery qualifies the killing to murder even when the accused are law enforcers acting in an operation.',
     'report', [{'t': 'Daily Tribune report, Dec. 22, 2025', 'u': 'https://tribune.net.ph/2025/12/22/sc-sentences-cops-to-reclusion-perpetua-over-killing-of-kian-delos-santos'}], ['treachery', 'conspiracy']))
 add(['rpc|article-90', 'rpc|article-355', 'ra10175|section-4', 'ra10175|section-6'], E(
-    'Causing v. People', 'G.R. No. 258524', 'October 11, 2023', '',
+    'Causing v. People', 'G.R. No. 258524', 'October 11, 2023', 'Third Division (Inting, J.); reaffirmed En Banc, April 2026 (8–7)',
     'Cyber libel prescribes in one year (the period for libel under Art. 90), counted from discovery — not 15 years. The unsigned resolution in Tolentino v. People (2018) is not binding precedent. Reported as reaffirmed by the En Banc on April 8, 2026.',
     'RA 10175 creates no new crime of libel; it raises the penalty when committed through a computer system, so the RPC’s prescriptive period for libel governs.',
-    'report', [{'t': 'SC decision and 2026 En Banc resolution (as reported)'}], ['cyber libel', 'prescription']))
+    'report', [{'t': 'Philstar report on the 2023 decision', 'u': 'https://philstar.com/headlines/2024/01/22/2327701/sc-prescription-period-cyber-libel-1-year-not-1215-years'}, {'t': 'Philstar report on the 2026 En Banc resolution (8–7)', 'u': 'https://www.philstar.com/nation/2026/04/22/2522625/sc-rules-filing-cyber-libel-cases'}], ['cyber libel', 'prescription']))
 add(['rpc|article-100', 'rpc|article-318', 'civil|article-29'], E(
     'Llonillo v. People', 'G.R. No. 246787', 'January 30, 2024', 'En Banc (Rosario, J.)',
     'The accused were acquitted of “other deceits” (Art. 318), yet the Court held they could be adjudged civilly liable in the same criminal case on an obligation from another source (here, their loan), sparing the creditor a separate suit. Several Justices dissented on that point.',
@@ -134,7 +134,7 @@ add(['rpc|article-266-a'], E(
 add(['rpc|article-266-a', 'rpc|article-336'], E(
     'Maliclic v. People', '', 'February 4, 2026', '',
     'After RA 11648, rape by carnal knowledge may be committed by and against any person; but for acts committed before that law, the same conduct against a male victim could not be rape by sexual intercourse and was punished instead as acts of lasciviousness.',
-    'Penal laws do not apply retroactively when unfavourable to the accused (Art. 21–22, RPC).',
+    'Penal laws do not apply retroactively when unfavorable to the accused (Art. 21–22, RPC).',
     'report', [{'t': 'SC decision (as reported)'}], ['RA 11648', 'gender-neutral']))
 
 # ---------------------------------------------------------------- Special penal laws
@@ -220,6 +220,11 @@ GENERAL = [
 
 
 def main():
+    # decisions applying the CPRA, extracted from the decision texts by cpra_cases.py
+    extra = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'cpra_cases.json')
+    if os.path.exists(extra):
+        for k, v in json.load(open(extra)).items():
+            R.setdefault(k, []).extend(v)
     n = sum(len(v) for v in R.values())
     uniq = len({(e['n'], e['g']) for v in R.values() for e in v})
     json.dump({'by': R, 'general': GENERAL, 'checked': CHECKED}, open(f'{SITE}/recent.json', 'w'), ensure_ascii=False, separators=(',', ':'))

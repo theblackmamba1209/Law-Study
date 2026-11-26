@@ -103,16 +103,23 @@ def block_after(lid, m_end):
     block = rest[:stop.start()] if stop else rest
     return [clean(x) for x in re.split(r'\n\s*\n', block) if clean(x)]
 
-def auto(code, lid, target, have, why):
+def auto(code, lid, target, have, why, topic):
     """Every 'Section N of <target> ... is hereby (further) amended to read as follows' and every inserted section in law lid."""
     b = body(lid)
-    for m in re.finditer(r'(?:Section|Sec\.)\s*(\d+(?:-[A-Z])?)(\s*,\s*[Pp]aragraph\s*\(\w\))?\s*of\s+' + target + r'[^\n]*?(?:is|are)\s+hereby\s+(?:further\s+)?amended\s+to\s+read\s+as\s+follows:', b):
-        n, part = m.group(1), bool(m.group(2))
+    for m in re.finditer(r'(?:Section|Sec\.)\s*(\d+(?:-[A-Z])?)(\s*,\s*[Pp]aragraph\s*\(?(\w+)\)?)?(?:\s*,?\s*of\s+(?:the\s+same\s+(?:law|Act)|' + target + r')[^\n]*?)?\s+(?:is|are)\s+hereby\s+(?:further\s+)?amended\s+(?:to\s+read\s+)?as\s+follows:', b):
+        n, part, which = m.group(1), bool(m.group(2)), m.group(3)
         if re.search(r'title\s+of\s*$', b[max(0, m.start() - 20):m.start()], re.I):
             continue   # only the section's title was changed
         paras = block_after(lid, m.end())
         if part:
-            ps = ['x x x'] + [re.sub(r"^\.?[\"“]", '', p).strip() for p in paras] + ['x x x']
+            got = dict(labeled(paras)).get(n)
+            body_ps = got if got else [re.sub(r"^\.?[\"“]", '', p).strip() for p in paras]
+            if which in ('1', 'a'):
+                ps = body_ps + ['x x x']
+            elif body_ps and len(body_ps[0]) < 60 and re.search(r'[-–—:]\s*$', body_ps[0]):   # keep the caption on top
+                ps = [body_ps[0], 'x x x'] + body_ps[1:] + ['x x x']
+            else:
+                ps = ['x x x'] + body_ps + ['x x x']
         else:
             got = dict(labeled(paras))
             ps = got.get(n)
@@ -133,7 +140,7 @@ def auto(code, lid, target, have, why):
             a = after or re.match(r'\d+', n).group(0)
             E.append((code, {'op': 'insert', 'after': a, 'n': n, 'kind': 'section', 'paras': ps, 'late': True,
                              'basis': 'Text verbatim from the amending law (LawPhil transcription, via LawCodex).',
-                             'note': f'Inserted by {lab(lid)} ({year(lid)}). {why}'}))
+                             'note': f'Inserted by {lab(lid)} ({year(lid)}), {topic}.'}))
             have.add(n); after = n
 
 # --- land registration: RA 11573 (2021) rewrote PD 1529 Sec. 14
@@ -199,10 +206,10 @@ amend('civil', 1146, 'pd-1755', '1', r'Article 1146 of the Civil Code of the Phi
 # --- CARL: the study text is RA 6657 as enacted; bring in the later amendments in order
 _carl = {p['n'] for p in json.load(open(f'{D}/codes/carl.json'))['provisions']
          if p.get('n') and not any(str(x.get('t', '')).startswith('Inserted by') for x in p.get('e', []))}   # not our own inserts
-auto('carl', 'ra-7881', r'Republic Act No\. 6657', _carl, 'amended this section (fishponds, prawn farms and commercial farms).')
-auto('carl', 'ra-7905', r'Republic Act No\. 6657', _carl, 'amended this section (support services and implementation).')
-auto('carl', 'ra-8532', r'Republic Act No\. 6657', _carl, 'amended this section (funding of the CARP).')
-auto('carl', 'ra-9700', r'Republic Act (?:No|So)\. 6657', _carl, 'is the CARPER law: it extended land acquisition and distribution to June 30, 2014 and rewrote this section.')
+auto('carl', 'ra-7881', r'Republic Act No\. 6657', _carl, 'amended this section (fishponds, prawn farms and commercial farms).', 'the law on fishponds, prawn farms and commercial farms')
+auto('carl', 'ra-7905', r'Republic Act No\. 6657', _carl, 'amended this section (support services and implementation).', 'the law strengthening support services and implementation')
+auto('carl', 'ra-8532', r'Republic Act No\. 6657', _carl, 'amended this section (funding of the CARP).', 'the law extending CARP funding')
+auto('carl', 'ra-9700', r'Republic Act (?:No|So)\. 6657', _carl, 'is the CARPER law: it extended land acquisition and distribution to June 30, 2014 and rewrote this section.', 'the CARPER law, which extended land acquisition and distribution to June 30, 2014')
 
 if __name__ == '__main__':
     er = json.load(open('errata.json'))

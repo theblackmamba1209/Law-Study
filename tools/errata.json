@@ -14630,7 +14630,7 @@
    "y": "1995",
    "paras": [
     "x x x",
-    "Section 3. Definitions. -For the purpose of this Act, unless the context indicates otherwise:",
+    "Definitions. -For the purpose of this Act, unless the context indicates otherwise:",
     "(b) Agriculture, Agricultural Enterprise or Agricultural Activity means the cultivation of the soil, planting of crops, growing of fruit trees, including the harvesting of such farm products, and other farm activities and practices performed by a farmer in conjunction with such farming operations done by persons whether natural or juridical.",
     "x x x"
    ],
@@ -14657,6 +14657,20 @@
    "note": "RA 7881 (1995) amended this section (fishponds, prawn farms and commercial farms)."
   },
   {
+   "op": "amend",
+   "n": "11",
+   "by": "RA 7881",
+   "sec": "",
+   "y": "1995",
+   "paras": [
+    "Commercial Farming. - Commercial farms, which are private agricultural lands devoted to saltbeds, fruit farms, orchards, vegetable and cut-flower farms, and cacao, coffee and rubber plantations, shall be subject to immediate compulsory acquisition and distribution after ten (10) years from the effectivity of this Act. in the case of new farms, the ten-year period shall begin from the first year of commercial production and operation, as determined by the DAR. During the ten-year period, the Government shall initiate steps necessary to acquire these lands, upon payment of just compensation for the land and the improvements thereon, preferably in favor of organized cooperatives or associations, which shall thereafter manage the said lands for the workers-beneficiaries .",
+    "x x x"
+   ],
+   "late": true,
+   "basis": "Text verbatim from the amending law (LawPhil transcription, via LawCodex).",
+   "note": "RA 7881 (1995) amended this section (fishponds, prawn farms and commercial farms). It restates only part of the section (“x x x” marks the parts left as they were)."
+  },
+  {
    "op": "insert",
    "after": "32",
    "n": "32-A",
@@ -14668,7 +14682,7 @@
    ],
    "late": true,
    "basis": "Text verbatim from the amending law (LawPhil transcription, via LawCodex).",
-   "note": "Inserted by RA 7881 (1995). amended this section (fishponds, prawn farms and commercial farms)."
+   "note": "Inserted by RA 7881 (1995), the law on fishponds, prawn farms and commercial farms."
   },
   {
    "op": "insert",
@@ -14681,7 +14695,7 @@
    ],
    "late": true,
    "basis": "Text verbatim from the amending law (LawPhil transcription, via LawCodex).",
-   "note": "Inserted by RA 7881 (1995). amended this section (fishponds, prawn farms and commercial farms)."
+   "note": "Inserted by RA 7881 (1995), the law on fishponds, prawn farms and commercial farms."
   },
   {
    "op": "insert",
@@ -14694,7 +14708,7 @@
    ],
    "late": true,
    "basis": "Text verbatim from the amending law (LawPhil transcription, via LawCodex).",
-   "note": "Inserted by RA 7881 (1995). amended this section (fishponds, prawn farms and commercial farms)."
+   "note": "Inserted by RA 7881 (1995), the law on fishponds, prawn farms and commercial farms."
   },
   {
    "op": "insert",
@@ -14706,7 +14720,7 @@
    ],
    "late": true,
    "basis": "Text verbatim from the amending law (LawPhil transcription, via LawCodex).",
-   "note": "Inserted by RA 7881 (1995). amended this section (fishponds, prawn farms and commercial farms)."
+   "note": "Inserted by RA 7881 (1995), the law on fishponds, prawn farms and commercial farms."
   },
   {
    "op": "insert",
@@ -14718,7 +14732,7 @@
    ],
    "late": true,
    "basis": "Text verbatim from the amending law (LawPhil transcription, via LawCodex).",
-   "note": "Inserted by RA 7881 (1995). amended this section (fishponds, prawn farms and commercial farms)."
+   "note": "Inserted by RA 7881 (1995), the law on fishponds, prawn farms and commercial farms."
   },
   {
    "op": "insert",
@@ -14730,7 +14744,7 @@
    ],
    "late": true,
    "basis": "Text verbatim from the amending law (LawPhil transcription, via LawCodex).",
-   "note": "Inserted by RA 7881 (1995). amended this section (fishponds, prawn farms and commercial farms)."
+   "note": "Inserted by RA 7881 (1995), the law on fishponds, prawn farms and commercial farms."
   },
   {
    "op": "amend",
@@ -14754,6 +14768,51 @@
     "11) Conduct an effective information dissemination system through the Department of Agriculture to promote marketing and minimize spoilage of agricultural produce and products;",
     "12) Create a credit guarantee fund for agricultural landowners that will enhance the collateral value of agricultural lands that are affected or will be affected by coverage under the agrarian reform program; and",
     "13) Administration, operation, management and funding of support services programs and projects including pilot projects and models related to agrarian reform as developed by the DAR."
+   ],
+   "late": true,
+   "basis": "Text verbatim from the amending law (LawPhil transcription, via LawCodex).",
+   "note": "RA 7905 (1995) amended this section (support services and implementation)."
+  },
+  {
+   "op": "amend",
+   "n": "36",
+   "by": "RA 7905",
+   "sec": "",
+   "y": "1995",
+   "paras": [
+    "Funding for Support Services. - In order to cover the expenses and cost of support services, at least twenty-five percent (25%) of all appropriations for agrarian reform shall be immediately set aside and made available for this purpose: Provided, That for the next five (5) years, a minimum of one (1) Agrarian Reform Community (ARC) shall be established by the DAR, in coordination with the local government units, non-governmental organizations and people organizations in each legislative district with a predominant agricultural population: Provided, further, That the areas in which the ARCs are to be established shall have been fully subjected under this law.",
+    "For this purpose, an Agrarian Reform Community shall be defined as a barangay or a cluster of barangays primarily composed and managed by Agrarian Reform Beneficiaries who shall be willing to be organized and undertake the integrated development of an area and/or their organizations/ cooperative. In each community, the DAR, together with the agencies and organizations abovementioned, shall identify the farmers association, cooperative or their respective federation approved by the farmers-beneficiaries that shall take the lead in the agricultural development of the area. In addition, the DAR shall be authorized to package proposals and receive grants, aid and other forms of financial assistance from any source."
+   ],
+   "late": true,
+   "basis": "Text verbatim from the amending law (LawPhil transcription, via LawCodex).",
+   "note": "RA 7905 (1995) amended this section (support services and implementation)."
+  },
+  {
+   "op": "amend",
+   "n": "44",
+   "by": "RA 7905",
+   "sec": "",
+   "y": "1995",
+   "paras": [
+    "Provincial Agrarian Reform Coordinating Committee (PARCCOM). - A Provincial Agrarian Reform Coordinating Committee is hereby created in each province, composed of a Chairman, who shall be appointed by the President upon the recommendation of the EXCOM, the Provincial Agrarian Reform Officer as Executive Officer, and one (1) representative each from the Departments of Agriculture, and of Environment and Natural Resources and from the LBP; one (1) representative each from existing farmers' organizations, agricultural cooperatives and non-governmental organizations in the province; two (2) representatives from landowners, at least one (1) of whom shall be a producer representing the principal crop of the province, and two (2) representatives from farmer and farmworker or beneficiaries, at least one (1) of whom shall be a farmer or farmworker representing the principal crop of the province, as members: Provided, That in areas where there are cultural communities, the latter shall likewise have one (1) representative.",
+    "The PARCCOM shall coordinate and monitor the implementation of the CARP in the province. It shall provide information on the provisions of the CARP, guidelines issued by the PARC and on the progress of the CARP in the province; in addition, it shall:",
+    "a) Recommend to the PARC the following:",
+    "1) Market prices to be used in the determination of the profit sharing obligation of agricultural entities in the province;",
+    "2) Adoption of the direct payment scheme between the landowner and the farmer and/or farmworker beneficiary: Provided, that the amount and terms of payment are not more burden some to the agrarian reform beneficiary than ander the compulsoory coverage provision of the CARL: Provided, further, That the agrarian reform beneficiary agrees to the amount and the terms of payment: Provided, further more, That the DAR shall act as mediator in cases of disagreement between the landowner and the farmer and/or farmworker beneficiary: Provided, finally, That the farmer and/or farmer beneficiary shall be eligible to borrow from the LBP an amount equal to eighty-five percent (85%) of the selling price of the land that they have acquired;",
+    "3) Continuous processing of applications for lease back arrangements, joint-venture agreements and other schemes that will optimize the operating size for agricultural production and also promote both security of tenure and security of income to farmer beneficiaries: Provided, That lease back arrangements should be the last resort."
+   ],
+   "late": true,
+   "basis": "Text verbatim from the amending law (LawPhil transcription, via LawCodex).",
+   "note": "RA 7905 (1995) amended this section (support services and implementation)."
+  },
+  {
+   "op": "amend",
+   "n": "45",
+   "by": "RA 7905",
+   "sec": "",
+   "y": "1995",
+   "paras": [
+    "Province-by-province Implementation. - The PARC shall provide the guidelines for the province-by-province implementation of the CARP, taking into account the peculiarities and needs of each place, kind of crops needed or suited, land distribution workload, beneficiaries development activities and other factors prevalent or obtaining in the area. In all cases, the implementing agencies at the provincial level shall promote the development of identified ARCs without neglecting the needs and problems of other beneficiaries. The ten-year program of distribution of public and private land in each province shall be adjusted from year to year by the province's PARCCOM in accordance with the level of operations previously established by the PARC, in every case ensuring that support services are available or have been programmed before actual distribution is effected."
    ],
    "late": true,
    "basis": "Text verbatim from the amending law (LawPhil transcription, via LawCodex).",
@@ -15159,7 +15218,7 @@
    ],
    "late": true,
    "basis": "Text verbatim from the amending law (LawPhil transcription, via LawCodex).",
-   "note": "Inserted by RA 9700 (2009). is the CARPER law: it extended land acquisition and distribution to June 30, 2014 and rewrote this section."
+   "note": "Inserted by RA 9700 (2009), the CARPER law, which extended land acquisition and distribution to June 30, 2014."
   },
   {
    "op": "insert",
@@ -15171,7 +15230,7 @@
    ],
    "late": true,
    "basis": "Text verbatim from the amending law (LawPhil transcription, via LawCodex).",
-   "note": "Inserted by RA 9700 (2009). is the CARPER law: it extended land acquisition and distribution to June 30, 2014 and rewrote this section."
+   "note": "Inserted by RA 9700 (2009), the CARPER law, which extended land acquisition and distribution to June 30, 2014."
   },
   {
    "op": "insert",
@@ -15183,7 +15242,7 @@
    ],
    "late": true,
    "basis": "Text verbatim from the amending law (LawPhil transcription, via LawCodex).",
-   "note": "Inserted by RA 9700 (2009). is the CARPER law: it extended land acquisition and distribution to June 30, 2014 and rewrote this section."
+   "note": "Inserted by RA 9700 (2009), the CARPER law, which extended land acquisition and distribution to June 30, 2014."
   },
   {
    "op": "insert",
@@ -15198,7 +15257,7 @@
    ],
    "late": true,
    "basis": "Text verbatim from the amending law (LawPhil transcription, via LawCodex).",
-   "note": "Inserted by RA 9700 (2009). is the CARPER law: it extended land acquisition and distribution to June 30, 2014 and rewrote this section."
+   "note": "Inserted by RA 9700 (2009), the CARPER law, which extended land acquisition and distribution to June 30, 2014."
   },
   {
    "op": "insert",
@@ -15212,7 +15271,7 @@
    ],
    "late": true,
    "basis": "Text verbatim from the amending law (LawPhil transcription, via LawCodex).",
-   "note": "Inserted by RA 9700 (2009). is the CARPER law: it extended land acquisition and distribution to June 30, 2014 and rewrote this section."
+   "note": "Inserted by RA 9700 (2009), the CARPER law, which extended land acquisition and distribution to June 30, 2014."
   }
  ]
 }

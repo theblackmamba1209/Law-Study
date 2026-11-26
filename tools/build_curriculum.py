@@ -52,7 +52,7 @@ FIELDS = [
  {'id': 'pol', 'name': 'Political Law', 'q': 'Who holds power, and what may the State not do to you?', 'tracks': [
    {'tier': 'start', 'name': 'The Constitution', 'why': 'Everything else in public law is measured against it. Begin with Article III.',
     'items': [C('const1987'), Y('cl2', 'Your Constitutional Law 2 syllabus')]},
-   {'tier': 'core', 'name': 'How government is organised', 'why': 'National administration, then local governments and the police power they exercise.',
+   {'tier': 'core', 'name': 'How government is organized', 'why': 'National administration, then local governments and the police power they exercise.',
     'items': [C('admincode'), C('lgc'), C('ra6975'), C('ra8551')]},
    {'tier': 'core', 'name': 'Elections and direct democracy', 'why': 'How power is given and taken back.',
     'items': [C('oec'), C('ra6735')]},
@@ -91,7 +91,7 @@ FIELDS = [
     'items': [C('rpc'), {'t': 'b2', 'id': 'book2', 'title': 'Book Two Studio'}, Y('crim1', 'Your Criminal Law 1 syllabus'), Y('crim2', 'Your Criminal Law 2 syllabus')]},
    {'tier': 'core', 'name': 'Computing and serving penalties', 'why': 'Read with Arts. 21 to 99 of the Code.',
     'items': [C('isl'), C('ra10951'), C('ra10592'), C('ra9346'), C('ra7659'), C('act3326')]},
-   {'tier': 'core', 'name': 'Sexual offences and violence against women', 'why': '', 'items': [C('ra8353'), C('ra11648'), C('ra9262'), C('ra9995'), C('ra7877', 1)]},
+   {'tier': 'core', 'name': 'Sexual offenses and violence against women', 'why': '', 'items': [C('ra8353'), C('ra11648'), C('ra9262'), C('ra9995'), C('ra7877', 1)]},
    {'tier': 'core', 'name': 'Children', 'why': '', 'items': [C('ra7610'), C('ra9344'), C('ra11930')]},
    {'tier': 'core', 'name': 'Drugs and firearms', 'why': '', 'items': [C('ra9165'), C('irr9165'), C('ra10591')]},
    {'tier': 'deep', 'name': 'Public officers and corruption', 'why': '', 'items': [C('ra3019'), C('ra7080'), C('pd1829')]},
@@ -101,7 +101,7 @@ FIELDS = [
               M('Bouncing Checks Law', 'Batas Pambansa Blg. 22 (1979)', 'Not in the statute source used for this build. Send a PDF and it will be added.')]},
    {'tier': 'deep', 'name': 'Privacy, cybercrime and security', 'why': '', 'items': [C('ra10175'), C('ra4200'), C('ra11479'), C('ra9851', 1)]},
  ]},
- {'id': 'com', 'name': 'Commercial Law and Taxation', 'q': 'How is business organised, financed and taxed?', 'tracks': [
+ {'id': 'com', 'name': 'Commercial Law and Taxation', 'q': 'How is business organized, financed and taxed?', 'tracks': [
    {'tier': 'start', 'name': 'The corporation', 'why': '', 'items': [C('rcc')]},
    {'tier': 'core', 'name': 'Instruments, insurance and securities', 'why': '', 'items': [C('nil'), C('insurance'), C('src')]},
    {'tier': 'core', 'name': 'Taxation', 'why': 'The 1997 Code is shown as enacted. TRAIN and CREATE rewrote many sections, so study them together.',
@@ -161,7 +161,7 @@ SETS = {
    ('civil', 'article-2', 'Effectivity after publication'), ('admincode', 'book-i-sec-18', 'The same rule, restated in 1987'),
    ('civil', 'article-3', 'Ignorance of the law'), ('admincode', 'book-i-sec-23', 'Ignorance, restated'),
    ('civil', 'article-4', 'Laws look forward'), ('admincode', 'book-i-sec-19', 'Prospectivity, restated'),
-   ('rpc', 'article-21', 'No penalty without a prior law'), ('rpc', 'article-22', 'The exception: penal laws favourable to the accused'),
+   ('rpc', 'article-21', 'No penalty without a prior law'), ('rpc', 'article-22', 'The exception: penal laws favorable to the accused'),
    ('const1987', 'art-iii-sec-22', 'No ex post facto law'),
    ('civil', 'article-7', 'Repeal, and the supremacy of the Constitution'), ('admincode', 'book-i-sec-21', 'Express repeal: no revival'),
    ('admincode', 'book-i-sec-22', 'Implied repeal: revival'), ('civil', 'article-13', 'Counting years, months and days'), ('admincode', 'book-i-sec-31', 'Legal periods, restated in 1987')]},
@@ -169,7 +169,7 @@ SETS = {
    ('civil', 'article-8', 'Decisions form part of the legal system'), ('civil', 'article-9', 'A judge may not decline to decide'),
    ('civil', 'article-10', 'In doubt, right and justice'), ('admincode', 'book-i-sec-20', 'The same presumption for administrative issuances'),
    ('civil', 'article-11', 'Customs'), ('civil', 'article-12', 'Proving a custom'),
-   ('rpc', 'article-10', 'The Code supplements special laws'), ('labor', 'article-4', 'Doubts in favour of labor'),
+   ('rpc', 'article-10', 'The Code supplements special laws'), ('labor', 'article-4', 'Doubts in favor of labor'),
    ('civil', 'article-1702', 'Labor contracts'), ('civil', 'article-1370', 'Clear contracts: the literal meaning'),
    ('civil', 'article-1377', 'Obscurity against the party who caused it'), ('const1987', 'art-vi-sec-26', 'One subject, one title; three readings')]},
  'intl-const': {'title': 'The Constitution’s doors to international law', 'blurb': 'Six provisions. Every PIL problem in a Philippine court passes through one of them.', 'items': [
@@ -221,7 +221,7 @@ LESSONS = {
    {'h': 'Try it on one sentence', 'p': [
      'Open {civil:article-1159}. Who is covered? The contracting parties. What must they do? Comply with the obligation. By what standard? Good faith. With what force? That of law between them. Four answers, one sentence, and you can now rebuild the article from memory.']},
    {'h': 'How this app helps', 'p': [
-     'On every provision the Highlights colour these same parts: duties and powers, conditions, exceptions, numbers, penalties and definitions. The Understand step sorts each sentence under the four questions for you. Do it yourself first, then compare.']}],
+     'On every provision the Highlights color these same parts: duties and powers, conditions, exceptions, numbers, penalties and definitions. The Understand step sorts each sentence under the four questions for you. Do it yourself first, then compare.']}],
   'try': ['Pick a provision you opened today. Write the four answers under My notes in two minutes, without looking at the Understand step.']},
 
  'law-takes-effect': {'title': 'When does a law bind you?', 'mins': 7,
@@ -232,9 +232,9 @@ LESSONS = {
      'Executive Order No. 200 (1987) later allowed publication either in the Official Gazette or in a newspaper of general circulation. The Administrative Code restates the rule in {admincode:book-i-sec-18}.']},
    {'h': '2. Ignorance excuses no one', 'p': ['{civil:article-3} and {admincode:book-i-sec-23}. This is why publication matters: the law may presume you know only what you could have read.']},
    {'h': '3. Laws look forward', 'p': [
-     '{civil:article-4} and {admincode:book-i-sec-19}: no retroactive effect unless the law says so. Penal law adds its own rules. No act is punished by a penalty not prescribed before it was committed ({rpc:article-21}), the Constitution forbids ex post facto laws ({const1987:art-iii-sec-22}), and a penal law that favours the accused does reach back, on the terms of {rpc:article-22}.']},
+     '{civil:article-4} and {admincode:book-i-sec-19}: no retroactive effect unless the law says so. Penal law adds its own rules. No act is punished by a penalty not prescribed before it was committed ({rpc:article-21}), the Constitution forbids ex post facto laws ({const1987:art-iii-sec-22}), and a penal law that favors the accused does reach back, on the terms of {rpc:article-22}.']},
    {'h': '4. Only a later law repeals', 'p': [
-     '{civil:article-7}: disuse, custom or contrary practice does not repeal a law, and a law or administrative act contrary to the Constitution is void. Courts do not favour implied repeals; they first try to give effect to both laws.',
+     '{civil:article-7}: disuse, custom or contrary practice does not repeal a law, and a law or administrative act contrary to the Constitution is void. Courts do not favor implied repeals; they first try to give effect to both laws.',
      'If the repealing law is itself repealed, does the first law return? It depends on how it was repealed: see {admincode:book-i-sec-21} for express repeals and {admincode:book-i-sec-22} for implied ones.']},
    {'h': '5. Count time the way the law does', 'p': [
      '{civil:article-13} defines years, months, days and nights and tells you to exclude the first day and include the last. The Administrative Code has its own definition of legal periods in {admincode:book-i-sec-31}. Read the two side by side and note how each defines a year; the Supreme Court has applied the later Administrative Code definition (Commissioner of Internal Revenue v. Primetown Property Group, G.R. No. 162155, August 28, 2007).']}],
@@ -267,13 +267,13 @@ LESSONS = {
   'lead': 'Each field of law has a rule for the case where doubt survives a careful reading. They are tie-breakers: they apply only after the text and purpose have been tried.',
   'sections': [
    {'h': 'By field', 'l': [
-     'Criminal law. Penal statutes are read strictly against the State and liberally in favour of the accused; a favourable penal law applies retroactively under {rpc:article-22}.',
-     'Labor law. Doubts in implementing and interpreting the Code are resolved in favour of labor: {labor:article-4}. For labor contracts and legislation, see also {civil:article-1702}.',
+     'Criminal law. Penal statutes are read strictly against the State and liberally in favor of the accused; a favorable penal law applies retroactively under {rpc:article-22}.',
+     'Labor law. Doubts in implementing and interpreting the Code are resolved in favor of labor: {labor:article-4}. For labor contracts and legislation, see also {civil:article-1702}.',
      'Taxation. A tax is not presumed: the law imposing it is read strictly against the government. An exemption is the reverse: it is read strictly against the taxpayer who claims it.',
-     'Social legislation. Read liberally in favour of the people it was passed to protect.',
+     'Social legislation. Read liberally in favor of the people it was passed to protect.',
      'Contracts. Clear terms control in their literal sense ({civil:article-1370}); an obscure term is read against the party who caused the obscurity ({civil:article-1377}).',
      'Every field. The lawmaking body is presumed to have intended right and justice to prevail: {civil:article-10}.']},
-   {'h': 'A caution', 'p': ['These rules do not invite the court to rewrite the law for the favoured side. If the text is clear against the worker, the accused or the taxpayer, the text governs.']}],
+   {'h': 'A caution', 'p': ['These rules do not invite the court to rewrite the law for the favored side. If the text is clear against the worker, the accused or the taxpayer, the text governs.']}],
   'try': ['For each of your subjects this semester, write its tie-breaker in one line and the provision that states it, if a provision does.']},
 
  'digest': {'title': 'Digest a case in five moves', 'mins': 7,
@@ -381,7 +381,7 @@ LESSONS = {
   'try': ['For the next ethics case you read, answer four things: who owed the duty, to whom, what act breached it, and why that sanction.']},
 
  'eth-cpra': {'title': 'The CPRA in six canons', 'mins': 6,
-  'lead': 'The Code of Professional Responsibility and Accountability (A.M. No. 22-09-01-SC, 2023) replaced the 1988 Code. It is organised into six canons. This is a map in our own words; study the official text for the wording.',
+  'lead': 'The Code of Professional Responsibility and Accountability (A.M. No. 22-09-01-SC, 2023) replaced the 1988 Code. It is organized into six canons. This is a map in our own words; study the official text for the wording.',
   'sections': [
    {'h': 'The six canons', 'l': [
      'Canon I, Independence. Professional judgment free of improper influence, including the lawyer’s own interests.',
@@ -389,7 +389,7 @@ LESSONS = {
      'Canon III, Fidelity. Loyalty to the Constitution and the law, to the courts, and to the client: the lawyer-client relationship, conflicts of interest and confidences are here.',
      'Canon IV, Competence and Diligence. Service that is skilled, prompt and thorough.',
      'Canon V, Equality. Fair and equal treatment of every person, and access to justice.',
-     'Canon VI, Accountability. How lawyers are disciplined: the procedure, the classes of offences and the sanctions.']},
+     'Canon VI, Accountability. How lawyers are disciplined: the procedure, the classes of offenses and the sanctions.']},
    {'h': 'How to study it', 'p': ['Most cases in your syllabus were decided under the 1988 Code. For each, ask which of the six canons the same conduct would fall under today. That translation is a common examination question.']}],
   'try': ['Sort ten cases from your ethics syllabus under the six canons.']},
 

@@ -1,0 +1,30 @@
+// NIRC: amendments in order, partial changes first, renumbered and inserted sections, repeals
+const { chromium } = require('/opt/npm-tools/node_modules/playwright');
+(async () => {
+  const b = await chromium.launch({ executablePath: '/usr/bin/google-chrome', args: ['--no-sandbox'] });
+  const errs = []; const SH = '/home/claude/work/shots/';
+  const pg = await b.newPage({ viewport: { width: 390, height: 900 }, deviceScaleFactor: 2 });
+  pg.on('pageerror', e => errs.push(e.message));
+  const look = async (h, f) => { await pg.goto('http://localhost:8811/' + h, { waitUntil: 'networkidle' }); await pg.waitForTimeout(350); if (f) await pg.screenshot({ path: SH + f + '.png', fullPage: true });
+    return pg.evaluate(() => ({ cap: document.querySelector('#law .lcap')?.textContent, banner: [...document.querySelectorAll('#law .inforce')].map(x => x.textContent.replace(/\s+/g, ' ').slice(0, 140)), chg: document.querySelectorAll('#law .amend.chg').length, status: document.querySelector('#law .status')?.textContent.slice(0, 90), text: document.querySelector('#law > .text')?.textContent.replace(/\s+/g, ' ').slice(0, 400) })); };
+  let r = await look('#/p/nirc/section-106', 'nirc106'); console.log('106', JSON.stringify(r).slice(0, 600));
+  if (!/RA 9337/.test(r.banner.join(' ')) || r.chg < 3 || !/Value-added Tax on Sale of Goods/i.test(r.cap || '')) errs.push('106 layout');
+  r = await look('#/p/nirc/section-24', 'nirc24'); console.log('24', JSON.stringify(r).slice(0, 500)); if (r.chg < 2) errs.push('24 changes not shown');
+  r = await look('#/p/nirc/section-174'); console.log('174', r.cap); if (!/Original Issue of Shares/i.test(r.cap || '')) errs.push('174 renumbering');
+  r = await look('#/p/nirc/section-180'); console.log('180', r.cap); if (!/Bills of Exchange/i.test(r.cap || '')) errs.push('180 insert');
+  r = await look('#/p/nirc/section-291'); console.log('291', r.cap); if (!/Scope and Coverage/.test(r.cap || '')) errs.push('291');
+  r = await look('#/p/nirc/section-312'); console.log('312', r.cap, r.text.slice(0, 80));
+  r = await look('#/p/nirc/section-35'); console.log('35', r.status); if (!/Repealed/.test(r.status || '')) errs.push('35 not repealed');
+  r = await look('#/p/nirc/section-27', 'nirc27'); console.log('27', JSON.stringify(r.banner));
+  r = await look('#/p/nirc/section-51-a'); console.log('51-A', r.cap);
+  r = await look('#/p/oec/section-71', 'oec71'); console.log('OEC 71', r.cap, r.text.slice(0, 90)); if (!/Changing political party/.test(r.cap || '')) errs.push('OEC 71 missing');
+  r = await look('#/p/oec/section-67'); console.log('OEC 67', r.status); if (!/Repealed by RA 9006/.test(r.status || '')) errs.push('OEC 67 not repealed');
+  r = await look('#/p/oec/section-185'); console.log('OEC 185', JSON.stringify(r.banner)); if (!/RA 7904/.test(r.banner.join(' '))) errs.push('OEC 185 not amended');
+  r = await look('#/p/ra10175/section-12', 'cyb12'); console.log('10175-12', r.status); if (!/Disini/.test(r.status || '')) errs.push('Disini status missing');
+  r = await look('#/p/ra9165/section-23'); console.log('9165-23', r.status); if (!/Estipona/.test(r.status || '')) errs.push('Estipona missing');
+  r = await look('#/p/pd851/rules-sec-1'); console.log('pd851 rules', r.cap);
+  r = await look('#/map/com/nirc', 'map_nirc'); 
+  const ov = await pg.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth); if (ov > 1) errs.push('overflow ' + ov);
+  await b.close();
+  console.log(errs.length ? errs.join('\n') : 'NO ERRORS');
+})();

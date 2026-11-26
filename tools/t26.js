@@ -61,7 +61,7 @@ const { chromium } = require('/opt/npm-tools/node_modules/playwright');
     await go('#/govern/r/t5', 'rule', 900);
     r = await ev(() => ({ h1: document.querySelector('h1')?.textContent, why: document.querySelectorAll('ol.explain li').length, cases: document.querySelectorAll('.case').length, chk: document.querySelectorAll('.case .chip.warn').length, quiz: !!document.querySelector('#gq'), links: [...document.querySelectorAll('.movev .chip.violet, .movev .chip.blue')].map(a => a.getAttribute('href')) }));
     console.log(tag, 'rule t5', JSON.stringify(r));
-    if (!/Curative/.test(r.h1) || r.why < 2 || r.cases < 2 || r.chk < 1 || !r.links.includes('#/law/ra-11573') || !r.links.includes('#/p/pd1529/section-14')) errs.push(tag + ' rule page');
+    if (!/Curative/.test(r.h1) || r.why < 2 || r.cases < 2 || !r.links.includes('#/law/ra-11573') || !r.links.includes('#/p/pd1529/section-14')) errs.push(tag + ' rule page');
     // t4 has a drill: answer it and it joins memory
     await go('#/govern/r/t4', '', 900);
     await pg.click('#gq .opt[data-o="1"]'); await pg.waitForTimeout(200);

@@ -191,8 +191,189 @@ def load_json_src(name):
             if 'cap' not in p:
                 p['cap'] = None
                 caption_split(p)
+        admin_structure(d['divisions'], provs, SPLITLOG)
     return dict(meta=d.get('meta', {}), title=d.get('title'), pre=d.get('pre', []), divisions=d['divisions'],
                 provisions=provs, closing=d.get('closing', []))
+
+
+ADMIN_PROOF = json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'admin_proof.json')))
+
+
+def _insert_div(divs, provs, at, rec):
+    """insert a division at index `at`, shifting every later index (division parents and provision divs)"""
+    for d in divs:
+        if d.get('parent') is not None and d['parent'] >= at:
+            d['parent'] += 1
+    for p in provs:
+        if p.get('div') is not None and p['div'] >= at:
+            p['div'] += 1
+    divs.insert(at, rec)
+
+
+def admin_structure(divs, provs, log):
+    """Headings the OCR read as the last line of the preceding section become headings again, and the sections after
+    them move under them; Book III's lettered groups (A to D) of Chapter 9 are set as siblings."""
+    leaks = ADMIN_PROOF['leaks']
+    k = 0
+    while k < len(provs):
+        p = provs[k]
+        hit = next((j for j, x in enumerate(p['paras']) if isinstance(x, str) and typo_norm(x) in leaks), None)
+        if hit is None:
+            k += 1; continue
+        title = leaks[typo_norm(p['paras'][hit])]
+        p['paras'] = p['paras'][:hit] + p['paras'][hit + 1:]
+        old = p['div']
+        new = {'t': title, 'lvl': divs[old]['lvl'], 'parent': divs[old]['parent']}
+        _insert_div(divs, provs, old + 1, new)
+        old_ = p['div']; nd = old_ + 1
+        moved = 0
+        for q in provs[k + 1:]:
+            if q['div'] != old_: break
+            q['div'] = nd; moved += 1
+        log.append({'code': 'admincode', 'n': p.get('n'), 'op': 'heading', 'applied': True,
+                    'note': f'“{title}” had been read as the last line of Sec. {p.get("n")}; restored as a heading over the {moved} section(s) that follow it.'})
+        k += 1
+    # Book III, Title III, Chapter 9: "A — Private Office" was run into the chapter title; C was nested under B
+    for i, d in enumerate(divs):
+        m = re.match(r'^(Chapter 9 — Functions of the Different Offices in the Office of the President Proper)\s*A\s*—\s*private Office$', d['t'])
+        if m:
+            d['t'] = m.group(1)
+            _insert_div(divs, provs, i + 1, {'t': 'A — The Private Office', 'lvl': d['lvl'] + 1, 'parent': i})
+            for p in provs:
+                if p['div'] == i: p['div'] = i + 1
+            kids = [j for j, x in enumerate(divs) if re.match(r'^[A-D]\s*—', x['t']) and j > i and j < i + 6]
+            for j in kids:
+                divs[j]['parent'] = i; divs[j]['lvl'] = d['lvl'] + 1
+            log.append({'code': 'admincode', 'n': '', 'op': 'heading', 'applied': True,
+                        'note': 'Book III, Chapter 9: “A — The Private Office” separated from the chapter title; groups A to D set side by side under the chapter.'})
+            break
+
+
+ADMIN_JUNK_END = re.compile(r'(?<=[.;:,a-z])\s+(?:ae|ba|ye|ai|ee(?: \*)?|eS|i|l|[fjtyq]|[|{}=_*~\\/@¢»©!]|—)$')
+
+
+def admin_proof(provs, doc, log):
+    """Proofreading pass over the Administrative Code (tools/admin_proof.json), then three mechanical repairs:
+    stray OCR marks at the end of a paragraph, paragraphs with no words of the law, and paragraphs the OCR broke at
+    a line or page end."""
+    A = ADMIN_PROOF
+    divs = doc['divisions']
+    for d in divs:
+        if d['t'] in A['divtitles']:
+            log.append({'code': 'admincode', 'n': '', 'op': 'heading', 'applied': True, 'note': f'Heading “{d["t"]}” → “{A["divtitles"][d["t"]]}”'})
+            d['t'] = A['divtitles'][d['t']]
+    byid = {p['i']: p for p in provs}
+    def note(p, t):
+        p.setdefault('e', []).append({'t': t, 'b': 'Proofreading against your scan and the LawPhil text'})
+    for e in A['drop']:
+        p = byid.get(e['i']); ok = False
+        if p:
+            keep = [x for x in p['p'] if not (isinstance(x, str) and x.strip() == e['f'])]
+            ok = len(keep) < len(p['p']); p['p'] = keep
+        log.append({'code': 'admincode', 'n': e['i'], 'op': 'ocr-drop', 'applied': ok, 'note': f'Removed OCR debris “{e["f"]}” (no words of the law)'})
+    for e in A['edits']:
+        p = byid.get(e['i']); ok = False
+        if p:
+            hits = [j for j, x in enumerate(p['p']) if isinstance(x, str) and e['f'] in x]
+            if len(hits) == 1 and p['p'][hits[0]].count(e['f']) == 1:
+                j = hits[0]
+                p['p'][j] = p['p'][j].replace(e['f'], e['t'])
+                if '\n\n' in p['p'][j]:
+                    p['p'][j:j + 1] = [s.strip() for s in p['p'][j].split('\n\n') if s.strip()]
+                ok = True
+                if e.get('why'): note(p, e['why'])
+        log.append({'code': 'admincode', 'n': e['i'], 'op': 'ocr-fix', 'applied': ok, 'note': f'“{e["f"]}” → “{e["t"]}”'})
+    for e in A['tables']:
+        p = byid.get(e['i']); ok = False
+        if p:
+            s = [x if isinstance(x, str) else None for x in p['p']]
+            if e['from'] in s and e['to'] in s:
+                a, b = s.index(e['from']), s.index(e['to'])
+                p['p'][a:b + 1] = [e['table']]; ok = True; note(p, e['why'])
+        log.append({'code': 'admincode', 'n': e['i'], 'op': 'ocr-table', 'applied': ok, 'note': 'OCR lines of a table set out as a table'})
+    for e in A.get('caps', []):
+        p = byid.get(e['i'])
+        if p:
+            p['c'] = e['c']
+        log.append({'code': 'admincode', 'n': e['i'], 'op': 'ocr-caption', 'applied': bool(p), 'note': f'Caption restored: “{e["c"]}”'})
+    for e in A['set']:
+        p = byid.get(e['i'])
+        if p:
+            p['p'] = list(e['p']); note(p, e['why'])
+        log.append({'code': 'admincode', 'n': e['i'], 'op': 'ocr-set', 'applied': bool(p), 'note': 'Section text taken from the LawPhil transcription (OCR garbled)'})
+    cl = A.get('closing')
+    if cl and cl['i'] in byid:
+        p = byid[cl['i']]
+        s_ = [x if isinstance(x, str) else None for x in p['p']]
+        if cl['from'] in s_:
+            k = s_.index(cl['from'])
+            doc['closing'] = [x for x in p['p'][k:] if isinstance(x, str)] + list(doc.get('closing') or [])
+            p['p'] = p['p'][:k]
+            log.append({'code': 'admincode', 'n': cl['i'], 'op': 'structure', 'applied': True, 'note': 'The signing clause (“Done in the City of Manila …”) moved from the last section to the closing of the Code.'})
+    words = _dic()
+    nj = nd = ne = 0
+    for p in provs:
+        ps = p['p']
+        for j, x in enumerate(ps):
+            if isinstance(x, str):
+                y = x
+                while True:
+                    z = ADMIN_JUNK_END.sub('', y)
+                    if z == y: break
+                    y = z
+                y = re.sub(r'([.;:,])[.;:,]$', r'\1', y) if re.search(r'[a-z)][.;:,][.;:]$', y) else y
+                if y != x:
+                    ps[j] = y; ne += 1
+        for j, x in enumerate(ps):
+            if not isinstance(x, str): continue
+            y = re.sub(r'^[{<](\w{1,4})\)\.?\s*', r'(\1) ', x)          # "{1)" / "<1)" -> "(1)"
+            y = re.sub(r'^(\d{1,2})\)\s', r'(\1) ', y)                    # "1) Establish" -> "(1) Establish"
+            y = re.sub(r'^\d{1,3}\s+(?=\(\d{1,2}\)\s)', '', y)            # page number before "(3)"
+            y = re.sub(r'^\d{1,3}\s+(?=[a-z]{2,})', '', y)                  # page number before a continued line
+            y = re.sub(r'^[-—_]+\s*(?=[a-z(“A-Z])', '', y)                   # dash or rule debris at the start
+            y = re.sub(r'^\*(?=[A-Z][a-z]+”)', '“', y)                        # "*Year”" -> "“Year”"
+            y = re.sub(r'^(\d)\.(?=[A-Z])', r'\1. ', y)                       # "2.In" -> "2. In"
+            if '[' not in y:
+                y = re.sub(r'(?<=[A-Za-z])\](?=[\s.,;:]|$)', '', y)            # "shall]" (OCR "l]" for "ll")
+            y = re.sub(r'(?<=\s)_(?=[a-z])|(?<=[a-z])_(?=\s)', '', y)         # "_perform", "and_ regulations"
+            y = re.sub(r'(?<=[a-z])!(?=\s)', '', y)                           # "control! is"
+            if y != x:
+                ps[j] = y; ne += 1
+        keep = []
+        for x in ps:
+            if isinstance(x, str) and not re.search(r'\(\w{1,4}\)', x) and not any(len(w) >= 3 and w.lower() in words for w in re.findall(r'[A-Za-z]+', x)):
+                log.append({'code': 'admincode', 'n': p['i'], 'op': 'ocr-drop', 'applied': True, 'note': f'Removed OCR debris “{x}”'}); nd += 1
+                continue
+            keep.append(x)
+        ps[:] = keep
+        j = 0
+        while j < len(ps) - 1:
+            a_, b_ = ps[j], ps[j + 1]
+            if isinstance(a_, str) and isinstance(b_, str) and a_.endswith(',') and re.match(r'^(?:The|All|He|It|This|These|Such|Any|No|In|If|When|Government-owned)\b', b_):
+                ps[j] = a_[:-1] + '.'   # a full stop the OCR read as a comma at the end of a paragraph
+                log.append({'code': 'admincode', 'n': p['i'], 'op': 'ocr-fix', 'applied': True, 'note': f'Full stop read as a comma before a new paragraph: “…{a_[-40:]}”'})
+                j += 1; continue
+            if isinstance(a_, str) and isinstance(b_, str) and not re.search(r'[.;:!?”"’)\]—]\s*$', a_) and (
+                    re.match(r'^(?:\)\s*)?[a-z]', b_) or (re.search(r'[A-Za-z,]$', a_) and re.match(r'^[A-Z][a-z]', b_) and not re.match(r'^\(?\w{1,4}[.)]\s', b_) and len(a_) > 60)):
+                ps[j] = a_.rstrip() + ' ' + re.sub(r'^\)\s*', '', b_); ps.pop(j + 1); nj += 1
+                log.append({'code': 'admincode', 'n': p['i'], 'op': 'ocr-join', 'applied': True, 'note': f'Rejoined a paragraph broken at a line or page end: “…{a_[-40:]}” + “{b_[:40]}…”'})
+                continue
+            j += 1
+        # verification flag: words still to check against the scan
+        if p.get('u'):
+            txt = ' '.join([p.get('c') or ''] + [x for x in ps if isinstance(x, str)])
+            p['u'] = [w for w in p['u'] if re.search(r'(?<![A-Za-z])' + re.escape(w) + r'(?![A-Za-z])', txt)]
+            if not p['u']:
+                p.pop('u'); p['v'] = 'ok'
+    print('admin proof: end-junk', ne, 'debris paragraphs', nd, 'joins', nj)
+
+
+def spellfix(assembled, log):
+    import spellfix_lib
+    for cid, (doc, provs) in assembled.items():
+        if cid != 'admincode':
+            spellfix_lib.join_broken(cid, provs, log)
+        spellfix_lib.apply(cid, doc['divisions'], provs, log)
 
 
 def load_ins10607():
@@ -767,6 +948,9 @@ def main():
                     if ok:
                         p.setdefault('e', []).append({'t': e['note'], 'b': e.get('basis', '')})
             report['errata'].append({'code': cid, 'n': e['n'], 'op': 'consolidate', 'applied': ok, 'note': e['note']})
+    if 'admincode' in assembled:
+        admin_proof(assembled['admincode'][1], assembled['admincode'][0], report['errata'])
+    spellfix(assembled, report['errata'])
     for (cid, short, title, cit, subj, src, core, note) in CODES:
         if cid not in assembled:
             continue
