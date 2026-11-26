@@ -593,7 +593,7 @@ function codeCard(c) {
 
 async function home() {
   setNav('home');
-  await Promise.all([loadShifts(), loadEnforce()]);
+  await Promise.all([loadShifts(), loadEnforce(), loadGov()]);
   const dk = dueKeys(), due = dk.length, nt = newToday(), st = streak();
   const dq = dk.filter(k => k.startsWith('q|')).length, dpv = due - dq;
   const dueWhat = [dpv ? `${dpv} provision${dpv === 1 ? '' : 's'}` : '', dq ? `${dq} question${dq === 1 ? '' : 's'}` : ''].filter(Boolean).join(' and ');
@@ -640,6 +640,11 @@ function itemRow(it, f) {
   if (it.t === 'shift') { const sh = SHF && SHF.byId[it.id]; if (!sh) return ''; return `<li><a href="#/shifts/${it.id}"><span class="kind k-shift">Change</span><span><span class="it">${esc(sh.title)}</span><br><span class="im">${esc(shiftSpan(sh))} · how the doctrine changed, and why</span></span><span class="st">${qChip('shift:' + it.id)}</span></a></li>`; }
   if (it.t === 'enforce') { const pb = it.id === 'playbook'; const n = ENF ? (pb ? ENF.moves.length : ENF.drills.length) : 0; const inMem = ENF ? ENF.drills.filter(d => lockState(QK('enf:' + d.id)) !== 'n').length : 0;
     return `<li><a href="${pb ? '#/enforce' : '#/enforce/drills'}"><span class="kind k-enf">${pb ? 'Playbook' : 'Cases'}</span><span><span class="it">${pb ? 'Enforcing a judgment' : 'Case files: enforcing a judgment'}</span><br><span class="im">${pb ? `${n} moves in nine stages, each tied to its rule` : `${n} problems; each joins your reviews once answered`}</span></span><span class="st">${pb ? (S.enf.seen ? '<span class="done">Opened</span>' : '') : (inMem ? `${inMem}/${n}` : '')}</span></a></li>`; }
+  if (it.t === 'govern') { const G = GOV || { drills: [], method: [], problems: [], land: { gates: [] } }; const inMem = G.drills.filter(d => lockState(QK('gov:' + d.id)) !== 'n').length;
+    const row = { method: ['#/govern', 'Method', 'Which law governs?', `The eight questions, the rules with their reasons, a date tool, ${G.problems.length} worked problems`, (S.seen || {}).govern ? '<span class="done">Opened</span>' : ''],
+      land: ['#/govern/land', 'Land', 'Land disputes: which law governs, gate by gate', 'Old or new Civil Code, Public Land Act, PD 1529, RA 11573, agrarian law, the Constitution', (S.seen || {}).govland ? '<span class="done">Read</span>' : ''],
+      drills: ['#/govern/drills', 'Cases', 'Case files: find the governing law', `${G.drills.length} problems; each joins your reviews once answered`, inMem ? `${inMem}/${G.drills.length}` : ''] }[it.id];
+    return row ? `<li><a href="${row[0]}"><span class="kind k-gov">${row[1]}</span><span><span class="it">${row[2]}</span><br><span class="im">${row[3]}</span></span><span class="st">${row[4]}</span></a></li>` : ''; }
   if (it.t === 'treaties') return `<li><a href="#/treaties"><span class="kind k-intl">Treaties</span><span><span class="it">Treaties binding the Philippines</span><br><span class="im">How international law enters Philippine law; the treaties, the laws that carry them out, the cases</span></span><span class="st">${(S.seen || {}).treaties ? '<span class="done">Opened</span>' : ''}</span></a></li>`;
   if (it.t === 'history') return `<li><a href="#/history"><span class="kind k-hist">History</span><span><span class="it">How Philippine law evolved</span><br><span class="im">From custom and the Spanish codes to the 1987 Constitution, and the history of each code</span></span><span class="st">${(S.seen || {}).history ? '<span class="done">Read</span>' : ''}</span></a></li>`;
   if (it.t === 'laws') return `<li><a href="#/laws"><span class="kind k-law">Library</span><span><span class="it">Every Philippine statute</span><br><span class="im">${Object.values(CAT.laws || {}).reduce((a, b) => a + b, 0).toLocaleString()} national laws as enacted, each with the later laws that changed it</span></span><span class="st"></span></a></li>`;
@@ -797,7 +802,7 @@ function verifyChips(cid, p) {
 
 async function provView(cid, pid, q) {
   setNav('library');
-  const d = await loadCode(cid); await loadExtras(cid); await Promise.all([loadSylIndex(), loadRecent(), loadShifts(), loadEnforce(), cid === 'rpc' ? loadB2().catch(() => null) : null]);
+  const d = await loadCode(cid); await loadExtras(cid); await Promise.all([loadSylIndex(), loadRecent(), loadShifts(), loadEnforce(), loadGov(), cid === 'rpc' ? loadB2().catch(() => null) : null]);
   const p = d.byId[pid];
   if (!p) { main.innerHTML = `<div class="empty">That provision is not in this code. <a href="#/code/${cid}">Back to ${esc(d.short)}</a></div>`; return; }
   const key = ck(cid, pid);
@@ -816,9 +821,9 @@ async function provView(cid, pid, q) {
   const notes = (NOTES[cid] || {})[pid];
   const cases = (CASES[cid] || {})[pid] || [];
   const syl = SYX[ck(cid, pid)] || [], rec = REC.by[ck(cid, pid)] || [];
-  const shf = SHF.byLink[ck(cid, pid)] || [], enf = ENF.byLink[ck(cid, pid)] || [];
+  const shf = SHF.byLink[ck(cid, pid)] || [], enf = ENF.byLink[ck(cid, pid)] || [], gov = (GOV && GOV.byLink[ck(cid, pid)]) || [];
   shf.forEach(x => seenQ('shift:' + x.id)); if (shf.length) save();
-  const ncase = cases.length + syl.length + rec.length + (((notes || {}).d) || []).length + shf.length + enf.length;
+  const ncase = cases.length + syl.length + rec.length + (((notes || {}).d) || []).length + shf.length + enf.length + gov.length;
   const on = S.settings.hl;
   const tabs = [['guide', 'Step 2', 'Understand'], ['recall', 'Step 3', 'Recall'], ['cases', 'Step 4', `Cases${ncase ? ' (' + ncase + ')' : ''}${rec.length ? ' <span class="newdot" title="has 2023–2026 rulings">new</span>' : ''}`], ['notes', 'Yours', 'My notes']];
   main.innerHTML = `${crumbs(d, p, cid)}${setBar}
@@ -842,7 +847,7 @@ async function provView(cid, pid, q) {
   const show = k => { $$('.steps button').forEach(b => b.classList.toggle('on', b.dataset.tab === k)); renderTab(k); };
   function renderTab(k) {
     if (k === 'guide') tabbox.innerHTML = guideHTML(d, p, cid, notes, loc);
-    if (k === 'cases') tabbox.innerHTML = casesHTML(cid, pid, notes, cases, syl, rec, shf, enf);
+    if (k === 'cases') tabbox.innerHTML = casesHTML(cid, pid, notes, cases, syl, rec, shf, enf, gov);
     if (k === 'notes') { tabbox.innerHTML = `<div class="panel"><textarea id="mynote" placeholder="Your own words: what the provision says, the elements, a case that applies it, a mnemonic…">${esc(S.notes[key] || '')}</textarea><p class="tiny muted">Saved on this device as you type. Writing it in your own words is one of the strongest ways to learn it.</p></div>`; $('#mynote').addEventListener('input', e => { S.notes[key] = e.target.value; save(); }); }
     if (k === 'recall') { recallPanel(tabbox, d, p, cid); if (S.hooks[key]) $('.panel', tabbox).insertAdjacentHTML('afterbegin', `<div class="hookcue"><b>Your picture:</b> ${esc(S.hooks[key])}</div>`); }
     if (k === 'guide') { $$('[data-av]', tabbox).forEach(b => b.onclick = () => { S.settings.anatView = b.dataset.av; save(); $$('[data-av]', tabbox).forEach(x => x.classList.toggle('on', x === b)); $('#av-judge').hidden = b.dataset.av !== 'judge'; $('#av-text').hidden = b.dataset.av !== 'text'; }); }
@@ -1007,8 +1012,9 @@ function sylHTML(syl) {
   return Object.entries(by).map(([k, arr]) => `<div class="card flat" style="margin-bottom:10px"><div class="row"><b>${esc(COURSE[k] || k)}</b><span class="spacer"></span><a class="tiny" href="#/syllabus/${k}">open the syllabus</a></div>
     <ul style="margin:8px 0 0;padding-left:1.1em">${arr.map(c => `<li><span style="font-family:var(--serif)">${esc(c.n)}</span>${c.c ? `, <span class="muted">${esc(c.c)}</span>` : ''}${c.note ? ` <span class="small muted">— ${esc(c.note)}</span>` : ''}${c.topic ? `<div class="tiny muted">${esc(c.topic)}${c.d ? ' · filed by the outline section' : ''}</div>` : ''}</li>`).join('')}</ul></div>`).join('');
 }
-function casesHTML(cid, pid, n, cases, syl = [], rec = [], shf = [], enf = []) {
+function casesHTML(cid, pid, n, cases, syl = [], rec = [], shf = [], enf = [], gov = []) {
   let h = '<div class="panel">';
+  if (gov.length) h += `<h3>Which law governs?</h3><p class="small muted">This provision decides which law applies to a set of facts, or is one of the laws you must date before you use it. Read it with:</p><div class="grid g2">${gov.map(govCard).join('')}</div>`;
   if (shf.length) h += `<h3>How the doctrine changed</h3><p class="small muted">The Supreme Court changed its own rule on this provision. The analysis gives the cases in order, the reasons and the dissents. Its question has joined your reviews.</p>` + shf.map(shiftCard).join('');
   if (enf.length) h += `<h3 style="margin-top:14px">Enforcing it</h3><p class="small muted">Moves from the playbook on executing judgments that rest on this provision.</p><div class="grid g2">${enf.map(m => moveCard(m, stageName(m.stage))).join('')}</div>`;
   if (rec.length) h += `<h3>Recent rulings (2023–2026)</h3><p class="small muted">Added after a check of recent Supreme Court decisions (last checked ${esc(REC.checked || '')}). Holdings are summarised in our own words.</p>` + recentHTML(rec);
@@ -1025,7 +1031,7 @@ function casesHTML(cid, pid, n, cases, syl = [], rec = [], shf = [], enf = []) {
       h += `<div class="card flat" style="margin-bottom:10px"><div class="row"><b>${esc(b)}</b><span class="spacer"></span><span class="tiny muted">${arr.length} citation${arr.length === 1 ? '' : 's'}</span></div><ul style="margin:8px 0 0;padding-left:1.1em">${arr.map(c => `<li><span style="font-family:var(--serif)">${esc(c.n)}</span>${c.c ? `, <span class="muted">${esc(c.c)}</span>` : ''} <span class="chip">p. ${esc(c.pg)}</span></li>`).join('')}</ul></div>`;
     }
   }
-  if (!dg.length && !cases.length && !syl.length && !rec.length && !shf.length && !enf.length) h += `<div class="empty">No cases indexed for this provision yet.</div>`;
+  if (!dg.length && !cases.length && !syl.length && !rec.length && !shf.length && !enf.length && !gov.length) h += `<div class="empty">No cases indexed for this provision yet.</div>`;
   return h + '</div>';
 }
 async function wireTutor(d, p, cid, cases) {
@@ -1206,7 +1212,7 @@ async function reviewView() {
       main.innerHTML = `<div class="reviewcard"><div class="row small muted"><span>${i + 1} / ${queue.length}</span><span class="spacer"></span><span>${esc(qi.kind)}</span></div><div class="qtitle">${esc(qi.title)}</div>${quizHTML('rq', qi.t)}</div>`;
       const box = wireQuiz('rq', qi.t, ok => rate(key, ok ? 3 : 1), (ok, c) => `${memLine(c)}<div class="row" style="margin-top:10px"><a class="btn sm ghost" href="${qi.href}">${esc(qi.open)}</a><span class="spacer"></span><button class="btn primary" id="rnx">Next</button></div>`);
       box.addEventListener('click', e => { if (e.target.id === 'rnx') { i++; step(); } });
-      document.onkeydown = e => { if (!location.hash.startsWith('#/review') || /input|textarea/i.test(e.target.tagName)) return; if (/^[1-4]$/.test(e.key)) { const b = $(`#rq .opt[data-o="${+e.key - 1}"]`); if (b && !b.disabled) b.click(); } if (e.key === 'Enter') { const n = $('#rnx'); if (n) n.click(); } };
+      document.onkeydown = e => { if (!location.hash.startsWith('#/review') || /input|textarea/i.test(e.target.tagName)) return; if (/^[1-4]$/.test(e.key)) { const b = $$('#rq .opt')[+e.key - 1]; if (b && !b.disabled) b.click(); } if (e.key === 'Enter') { const n = $('#rnx'); if (n) n.click(); } };
       return;
     }
     if (!meta(cid)) { i++; return step(); }
@@ -1311,11 +1317,11 @@ async function mapView(parts) {
           ${nx ? `<div class="mapnext"><span class="eyebrow">Next to lock in</span><a class="btn primary" href="#/map/${nx.f.id}">${esc(nx.f.name)} →</a><span class="small muted">${nx.t.x ? `${nx.t.x} provision${nx.t.x === 1 ? ' is' : 's are'} slipping here.` : 'The least locked-in field you are taking this semester.'}</span></div>` : ''}</div></div>
       <div class="mapgrid">${rows.map(({ f, t, mine }) => `<a class="mtile f-${f.id}${mine ? '' : ' dim'}" href="#/map/${f.id}"><span class="mth"><span><span class="p">${f.n} · ${esc(f.pname)}</span><span class="t">${esc(f.name)}</span></span>${ringHTML(t, 52)}</span>${waffle(t)}<span class="ml">${lockLine(t)}</span></a>`).join('')}</div>
       ${LEGEND}<p class="tiny muted">Each square in a tile is 1% of that field. Faded fields are outside this semester. <a href="#/learn">Change your fields</a> · <a href="#/about">What “locked in” means</a></p>
-      <div class="mapextra"><a class="card codecard" href="#/laws"><span class="eyebrow">The whole statute book</span><span class="t">Every Philippine statute</span><span class="small muted">${Object.values(CAT.laws || {}).reduce((a, b) => a + b, 0).toLocaleString()} laws from 1900 to today, as enacted, each with the later laws that changed it.</span></a><a class="card codecard" href="#/history"><span class="eyebrow">Legal history</span><span class="t">How Philippine law evolved</span><span class="small muted">The eras, from custom and the Spanish codes to 1987, and each code’s own history.</span></a><a class="card codecard" href="#/treaties"><span class="eyebrow">International law</span><span class="t">Treaties binding the Philippines</span><span class="small muted">The treaties, how they enter Philippine law, the laws that carry them out.</span></a><a class="card codecard" href="#/shifts"><span class="eyebrow">Across the fields</span><span class="t">How the doctrine changed</span><span class="small muted">Where the Court abandoned its own rule: old rule, new rule, the reasons, the dissents.</span></a><a class="card codecard" href="#/enforce"><span class="eyebrow">After you win</span><span class="t">Enforcing a judgment</span><span class="small muted">Nine stages from attachment to the ten-year clock, with case files to practise on.</span></a></div></div>`;
+      <div class="mapextra"><a class="card codecard" href="#/laws"><span class="eyebrow">The whole statute book</span><span class="t">Every Philippine statute</span><span class="small muted">${Object.values(CAT.laws || {}).reduce((a, b) => a + b, 0).toLocaleString()} laws from 1900 to today, as enacted, each with the later laws that changed it.</span></a><a class="card codecard" href="#/history"><span class="eyebrow">Legal history</span><span class="t">How Philippine law evolved</span><span class="small muted">The eras, from custom and the Spanish codes to 1987, and each code’s own history.</span></a><a class="card codecard" href="#/treaties"><span class="eyebrow">International law</span><span class="t">Treaties binding the Philippines</span><span class="small muted">The treaties, how they enter Philippine law, the laws that carry them out.</span></a><a class="card codecard" href="#/shifts"><span class="eyebrow">Across the fields</span><span class="t">How the doctrine changed</span><span class="small muted">Where the Court abandoned its own rule: old rule, new rule, the reasons, the dissents.</span></a><a class="card codecard" href="#/enforce"><span class="eyebrow">After you win</span><span class="t">Enforcing a judgment</span><span class="small muted">Nine stages from attachment to the ten-year clock, with case files to practise on.</span></a><a class="card codecard" href="#/govern"><span class="eyebrow">Before you argue</span><span class="t">Which law governs?</span><span class="small muted">Old or new Civil Code? The law of the date, the place and the rank, with land disputes worked in full.</span></a></div></div>`;
   } else if (!cid) {
     // level 1: one field — its whole path in the order it is best learned: lessons, walks, codes, changes of course, case files
     const f = CUR.byId[fid]; if (!f) return mapView([]);
-    await Promise.all([loadShifts(), loadEnforce()]);
+    await Promise.all([loadShifts(), loadEnforce(), loadGov()]);
     const tierName = { start: 'Start here', core: 'Core', deep: 'Go deeper when you need it' };
     const ft = fieldCodes(f).reduce((a, c) => addT(a, codeTally(c)), zeroT());
     let nxt = null;
@@ -1457,7 +1463,7 @@ async function sprintView(q) {
       const box = wireQuiz('spq', qi.t, ok => { const g = ok ? 3 : 1; const c = rate(key, g); done.push([key, g]); if (g === 1) { missed[key] = (missed[key] || 0) + 1; if (missed[key] <= 2) queue.splice(Math.min(queue.length, i + 3), 0, key); } return c; },
         (ok, c) => `${memLine(c)}<div class="row" style="margin-top:10px"><a class="btn sm ghost" href="${qi.href}">${esc(qi.open)}</a><span class="spacer"></span><button class="btn primary" id="spnx">Next</button></div>`);
       box.addEventListener('click', e => { if (e.target.id === 'spnx') { i++; step(); } });
-      document.onkeydown = e => { if (!location.hash.startsWith('#/sprint') || /input|textarea/i.test(e.target.tagName)) return; if (/^[1-4]$/.test(e.key)) { const b = $(`#spq .opt[data-o="${+e.key - 1}"]`); if (b && !b.disabled) b.click(); } if (e.key === 'Enter') { const n = $('#spnx'); if (n) n.click(); } };
+      document.onkeydown = e => { if (!location.hash.startsWith('#/sprint') || /input|textarea/i.test(e.target.tagName)) return; if (/^[1-4]$/.test(e.key)) { const b = $$('#spq .opt')[+e.key - 1]; if (b && !b.disabled) b.click(); } if (e.key === 'Enter') { const n = $('#spnx'); if (n) n.click(); } };
       return;
     }
     if (!meta(cid)) { i++; return step(); }
@@ -1642,7 +1648,7 @@ async function searchView(q) {
     const mark = s => { let h = esc(s); for (const w of terms.concat(phrases)) if (w.length > 2) h = h.replace(new RegExp('(' + w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi'), '<mark>$1</mark>'); return h; };
     const snip = p => { const t2 = provText(p); const low = t2.toLowerCase(); const w = (phrases[0] || terms[0] || ''); const k = w ? low.indexOf(w) : 0; const a = Math.max(0, k - 90); return (a ? '…' : '') + t2.slice(a, a + 260) + (t2.length > a + 260 ? '…' : ''); };
     const ch = await caseHits(terms.concat(phrases), only);
-    await Promise.all([loadShifts(), loadEnforce(), loadLaws().catch(() => null)]); const xh = only ? [] : extraHits(terms.concat(phrases));
+    await Promise.all([loadShifts(), loadEnforce(), loadGov(), loadLaws().catch(() => null)]); const xh = only ? [] : extraHits(terms.concat(phrases));
     const lh = only || !LAWS ? [] : lawSearch(t).slice(0, 12);
     sr.innerHTML = (lh.length ? `<div class="card flat" style="margin-bottom:12px"><h3 style="margin:0 0 6px">Statutes (${lh.length}${lh.length >= 12 ? '+' : ''})</h3><ul class="items lawlist">${lh.map(lawRow).join('')}</ul><a class="small" href="#/laws?q=${encodeURIComponent(t)}">All matching statutes →</a></div>` : '') + (xh.length ? `<div class="card flat" style="margin-bottom:12px"><h3 style="margin:0 0 6px">In the changes of course and the enforcement playbook (${xh.length})</h3><ul class="small" style="margin:0;padding-left:1.1em">${xh.map(([h, k, t2]) => `<li><span class="chip violet">${esc(k)}</span> <a href="${h}">${mark(t2)}</a></li>`).join('')}</ul></div>` : '') + (ch.length ? `<div class="card flat" style="margin-bottom:12px"><h3 style="margin:0 0 6px">Cases named “${esc(t)}” (${ch.length})</h3><ul class="small" style="margin:0;padding-left:1.1em">${ch.slice(0, 60).map(x => `<li><span style="font-family:var(--serif)">${mark(x.n)}</span>${x.c ? `, <span class="muted">${esc(x.c)}</span>` : ''} <span class="tiny muted">${esc(x.src)}</span> → ${x.ks.slice(0, 6).map(k => { const [c, p] = k.split('|'); const pr = CODES[c] && CODES[c].byId[p]; return `<a class="chip blue" href="#/p/${c}/${p}">${esc((meta(c) || {}).short || c)} ${esc(pr ? pr.l : p)}</a>`; }).join(' ')}</li>`).join('')}</ul></div>` : '') + `<p class="small muted">${hits.length.toLocaleString()} provision${hits.length === 1 ? '' : 's'}${hits.length > 150 ? ' · showing 150' : ''}</p><ol class="results" style="padding-left:1.2em">${hits.slice(0, 150).map(h => `<li><a href="#/p/${h.cid}/${h.p.i}"><b>${esc(meta(h.cid).short)} · ${esc(h.p.l)}</b>${h.p.c ? ' — ' + mark(h.p.c) : ''}</a><div class="small" style="font-family:var(--serif)">${mark(snip(h.p))}</div></li>`).join('')}</ol>`;
   };
@@ -1891,7 +1897,8 @@ async function aboutView() {
   <h2 id="coverage">What Philippine law is in Sinag</h2>
   <ul class="explain small">
     <li><b>Study library: ${CAT.codes.length} instruments</b>, ${CAT.total.toLocaleString()} provisions, taken apart for learning, with the text in force where amendments are consolidated. These are the codes and special laws on the bar syllabus.</li>
-    <li><b>Statute library: ${Object.values(CAT.laws || {}).reduce((a, b) => a + b, 0).toLocaleString()} national statutes</b> as enacted: the six constitutions, ${(CAT.laws || {}).act || 0} Acts (1900–1935), ${(CAT.laws || {}).ca || 0} Commonwealth Acts, ${((CAT.laws || {}).ra || 0).toLocaleString()} Republic Acts, ${((CAT.laws || {}).pd || 0).toLocaleString()} Presidential Decrees, ${(CAT.laws || {}).bp || 0} Batas Pambansa and ${((CAT.laws || {}).eo || 0).toLocaleString()} Executive Orders, each with the later laws that expressly amended or repealed it. Numbers the source lacks: ${['act', 'ra', 'pd', 'bp'].filter(k => (CAT.lawgaps || {})[k]).map(k => `${(CAT.lawgaps[k].missing)} ${({ act: 'Acts', ra: 'Republic Acts', pd: 'Presidential Decrees', bp: 'Batas Pambansa (including BP 1–83, so BP 22 and BP 68)' })[k]}`).join(', ')}.</li>
+    <li><b>Statute library: ${Object.values(CAT.laws || {}).reduce((a, b) => a + b, 0).toLocaleString()} national statutes</b> as enacted: the six constitutions, ${(CAT.laws || {}).act || 0} Acts (1900–1935), ${(CAT.laws || {}).ca || 0} Commonwealth Acts, ${((CAT.laws || {}).ra || 0).toLocaleString()} Republic Acts, ${((CAT.laws || {}).pd || 0).toLocaleString()} Presidential Decrees, ${(CAT.laws || {}).bp || 0} Batas Pambansa and ${((CAT.laws || {}).eo || 0).toLocaleString()} Executive Orders, each with the later laws that expressly amended or repealed it. Those links are detected by machine from the later law’s title and text and shown with the sentence that says so; the detector reads a repeal as total only when the sentence names the whole law and nothing limits it, and treats anything less (a section, “insofar as”, “inconsistent herewith”) as a repeal in part, so read the quoted sentence before you rely on a link. Numbers the source lacks: ${['act', 'ra', 'pd', 'bp'].filter(k => (CAT.lawgaps || {})[k]).map(k => `${(CAT.lawgaps[k].missing)} ${({ act: 'Acts', ra: 'Republic Acts', pd: 'Presidential Decrees', bp: 'Batas Pambansa (including BP 1–83, so BP 22 and BP 68)' })[k]}`).join(', ')}.</li>
+    <li><b>Later amendments brought into the study texts.</b> Where a study text came from an edition older than its latest amendment, the amendment is applied from the amending law’s own words and marked on the provision (for example PD 1529 Sec. 14 as rewritten by RA 11573, the CARL as amended by RA 7881, RA 7905, RA 8532 and RA 9700, the Labor Code articles on apprentices repealed by RA 12063, and RA 7610 as amended by RA 11648).</li>
     <li><b>Treaties:</b> a registry of the treaties that bind the Philippines, with how each enters Philippine law, the statutes that carry it out and the leading cases. The treaty texts themselves are linked at their depositaries, not reproduced.</li>
     <li><b>Not here, and why.</b> Implementing rules and regulations and agency issuances (there are tens of thousands, published by each agency and the Office of the National Administrative Register, with no complete public source to draw from); Supreme Court rules and circulars, including the Rules of Court (the Court publishes them, but not in a source this build can use); and local ordinances (each of the country’s roughly 1,700 provinces, cities and municipalities keeps its own, with no national compilation). A few IRRs that the bar tests are in the study library (Labor Code, RA 9165, DO 174). Ask, and a specific issuance can be added from its official text.</li></ul>
   <h2>How complete are the cases?</h2>
@@ -1941,14 +1948,16 @@ const QK = id => 'q|' + id;
 function seenQ(id) { const k = QK(id); if (!S.cards[k]) S.cards[k] = { reps: 0, lapses: 0, seen: Date.now() }; }
 function qChip(id) { const st = lockState(QK(id)); return { k: '<span class="chip ok">Locked in</span>', g: '<span class="chip blue">In memory</span>', x: '<span class="chip warn">Slipping</span>', o: '<span class="chip">Opened</span>', n: '' }[st]; }
 async function qResolve(key) {
-  const id = key.slice(2); await Promise.all([loadShifts(), loadEnforce()]);
+  const id = key.slice(2); await Promise.all([loadShifts(), loadEnforce(), loadGov()]);
   if (id.startsWith('shift:')) { const x = SHF.byId[id.slice(6)]; return x && { t: x.test, kind: 'How the doctrine changed', title: x.title, href: `#/shifts/${x.id}`, open: 'Read the analysis' }; }
+  if (id.startsWith('gov:')) { const d = GOV && GOV.drillById[id.slice(4)]; const ref = d && GOV.byId[d.ref]; return d && { t: d, kind: 'Case file · which law governs?', title: ref ? ref.t : 'Which law governs?', href: ref && ref.g ? `#/govern/r/${ref.id}` : ref && ref.rows ? `#/govern/clock?k=${ref.id}` : '#/govern', open: 'Open the rule' }; }
   if (id.startsWith('enf:')) { const d = ENF.drills.find(z => z.id === id.slice(4)); const m = d && ENF.byId[d.m[0]]; return d && { t: d, kind: 'Case file · enforcing a judgment', title: m ? m.title : 'Enforcing a judgment', href: m ? `#/enforce/${m.id}` : '#/enforce', open: 'Open the move' }; }
   return null;
 }
 function keyLabel(k) {
   if (k.startsWith('q|shift:')) { const x = SHF && SHF.byId[k.slice(8)]; return [`#/shifts/${k.slice(8)}`, 'Question: ' + (x ? x.title : 'a change of course')]; }
   if (k.startsWith('q|enf:')) return [`#/enforce/drills?only=${k.slice(6)}`, 'Case file ' + k.slice(7) + ', enforcing a judgment'];
+  if (k.startsWith('q|gov:')) return [`#/govern/drills?only=${k.slice(6)}`, 'Case file ' + k.slice(7) + ', which law governs'];
   const [c, pid] = k.split('|'); const pr = CODES[c] && CODES[c].byId[pid];
   return [`#/p/${c}/${pid}`, `${(meta(c) || {}).short || c} ${pr ? pr.l : String(pid).replace(/-/g, ' ')}`];
 }
@@ -1966,6 +1975,7 @@ function itemLink(i, f) {
   if (i.t === 'shift') { const x = SHF && SHF.byId[i.id]; return [`#/shifts/${i.id}`, x ? x.title : 'How the doctrine changed']; }
   if (i.t === 'enforce') return i.id === 'drills' ? ['#/enforce/drills', 'Case files: enforcing a judgment'] : ['#/enforce', 'Enforcing a judgment'];
   if (i.t === 'treaties') return ['#/treaties', 'Treaties binding the Philippines'];
+  if (i.t === 'govern') return i.id === 'land' ? ['#/govern/land', 'Land disputes: which law governs'] : i.id === 'drills' ? ['#/govern/drills', 'Case files: find the governing law'] : ['#/govern', 'Which law governs?'];
   if (i.t === 'history') return ['#/history', 'How Philippine law evolved'];
   if (i.t === 'laws') return ['#/laws', 'Every Philippine statute'];
   return ['#/map/' + f.id, f.name];
@@ -1983,6 +1993,7 @@ function pathTodo(f) {
     if (i.t === 'shift' && SHF && SHF.byId[i.id] && ['n', 'o'].includes(lockState(QK('shift:' + i.id)))) return itemLink(i, f);
     if (i.t === 'enforce' && ENF && (i.id === 'playbook' ? !S.enf.seen : ENF.drills.some(d => lockState(QK('enf:' + d.id)) === 'n'))) return itemLink(i, f);
     if ((i.t === 'treaties' || i.t === 'history') && !(S.seen || {})[i.t]) return itemLink(i, f);
+    if (i.t === 'govern' && GOV && (i.id === 'method' ? !(S.seen || {}).govern : i.id === 'land' ? !(S.seen || {}).govland : GOV.drills.some(d => lockState(QK('gov:' + d.id)) === 'n'))) return itemLink(i, f);
   }
   return null;
 }
@@ -1998,13 +2009,15 @@ function shiftCard(x) {
   return `<div class="shiftmini"><div class="row"><span class="chip violet">Doctrine changed · ${esc(shiftSpan(x))}</span>${qChip('shift:' + x.id)}<span class="spacer"></span><a class="small" href="#/shifts/${x.id}">Full analysis →</a></div><div class="sm-t">${esc(x.title)}</div>${thenNow(x, 1)}</div>`;
 }
 function moveCard(m, label) { return `<a class="movecard" href="#/enforce/${m.id}">${label ? `<span class="eyebrow">${esc(label)}</span>` : ''}<span class="mt">${esc(m.title)}</span><span class="mh">${esc(m.hook)}</span></a>`; }
-function quizHTML(id, t) { return `<div class="card quiz" id="${id}"><p class="explain" style="margin-top:0">${esc(t.q)}</p><div class="opts">${t.options.map((o, i) => `<button class="opt" data-o="${i}"><span class="qn">${i + 1}</span>${esc(o)}</button>`).join('')}</div><div class="qres"></div></div>`; }
+/* options are shown in a fresh order each time, so the answer is learned, not its position; data-o keeps the authored index */
+function quizOrder(n) { const a = [...Array(n).keys()]; for (let i = n - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+function quizHTML(id, t) { return `<div class="card quiz" id="${id}"><p class="explain" style="margin-top:0">${esc(t.q)}</p><div class="opts">${quizOrder(t.options.length).map((i, k) => `<button class="opt" data-o="${i}"><span class="qn">${k + 1}</span>${esc(t.options[i])}</button>`).join('')}</div><div class="qres"></div></div>`; }
 /* grade first (the card is rated), then show the reason and whatever comes next */
 function wireQuiz(id, t, grade, extra) {
   const box = $('#' + id);
   $$('.opt', box).forEach(b => b.onclick = () => {
     const o = +b.dataset.o, ok = o === t.a;
-    $$('.opt', box).forEach((x, i) => { x.disabled = true; x.classList.toggle('right', i === t.a); x.classList.toggle('wrong', i === o && !ok); });
+    $$('.opt', box).forEach(x => { const i = +x.dataset.o; x.disabled = true; x.classList.toggle('right', i === t.a); x.classList.toggle('wrong', i === o && !ok); });
     const r = grade(ok);
     $('.qres', box).innerHTML = `<div class="note ${ok ? '' : 'bad'}" style="margin-top:10px"><b>${ok ? 'Right.' : 'Not quite.'}</b> ${esc(t.why)}</div>${extra ? extra(ok, r) : ''}`;
   });
@@ -2108,6 +2121,168 @@ function enforceDrills(q, base) {
     main.innerHTML = `${crumb}<span class="eyebrow">Case file ${i + 1} of ${list.length}</span>${quizHTML('dq', d)}`;
     const box = wireQuiz('dq', d, ok => { if (ok) score++; return rate(QK('enf:' + d.id), ok ? 3 : 1); },
       (ok, c) => `${memLine(c)}<div class="row" style="margin-top:10px">${d.m.map(z => ENF.byId[z]).filter(Boolean).map(mv => `<a class="btn sm" href="#/enforce/${mv.id}">${esc(mv.title)}</a>`).join('')}<span class="spacer"></span><button class="btn primary" id="nx">${i + 1 < list.length ? 'Next case file' : 'See your score'}</button></div>`);
+    box.addEventListener('click', e => { if (e.target.id === 'nx') { i++; draw(); window.scrollTo(0, 0); } });
+  };
+  draw();
+}
+
+/* ------------------------------------------------------------------ which law governs?
+   Research training: the law in force at the operative event (time), the system when facts cross a border (place),
+   and the rank of the sources that apply together. A date tool answers "what was in force then"; land is worked
+   gate by gate; worked problems reveal one step at a time; the case files join the same memory as the provisions. */
+let GOV = null;
+async function loadGov() {
+  if (!GOV) {
+    GOV = await getJSON('data/govern.json?v=' + (CAT.ghash || CAT.built)).catch(() => null);
+    if (!GOV) { GOV = { method: [], rules: [], clocks: [], land: { gates: [], table: [] }, fields: [], problems: [], drills: [], traps: [], memo: { lines: [] }, byId: {}, byLink: {}, drillById: {} }; return GOV; }
+    GOV.byId = {}; GOV.byLink = {}; GOV.drillById = {};
+    GOV.drills.forEach(d => { GOV.drillById[d.id] = d; });
+    const put = (b, ent) => { if (!b || !b.c || b.c === 'law' || b.c === 'shift') return; const k = ck(b.c, b.i); const arr = GOV.byLink[k] = GOV.byLink[k] || []; if (!arr.some(e => e.href === ent.href)) arr.push(ent); };
+    GOV.method.forEach((m, i) => { GOV.byId[m.id] = m; m.basis.forEach(b => put(b, { k: 'Method, step ' + (i + 1), t: m.t, href: `#/govern#${m.id}` })); });
+    GOV.rules.forEach(r => { GOV.byId[r.id] = r; r.basis.forEach(b => put(b, { k: GOV_GROUP[r.g][0], t: r.t, href: `#/govern/r/${r.id}` })); });
+    GOV.clocks.forEach(c => { GOV.byId[c.id] = c; const ent = { k: 'Law in force on a date', t: c.t, href: `#/govern/clock?k=${c.id}` }; c.basis.forEach(b => put(b, ent)); c.rows.forEach(r => r.c && put({ c: r.c, i: r.i }, ent)); });
+    GOV.land.gates.forEach(g => g.basis.forEach(b => put(b, { k: 'Land disputes, gate ' + g.n, t: g.t, href: `#/govern/land#g${g.n}` })));
+    GOV.problems.forEach(p => p.basis.forEach(b => put(b, { k: 'Worked problem', t: p.t, href: `#/govern/p/${p.id}` })));
+  }
+  return GOV;
+}
+const GOV_GROUP = { time: ['When: the law of the date', 'time'], space: ['Where: the law of the place', 'space'], rank: ['Which rank: the higher law', 'rank'], cases: ['The case law has a date too', 'cases'] };
+function govB(b) {
+  if (b.c === 'law') return `<a class="chip violet" href="#/law/${b.i}">${esc(b.t)}</a>`;
+  if (b.c === 'shift') return `<a class="chip violet" href="#/shifts/${b.i}">${esc(b.t)}</a>`;
+  return `<a class="chip blue" href="#/p/${b.c}/${b.i}">${esc(b.t)}</a>`;
+}
+const govCase = c => `<div class="case"><div class="row"><span class="cn">${esc(c.n)}</span>${c.chk ? '<span class="chip warn" title="A reported holding: read the full decision before citing it">read first</span>' : ''}</div><div class="cc">${esc(c.cite)}</div><div class="dg"><div>${esc(c.held)}</div></div></div>`;
+const govBase = () => { const craft = CUR.byId.craft; return [['Law school', '#/map'], [craft ? craft.name : 'Lawyering', '#/map/craft']]; };
+function govCard(e) { return `<a class="movecard" href="${e.href}"><span class="eyebrow">${esc(e.k)}</span><span class="mt">${esc(e.t)}</span></a>`; }
+function fmtD(s) { if (!s) return ''; const [y, m, d] = s.split('-').map(Number); return new Date(Date.UTC(y, m - 1, d)).toLocaleDateString('en-PH', { year: 'numeric', month: 'short', day: 'numeric', timeZone: 'UTC' }); }
+function clockAt(c, d) { return c.rows.find(r => (!r.f || r.f <= d) && (!r.u || d <= r.u)) || null; }
+function clockHTML(c, d) {
+  const hit = d ? clockAt(c, d) : null;
+  const before = d && !hit && c.rows[0].f && d < c.rows[0].f;
+  const span = r => r.f && r.u ? `${fmtD(r.f)} – ${fmtD(r.u)}` : r.f ? `from ${fmtD(r.f)}` : `until ${fmtD(r.u)}`;
+  const links = r => [r.lid ? `<a class="chip violet" href="#/law/${r.lid}">The statute</a>` : '', r.c ? `<a class="chip blue" href="#/p/${r.c}/${r.i}">Study it</a>` : '', r.out ? '<span class="chip">not in the library</span>' : ''].join('');
+  return `${d ? (hit ? `<div class="note ok tmans"><span class="eyebrow">On ${esc(fmtD(d))}, for ${esc(c.ev)}</span><b>${esc(hit.law)}</b>${hit.x ? `<span class="small">${esc(hit.x)}</span>` : ''}</div>` : `<div class="note bad tmans">${before ? 'That date is before the first law on this timeline; look to the law of the period (Spanish law, custom) and ask a librarian for the sources.' : 'No row matches that date.'}</div>`) : ''}
+  <ol class="tl compact clock">${c.rows.map(r => `<li class="${hit === r ? 'on' : ''}"><span class="ty">${esc(span(r))}</span><div><div class="tc">${esc(r.law)}</div>${r.x ? `<p class="small">${esc(r.x)}</p>` : ''}<div class="row">${links(r)}</div></div></li>`).join('')}</ol>
+  <h3>Then check</h3><ul class="explain">${c.check.map(z => `<li>${esc(z)}</li>`).join('')}</ul>
+  <div class="row">${c.basis.map(govB).join('')}</div>`;
+}
+function timeMachine(k, d) {
+  const c = GOV.byId[k] || GOV.clocks[0];
+  return `<div class="card tm" id="tm"><div class="row tmq"><label><span class="small muted">The question is about</span><select id="tmk">${GOV.clocks.map(x => `<option value="${x.id}" ${x === c ? 'selected' : ''}>${esc(x.t)}</option>`).join('')}</select></label>
+    <label><span class="small muted">Date of <span id="tmev">${esc(c.ev)}</span></span><input type="date" id="tmd" value="${esc(d || '')}" min="1800-01-01" max="2100-12-31"></label></div>
+    <div id="tmr">${clockHTML(c, d)}</div></div>`;
+}
+function wireTM(path) {
+  const k = $('#tmk'), dd = $('#tmd'); if (!k) return;
+  const upd = () => { const c = GOV.byId[k.value]; $('#tmev').textContent = c.ev; $('#tmr').innerHTML = clockHTML(c, dd.value); if (path) history.replaceState(null, '', `#/govern/clock?k=${c.id}${dd.value ? '&d=' + dd.value : ''}`); };
+  k.onchange = upd; dd.onchange = upd; dd.oninput = upd;
+}
+async function govView(parts, q) {
+  setNav('library');
+  await Promise.all([loadGov(), loadShifts()]);
+  const base = govBase();
+  const [sec, id] = parts;
+  if (sec === 'clock') {
+    main.innerHTML = `${mapCrumbs(base.concat([['Which law governs?', '#/govern'], ['Law in force on a date', '']]))}<span class="eyebrow">Which law governs? · the date tool</span><h1>What law was in force on that day?</h1>
+    <p class="lead">Pick the kind of question and the date of the event that fixes it. The tool shows the law then in force and what to check next. It is a starting point for research, not the end of it: always read the text as it stood that day.</p>
+    ${timeMachine(q.get('k'), q.get('d'))}<div class="pn"><a class="btn" href="#/govern">← Which law governs?</a><a class="btn primary" href="#/govern/land">Land disputes, gate by gate →</a></div>`;
+    wireTM(true); return;
+  }
+  if (sec === 'land') return govLand(base);
+  if (sec === 'r') return govRule(id, base);
+  if (sec === 'p') return govProblem(id, base);
+  if (sec === 'drills') return govDrills(q, base);
+  seenMark('govern');
+  const inMem = GOV.drills.filter(d => lockState(QK('gov:' + d.id)) !== 'n').length;
+  const groups = ['time', 'space', 'rank', 'cases'];
+  main.innerHTML = `${mapCrumbs(base.concat([['Which law governs?', '']]))}<span class="eyebrow">Legal research · choosing the law</span><h1>Which law governs?</h1>
+  <p class="lead">${esc(GOV.intro)}</p>
+  <div class="row small muted" style="margin:6px 0 0"><span>${GOV.method.length} steps</span><span>·</span><span>${GOV.rules.length} rules with their reasons</span><span>·</span><span>${GOV.problems.length} worked problems</span><span>·</span><span>${inMem}/${GOV.drills.length} case files in your memory</span></div>
+  <div class="sect"><h2>The date tool</h2><span class="spacer"></span><a class="small" href="#/govern/clock">Open it on its own page →</a></div>
+  ${timeMachine('succession', '')}
+  <div class="sect"><h2>The method, in order</h2></div><p class="small muted" style="margin:-4px 0 10px;max-width:70ch">Eight questions a careful lawyer asks before reading a single provision for the answer. Open each one.</p>
+  <ol class="govm">${GOV.method.map((m, i) => `<li id="${m.id}"><details${i === 0 ? ' open' : ''}><summary><span class="gn">${i + 1}</span><b>${esc(m.t)}</b></summary><p>${esc(m.x)}</p>${m.ask.length ? `<div class="small"><b>Ask:</b><ul>${m.ask.map(z => `<li>${esc(z)}</li>`).join('')}</ul></div>` : ''}<div class="note bad small"><b>Trap.</b> ${esc(m.trap)}</div>${m.basis.length ? `<div class="row">${m.basis.map(govB).join('')}</div>` : ''}</details></li>`).join('')}</ol>
+  <div class="sect"><h2>The rules, and why they exist</h2></div>
+  ${groups.map(g => `<h3 class="govg g-${g}">${esc(GOV_GROUP[g][0])}</h3><div class="grid g2">${GOV.rules.filter(r => r.g === g).map(r => `<a class="card govrule g-${g}" href="#/govern/r/${r.id}"><span class="t">${esc(r.t)}</span><span class="small muted">${esc(r.rule)}</span>${GOV.drills.some(d => d.ref === r.id) ? `<span class="row">${qChip('gov:' + GOV.drills.find(d => d.ref === r.id).id) || '<span class="chip">case file</span>'}</span>` : ''}</a>`).join('')}</div>`).join('')}
+  <div class="sect"><h2>Land disputes, worked in full</h2></div>
+  <a class="card govland" href="#/govern/land"><span class="eyebrow">Seven gates</span><span class="t">Old Civil Code, new Civil Code, Public Land Act, PD 1529, RA 11573, agrarian law?</span><span class="small muted">${esc(GOV.land.intro)}</span></a>
+  <div class="sect"><h2>Field by field</h2></div>
+  <div class="grid g2">${GOV.fields.map(f => `<div class="card flat govf"><b>${esc(f.t)}</b><div class="tiny muted">The date that decides: ${esc(f.ev)}</div><p class="small">${esc(f.rule)}</p><div class="small"><b>Trap.</b> ${esc(f.trap)}</div><div class="row" style="margin-top:6px">${f.basis.map(govB).join('')}<a class="chip ok" href="#/govern/clock?k=${f.clock}">Date tool</a></div></div>`).join('')}</div>
+  <div class="sect"><h2>Worked problems</h2><span class="spacer"></span><span class="small muted">Think first; each step reveals the analysis.</span></div>
+  <div class="grid g3">${GOV.problems.map((p, i) => `<a class="movecard" href="#/govern/p/${p.id}"><span class="eyebrow">Problem ${i + 1}</span><span class="mt">${esc(p.t)}</span><span class="mh">${esc(p.facts.slice(0, 120))}…</span></a>`).join('')}</div>
+  <div class="card flat" style="margin-top:14px"><div class="row"><b>Test it</b><span class="small muted">${GOV.drills.length} case files; each joins your reviews once answered, with your provisions.</span><span class="spacer"></span><a class="btn primary" href="#/govern/drills">Work the case files</a></div></div>
+  <div class="grid g2" style="margin-top:14px"><div class="card"><h3 style="margin-top:0">${esc(GOV.memo.t)}</h3><p class="small muted">Open every memo, pleading and exam answer with it.</p><ol class="memo">${GOV.memo.lines.map(z => `<li>${esc(z)}</li>`).join('')}</ol></div>
+    <div class="card"><h3 style="margin-top:0">The usual mistakes</h3><ul class="guard">${GOV.traps.map(z => `<li>${esc(z)}</li>`).join('')}</ul></div></div>
+  <p class="tiny muted" style="margin-top:18px">${esc(GOV.note)}</p>
+  ${nextBar(pathNext('govern', 'method'))}`;
+  wireTM(false);
+  const hash = location.hash.split('#')[2]; if (hash) { const el = document.getElementById(hash); if (el) { const det = el.querySelector('details'); if (det) det.open = true; setTimeout(() => el.scrollIntoView({ block: 'start' }), 30); } }
+}
+function govRule(id, base) {
+  const r = GOV.byId[id]; if (!r || !r.g) return govView([], new URLSearchParams());
+  const same = GOV.rules.filter(x => x.g === r.g), ix = GOV.rules.indexOf(r), prev = GOV.rules[ix - 1], next = GOV.rules[ix + 1];
+  const dr = GOV.drills.filter(d => d.ref === id);
+  main.innerHTML = `${mapCrumbs(base.concat([['Which law governs?', '#/govern'], [GOV_GROUP[r.g][0], '']]))}
+  <article class="movev"><span class="eyebrow">${esc(GOV_GROUP[r.g][0])} · ${same.indexOf(r) + 1} of ${same.length}</span><h1>${esc(r.t)}</h1>
+  <p class="lead">${esc(r.rule)}</p>
+  <h2>Why the law is built this way</h2><ol class="explain">${r.why.map(z => `<li>${esc(z)}</li>`).join('')}</ol>
+  ${r.basis.length ? `<h2>Where it is written</h2><div class="row">${r.basis.map(govB).join('')}</div>` : ''}
+  ${r.cases.length ? `<h2>Cases</h2>${r.cases.map(govCase).join('')}` : ''}
+  ${r.ex ? `<div class="note blue"><b>In practice.</b> ${esc(r.ex)}</div>` : ''}
+  ${dr.length ? `<h2>Test it</h2><p class="small muted" style="margin-top:-4px">Graded, and it joins your reviews.</p>${quizHTML('gq', dr[0])}` : ''}
+  <div class="pn">${prev ? `<a class="btn" href="#/govern/r/${prev.id}">← ${esc(prev.t)}</a>` : `<a class="btn" href="#/govern">← Which law governs?</a>`}${next ? `<a class="btn primary" href="#/govern/r/${next.id}">${esc(next.t)} →</a>` : `<a class="btn primary" href="#/govern/land">Land disputes →</a>`}</div></article>`;
+  if (dr.length) { seenQ('gov:' + dr[0].id); save(); wireQuiz('gq', dr[0], ok => rate(QK('gov:' + dr[0].id), ok ? 3 : 1), (ok, c) => memLine(c)); }
+}
+function govLand(base) {
+  seenMark('govland');
+  const L = GOV.land;
+  main.innerHTML = `${mapCrumbs(base.concat([['Which law governs?', '#/govern'], ['Land disputes', '']]))}<span class="eyebrow">Which law governs? · land</span><h1>Land disputes, gate by gate</h1>
+  <p class="lead">${esc(L.intro)}</p>
+  <nav class="stagepath" aria-label="Gates">${L.gates.map(g => `<button data-go="g${g.n}" title="${esc(g.t)}"><b>${g.n}</b><span>${esc(g.t.split(/[,?]/)[0])}</span></button>`).join('')}</nav>
+  ${L.gates.map(g => `<section class="stage gate" id="g${g.n}"><div class="sect"><span class="stn">${g.n}</span><h2>${esc(g.t)}</h2></div><p style="max-width:72ch">${esc(g.x)}</p><ul class="explain">${g.rules.map(z => `<li>${esc(z)}</li>`).join('')}</ul>${g.chk ? `<p class="tiny muted"><span class="chip warn">read first</span> ${esc(g.chk.join('; '))}: a reported holding; read the decision before relying on it.</p>` : ''}<div class="row">${g.basis.map(govB).join('')}</div></section>`).join('')}
+  <h2>The land question at a glance</h2>
+  <div class="tablewrap"><table class="gtab"><thead><tr><th>Question</th><th>Governing law</th><th>Why</th></tr></thead><tbody>${L.table.map(r => `<tr><td><b>${esc(r[0])}</b></td><td>${esc(r[1])}</td><td class="small">${esc(r[2])}</td></tr>`).join('')}</tbody></table></div>
+  <div class="grid g2" style="margin-top:14px"><a class="card codecard" href="#/govern/clock?k=imperfect"><span class="eyebrow">Date tool</span><span class="t">Imperfect titles: the possession rule of each period</span><span class="small muted">From the 1894 cut-off to RA 11573’s twenty years.</span></a><a class="card codecard" href="#/govern/clock?k=landreg"><span class="eyebrow">Date tool</span><span class="t">Registration systems: Spanish, Act 496, PD 1529</span><span class="small muted">And what PD 892 did to Spanish titles.</span></a></div>
+  <div class="row" style="margin-top:12px">${GOV.problems.filter(p => ['p1', 'p4', 'p6'].includes(p.id)).map(p => `<a class="btn" href="#/govern/p/${p.id}">Problem: ${esc(p.t)}</a>`).join('')}</div>
+  ${nextBar(pathNext('govern', 'land'), '<a class="btn" href="#/govern">← Which law governs?</a>')}`;
+  $$('.stagepath button').forEach(b => b.onclick = () => document.getElementById(b.dataset.go).scrollIntoView({ behavior: 'smooth', block: 'start' }));
+  const hash = location.hash.split('#')[2]; if (hash) setTimeout(() => { const el = document.getElementById(hash); if (el) el.scrollIntoView({ block: 'start' }); }, 30);
+}
+function govProblem(id, base) {
+  const p = GOV.problems.find(x => x.id === id); if (!p) return govView([], new URLSearchParams());
+  const ix = GOV.problems.indexOf(p), prev = GOV.problems[ix - 1], next = GOV.problems[ix + 1];
+  main.innerHTML = `${mapCrumbs(base.concat([['Which law governs?', '#/govern'], [`Problem ${ix + 1}`, '']]))}
+  <article class="movev"><span class="eyebrow">Worked problem ${ix + 1} of ${GOV.problems.length}</span><h1>${esc(p.t)}</h1>
+  <div class="card flat facts"><b>The facts.</b> ${esc(p.facts)}</div>
+  <p class="small muted">Answer each question yourself, on paper or aloud, before you reveal the analysis.</p>
+  <ol class="gsteps">${p.steps.map(([qq, a], i) => `<li><div class="sq">${esc(qq)}</div><div class="sa" hidden>${esc(a)}</div><button class="btn sm" data-rev="${i}">Reveal the analysis</button></li>`).join('')}</ol>
+  <div class="note blue" id="lesson" hidden><b>The lesson.</b> ${esc(p.lesson)}</div>
+  ${p.chk ? `<p class="tiny muted"><span class="chip warn">read first</span> ${esc(p.chk.join(' '))}</p>` : ''}
+  <div class="row">${p.basis.map(govB).join('')}</div>
+  <div class="pn">${prev ? `<a class="btn" href="#/govern/p/${prev.id}">← ${esc(prev.t)}</a>` : `<a class="btn" href="#/govern">← Which law governs?</a>`}${next ? `<a class="btn primary" href="#/govern/p/${next.id}">${esc(next.t)} →</a>` : `<a class="btn primary" href="#/govern/drills">Case files →</a>`}</div></article>`;
+  const showLesson = () => { if ($$('.gsteps .sa[hidden]').length === 0) $('#lesson').hidden = false; };
+  $$('[data-rev]').forEach(b => b.onclick = () => { const li = b.closest('li'); $('.sa', li).hidden = false; b.remove(); showLesson(); });
+}
+function govDrills(q, base) {
+  const only = ((q && q.get('only')) || '').split(',').filter(Boolean);
+  const list = only.length ? GOV.drills.filter(d => only.includes(d.id)) : GOV.drills;
+  const crumb = mapCrumbs(base.concat([['Which law governs?', '#/govern'], ['Case files', '']]));
+  S.gov = S.gov || {};
+  let i = 0, score = 0;
+  const draw = () => {
+    if (i >= list.length) {
+      if (!only.length) { S.gov.best = Math.max(S.gov.best || 0, score); save(); }
+      main.innerHTML = `${crumb}<div class="reviewcard card"><h1>${score} of ${list.length}</h1><p class="muted">${score === list.length ? 'Every governing law found.' : 'The ones you missed come back in your reviews within minutes, then on the schedule your memory needs.'} All of them are now in your memory, with your provisions.</p><div class="row"><a class="btn primary" href="#/govern">Back to the method</a><button class="btn" id="again">Again</button></div></div>
+      ${only.length ? '' : nextBar(pathNext('govern', 'drills'))}`;
+      $('#again').onclick = () => { i = 0; score = 0; draw(); };
+      return;
+    }
+    const d = list[i]; const ref = GOV.byId[d.ref];
+    const refLink = ref ? (ref.g ? `#/govern/r/${ref.id}` : ref.rows ? `#/govern/clock?k=${ref.id}` : `#/govern#${ref.id}`) : '#/govern';
+    main.innerHTML = `${crumb}<span class="eyebrow">Case file ${i + 1} of ${list.length} · which law governs?</span>${quizHTML('gq', d)}`;
+    const box = wireQuiz('gq', d, ok => { if (ok) score++; return rate(QK('gov:' + d.id), ok ? 3 : 1); },
+      (ok, c) => `${memLine(c)}<div class="row" style="margin-top:10px"><a class="btn sm" href="${refLink}">${esc(ref ? ref.t : 'The method')}</a><span class="spacer"></span><button class="btn primary" id="nx">${i + 1 < list.length ? 'Next case file' : 'See your score'}</button></div>`);
     box.addEventListener('click', e => { if (e.target.id === 'nx') { i++; draw(); window.scrollTo(0, 0); } });
   };
   draw();
@@ -2298,6 +2473,12 @@ function extraHits(terms) {
   const has = txt => { const low = txt.toLowerCase(); return terms.length && terms.every(w => low.includes(w)); };
   const out = [];
   (SHF ? SHF.shifts : []).forEach(x => { if (has([x.title, x.q, x.then, x.now, ...x.timeline.flatMap(e => [e.case, e.cite, e.rule]), ...x.why, ...x.competing].join(' '))) out.push([`#/shifts/${x.id}`, 'Change of course', x.title]); });
+  if (GOV) {
+    GOV.rules.forEach(r => { if (has([r.t, r.rule, ...r.why, r.ex, ...r.cases.flatMap(c => [c.n, c.cite, c.held])].join(' '))) out.push([`#/govern/r/${r.id}`, 'Which law governs', r.t]); });
+    GOV.problems.forEach(p => { if (has([p.t, p.facts, p.lesson, ...p.steps.flat()].join(' '))) out.push([`#/govern/p/${p.id}`, 'Worked problem', p.t]); });
+    GOV.land.gates.forEach(g => { if (has([g.t, g.x, ...g.rules].join(' '))) out.push([`#/govern/land#g${g.n}`, 'Land disputes', g.t]); });
+    GOV.clocks.forEach(c => { if (has([c.t, c.ev, ...c.rows.flatMap(r => [r.law, r.x || '']), ...c.check].join(' '))) out.push([`#/govern/clock?k=${c.id}`, 'Law in force on a date', c.t]); });
+  }
   (ENF ? ENF.moves : []).forEach(m => { if (has([m.title, m.hook, m.when, ...m.steps, ...m.traps, ...m.basis.map(b => b.t), ...m.cases.flatMap(c => [c.n, c.cite, c.held])].join(' '))) out.push([`#/enforce/${m.id}`, 'Enforcement move', m.title]); });
   return out;
 }
@@ -2305,7 +2486,7 @@ function extraHits(terms) {
 /* ------------------------------------------------------------------ router */
 async function route() {
   const h = location.hash.replace(/^#\/?/, '');
-  const [path, qs] = h.split('?');
+  const [path0, qs] = h.split('?'); const path = path0.split('#')[0];
   const q = new URLSearchParams(qs || '');
   const parts = path.split('/').map(decodeURIComponent);
   document.onkeydown = null; main.onclick = null; document.body.classList.remove('focus');
@@ -2334,6 +2515,7 @@ async function route() {
     else if (parts[0] === 'history') await historyView();
     else if (parts[0] === 'treaties') await treatiesView(parts[1]);
     else if (parts[0] === 'enforce') await enforceView(parts.slice(1), q);
+    else if (parts[0] === 'govern') await govView(parts.slice(1), q);
     else if (parts[0] === 'about') await aboutView();
     else await home();
     if (!['search'].includes(parts[0])) window.scrollTo(0, 0);

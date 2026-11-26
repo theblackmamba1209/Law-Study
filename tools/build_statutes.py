@@ -180,20 +180,41 @@ def sentences(par):
 
 AMEND_S = re.compile(r'\b(?:hereby\s+(?:further\s+)?amended|(?:is|are)\s+(?:hereby\s+)?(?:further\s+)?amended\s+to\s+read|amended\s+as\s+follows)', re.I)
 REPEAL_S = re.compile(r'\b(?:hereby\s+)?(?:expressly\s+)?repealed\b', re.I)
-NEG = re.compile(r'\bnot\s+(?:be\s+)?(?:deemed\s+|construed\s+(?:as\s+)?)?(?:to\s+)?(?:have\s+)?repeal|shall\s+not\s+be\s+construed|nothing\s+in\s+this', re.I)
-PARTIAL = re.compile(r'insofar|inconsistent|modified|partially|in\s+part|so\s+much\s+of|portion|provisions?\s+of', re.I)
-PIECE = re.compile(r'(?:Sections?|Secs?\.|Articles?|Arts?\.|paragraphs?|pars?\.|Titles?|Chapters?|Books?|Rules?)\s+[\w\-,()\s]{0,60}?\bof\s+(?:the\s+)?$', re.I)
-TITLE_VERB = re.compile(r'\b(amend\w*|expand\w*|strengthen\w*|revis\w*|modif\w*|adjust\w*|increas\w*|extend\w*|repeal\w*|supersed\w*|reviv\w*|reconstitut\w*)', re.I)
+# a sentence that says a law is NOT repealed, or stays in force
+NEG = re.compile(r'\bnot\s+(?:be\s+)?(?:deemed\s+|construed\s+(?:as\s+)?)?(?:to\s+)?(?:have\s+)?repeal|shall\s+not\s+be\s+construed|nothing\s+in\s+this'
+                 r'|\bnot\s+in\s+any\s+(?:way|manner)|\bin\s+no\s+case\b|shall\s+not\s+(?:in\s+any\s+way\s+)?be\s+(?:\w+\s+(?:or|and/or)\s+)?repealed'
+                 r'|\b(?:shall\s+)?remain\s+(?:in\s+(?:full\s+)?force|applicable|valid|effective|operative)'
+                 r'|\bunless\s+[^.;]{0,80}?repealed|\bif\s+[^.;]{0,40}?(?:is|are)\s+repealed|\bin\s+case\s+[^.;]{0,60}?repealed', re.I)
+# words before a reference that make it a piece of the law, not the whole law
+PIECE_W = re.compile(r'\b(?:Sections?|Secs?\.|Articles?|Arts?\.|(?:sub-?)?paragraphs?|pars?\.|items?|Titles?|Chapters?|Books?|Parts?|portions?|provisions?|so\s+much|pertinent|appropriations?|Special\s+Provisions?|crimes?\s+of|annex(?:es)?|schedules?|subsections?)\b', re.I)
+DISTRIB = re.compile(r'\b(?:provisions?|portions?|parts?|pertinent|so\s+much|such)\b', re.I)
+# words between the reference and the verb (or right after the verb) that limit the repeal
+PARTIAL = re.compile(r'insofar|in\s+so\s+far|inconsistent|in\s+conflict|contrary|modified|partially|in\s+part|so\s+much\s+of|portion|provisions?\s+of|\bexcept\b|to\s+the\s+extent|thereof|particularly|specifically|pertinent|relating\s+to|relative\s+to|which\s+(?:are|is|may)', re.I)
+TAIL = re.compile(r'^\W*(?:insofar|in\s+so\s+far|to\s+the\s+extent|as\s+far\s+as|only|except|with\s+respect|as\s+regards|(?:,?\s*(?:or|and/or|and)\s+)?(?:modified|amended|superseded)|accordingly)', re.I)
+GENERAL = re.compile(r'\b(?:and|as\s+well\s+as|together\s+with|including)\s+(?:all|any|other|the\s+other)\b', re.I)
+TITLE_VERB = re.compile(r'\b(amend(?:ing|s|atory)?\b|expand\w*|strengthen\w*|revis\w*|modif\w*|adjust\w*|increas\w*|extend\w*|repeal(?:ing|s)?\b|supersed(?:ing|es?)\b|reviv\w*|reconstitut\w*)', re.I)
+TITLE_TAIL = re.compile(r'^[^;]{0,120}?\b(?:so\s+far\s+as|insofar|in\s+so\s+far|as\s+regards|with\s+respect\s+to|in\s+its\s+application|to\s+the\s+extent)', re.I)
+# known errors in the source titles (a misprinted number would point at the wrong law)
+DROP = {('ra-11930', 'ra-977')}
 NOTE = re.compile(r'^[\s*_(\[]*(?:as\s+)?(amended|repealed|superseded|modified)\s+by\s+(.+?)[)\]_*\s]*$', re.I)
 
-QUOTED = re.compile(r'[“"][^”"]{3,400}[”"]')
+QUOTED = re.compile(r'[“"][^”"]{3,900}[”"]')
 PRIOR = re.compile(r'\b(?:as\s+)?(?:amended|revised|modified|repealed|supplemented|superseded)\s+by\b', re.I)
 GOVERN = re.compile(r'\b(?:is|are)\s+(?:hereby\s+)?(?:further\s+)?(?:amended|repealed)|\bhereby\b|\bamending\b|\brepealing\b|\bexpanding\b|\bstrengthening\b|\brevising\b', re.I)
-MENTION = re.compile(r'(?:pursuant\s+to|under|in\s+accordance\s+with|provided\s+(?:for\s+)?(?:in|by|under)|created\s+(?:by|under)|mandated\s+by|authorized\s+(?:by|under)|granted\s+(?:by|under)|in\s+relation\s+to|referred\s+to\s+in)\s+(?:(?:the|said)\s+)?(?:(?:Sections?|Sec\.|Articles?|Art\.)\s+[\w\-,()\s]{0,40}?\s+of\s+(?:the\s+)?)?$', re.I)
+# a reference that is only mentioned: the law something was done under, the standard of comparison, or an exception
+MENTION = re.compile(r'(?:pursuant\s+to|under|in\s+accordance\s+with|provided\s+(?:for\s+)?(?:in|by|under)|created\s+(?:by|under)|mandated\s+by|authorized\s+(?:by|under)|granted\s+(?:by|under)|in\s+relation\s+to|referred\s+to\s+in'
+                     r'|by\s+virtue\s+(?:of|by)|conform(?:ity)?\s+with|consistent\s+with|inconsistent\s+with|contrary\s+to|in\s+conflict\s+with|repugnant\s+to'
+                     r'|except|other\s+than|excluding|exception\s+of)\s+(?:(?:the|said)\s+)?(?:(?:the\s+)?provisions?\s+of\s+(?:the\s+|this\s+Act\s+(?:and|or)\s+)?)?(?:(?:Sections?|Sec\.|Articles?|Art\.)\s+[\w\-,()\s]{0,40}?\s+of\s+(?:the\s+)?)?$', re.I)
+# a second name for the law just cited ("..., otherwise known as the Labor Code"): the first reference decides
+ALIAS_OF = re.compile(r'(?:otherwise|also)\s+known\s+as\s+(?:the\s+)?$|\bor\s+the\s+$|\bentitled\s+$', re.I)
 def mask(text):
     """Blank out quoted titles (their references belong to the quoted law) and the lists after 'as amended by'
     up to the governing verb, keeping positions so evidence lines up."""
     t = QUOTED.sub(lambda m: ' ' * len(m.group(0)), text)
+    # a quoted title left open (truncated source): its words belong to the quoted law, so blank to the end
+    u = re.search(r'\b(?:entitled|known\s+as)[,:]?\s*[“"]', t, re.I)
+    if u and not re.search(r'[”"]', t[u.end():]):
+        t = t[:u.end()] + ' ' * (len(t) - u.end())
     out = list(t)
     for m in PRIOR.finditer(t):
         g = GOVERN.search(t, m.end())
@@ -203,8 +224,28 @@ def mask(text):
     return ''.join(out)
 WEAK = ('expand', 'strengthen', 'revis', 'modif', 'adjust', 'increas', 'extend', 'reviv', 'reconstitut')
 
+def partial_repeal(sent, a, b, prev_end, vr):
+    """Is this a repeal of part of the law only? Conservative: anything short of a clean
+    'Law X [, as amended / otherwise known as ...] is hereby repealed' counts as partial."""
+    before = sent[prev_end:a] if prev_end <= a else ''
+    before = re.sub(r'^.*?(?:Clauses?|Repeals?|Repealed)[._\s]*[\-–—:]+\s*', '', before)    # drop a 'Repealing Clause. —' heading
+    if PIECE_W.search(before):
+        return True
+    first = next((m.start() for m in re.finditer(r'\b(?:Republic|Commonwealth|Act|Acts|Presidential|Batas|Executive|P\.D\.|R\.A\.|B\.P\.|E\.O\.|C\.A\.)\b', sent)), a)
+    if DISTRIB.search(re.sub(r'^.*?(?:Clauses?|Repeals?)[._\s]*[\-–—:]+\s*', '', sent[:min(first, a)])):
+        return True
+    between = sent[b:vr.start()]
+    g = GENERAL.search(between)
+    if g:
+        between = between[:g.start()]
+    if PARTIAL.search(between):
+        return True
+    return bool(TAIL.search(sent[vr.end():vr.end() + 60]))
+
 edges = {}  # (src, dst, kind) -> evidence
 def add(src, dst, kind, ev, how):
+    if (src, dst) in DROP:
+        return
     k = (src, dst, kind)
     if k not in edges:
         edges[k] = (ev.strip()[:320], how)
@@ -214,8 +255,11 @@ for l in laws.values():
         continue
     # 1. the title
     t0 = norm(l['t']); t = mask(t0)
+    prev_end = 0
     for lid, a, b in refs(t, l):
-        if MENTION.search(t[max(0, a - 90):a]):
+        pe, prev_end = prev_end, b
+        pre = t[max(0, a - 90):a]
+        if MENTION.search(pre) or ALIAS_OF.search(pre):
             continue
         verbs = [m for m in TITLE_VERB.finditer(t[:a])]
         if not verbs:
@@ -223,29 +267,35 @@ for l in laws.values():
         v = verbs[-1].group(1).lower()
         if v.startswith(WEAK) and a - verbs[-1].end() > 80:
             continue
-        kind = 'r' if v.startswith(('repeal', 'supersed')) else 'a'
+        kind = 'a'
+        if v.startswith(('repeal', 'supersed')):
+            # 'Repealing Section 5 of ...', 'Repealing the Crime of ... under Article 351 of ...' repeal a piece
+            kind = 'rp' if (PIECE_W.search(t[max(verbs[-1].end(), pe):a]) or TITLE_TAIL.search(t[b:])) else 'r'
         add(l['id'], lid, kind, l['t'], 'title')
     # 2. the body, sentence by sentence
     body = l['body']
     for par in re.split(r'\n\s*\n', body):
         if 'amended' not in par and 'repealed' not in par:
             continue
-        flat = norm(re.sub(r'\s+', ' ', par))
+        flat = norm(re.sub(r'\s+', ' ', re.sub(r'[_*]+|\\(?=[\-–—])', '', par)))   # markdown emphasis off
         for sent0 in sentences(flat):
             sent = mask(sent0)
             am, rp = AMEND_S.search(sent), REPEAL_S.search(sent)
             if not (am or rp):
                 continue
+            prev_end = 0
             for lid, a, b in refs(sent, l):
-                if MENTION.search(sent[max(0, a - 90):a]):
+                pe, prev_end = prev_end, b
+                pre = sent[max(0, a - 90):a]
+                if MENTION.search(pre) or ALIAS_OF.search(pre):
                     continue
                 # the verb that governs a reference is the nearest one after it
                 va = next((m for m in AMEND_S.finditer(sent) if m.start() > a - 40), None)
                 vr = next((m for m in REPEAL_S.finditer(sent) if m.start() > a), None)
-                if vr and (not va or vr.start() < va.start()) and not NEG.search(sent):
-                    tail = sent[vr.end():vr.end() + 40]
-                    part = bool(PIECE.search(sent[max(0, a - 90):a])) or bool(re.search(r'^\W*(?:insofar|in so far|to the extent|as far as|only)', tail, re.I)) or bool(PARTIAL.search(sent[b:vr.start()]))
-                    add(l['id'], lid, 'rp' if part else 'r', sent0, 'text')
+                if vr and (not va or vr.start() < va.start()):
+                    if NEG.search(sent):
+                        continue
+                    add(l['id'], lid, 'rp' if partial_repeal(sent, a, b, pe, vr) else 'r', sent0, 'text')
                 elif va:
                     add(l['id'], lid, 'a', sent0, 'text')
     # 3. LawPhil's own notes on this page ("Amended by RA 8533")
@@ -256,6 +306,11 @@ for l in laws.values():
                 kind = {'amended': 'a', 'modified': 'a', 'repealed': 'r', 'superseded': 'r'}[m.group(1).lower()]
                 add(lid, l['id'], kind, line.strip(), 'note')
 
+# a whole repeal and a partial one by the same law: keep the partial (the safer reading)
+for (src, dst, kind) in list(edges):
+    if kind == 'r' and (src, dst, 'rp') in edges:
+        del edges[(src, dst, 'r')]
+
 # keep only edges where the source is not older than the target (a law cannot amend a later law)
 def dkey(l): return l['d'] or (l['y'] + '-00-00' if l['y'] else '')
 clean = {}
@@ -265,6 +320,7 @@ for (src, dst, kind), ev in edges.items():
         continue
     clean[(src, dst, kind)] = ev
 edges = clean
+json.dump([[k[0], k[1], k[2], v[1], v[0]] for k, v in edges.items()], open('/tmp/edges_all.json', 'w'))
 print('edges', len(edges), {k: sum(1 for e in edges if e[2] == k) for k in ('a', 'r', 'rp')})
 
 inc, outg = {}, {}

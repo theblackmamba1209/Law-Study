@@ -1,0 +1,551 @@
+"""Which law governs? Training in finding the governing law for a set of facts: the law in force at the operative
+event (time), the system that applies when facts cross a border (space), and the rank of the sources that apply
+together (hierarchy), with the land question worked in full.
+
+Everything here is written in our own words. Codal anchors point into the study library and are validated below;
+statute references point into the statute library; doctrine-shift references point into the shifts module.
+Dates were checked against the statutes themselves (LawCodex corpus) or, where the corpus lacks the instrument,
+against the Supreme Court E-Library and official issuances; those are flagged 'outside' so the page can say so.
+Case entries marked chk=True are reported holdings the learner should read in full before citing."""
+import json, gzip, base64, hashlib, os, re
+D = '/home/claude/site/data'
+
+def L(c, i, t): return {'c': c, 'i': i, 't': t}          # study-library provision
+def S(i, t): return {'c': 'law', 'i': i, 't': t}         # statute library
+def X(i, t): return {'c': 'shift', 'i': i, 't': t}       # doctrine shift
+def C(n, cite, held, chk=False): return {'n': n, 'cite': cite, 'held': held, **({'chk': True} if chk else {})}
+
+INTRO = ('Every legal question has a date and a place. Before asking what the law says, ask which law speaks: the one in '
+         'force when the right was born, the one of the country the question belongs to, and the highest-ranking one that '
+         'reaches the facts. Get this wrong and a flawless argument rests on a dead statute. Get it right and you often win '
+         'before the merits begin, because the governing law decides the periods, the shares, the penalty and the court.')
+
+# ---------------------------------------------------------------- the method
+METHOD = [
+ dict(id='m1', t='Build a dated chronology',
+      x='Write down every event with its date: the contract, the sale, the donation, the marriage, the death, the start of possession, the registration, the dismissal, the act charged, and then the filing, the judgment and the appeal. Each issue in a case has its own operative event, so one case can be governed by several laws at once.',
+      ask=['What happened, and on what exact day?', 'Which event created, transferred or extinguished the right in issue?', 'Did the law change between that event and today?'],
+      basis=[L('civil', 'article-4', 'Civil Code Art. 4'), L('civil', 'article-777', 'Civil Code Art. 777')],
+      trap='Dating the dispute by the filing of the complaint. Rights to an inheritance were fixed at death; the property regime at the wedding; the crime at its commission.'),
+ dict(id='m2', t='Name the category of each issue',
+      x='The category picks the connecting fact. Contract: the day it was perfected. Succession: the day of death. Property of spouses: the day of the marriage. Crime: the day it was committed. Procedure: the day the step is taken. Land: where it lies. Characterization is a judgment, and good lawyers argue for the category whose rule favours their client.',
+      ask=['Is this really a question of property, or of succession, or of the marriage?', 'Could a court reasonably put it in a different box, and what law would that box bring?'],
+      basis=[L('civil', 'article-16', 'Civil Code Art. 16')],
+      trap='Treating a widow’s claim to land as one question. It is two: her half as owner under the property regime (law at the marriage) and her share as heir (law at the death).'),
+ dict(id='m3', t='Look for a foreign element',
+      x='If a party is foreign, an act happened abroad, or property lies outside the country, choose the legal system first. Status and capacity follow nationality; property follows its location; succession follows the decedent’s nationality; forms follow the place of execution; and Philippine public policy has the last word.',
+      ask=['Is anyone not a Filipino citizen, or was anyone not when the act was done?', 'Where was the act done, and where is the property?'],
+      basis=[L('civil', 'article-15', 'Civil Code Art. 15'), L('civil', 'article-16', 'Art. 16'), L('civil', 'article-17', 'Art. 17')],
+      trap='Applying the law of the land’s location to an inheritance question. For succession, Article 16’s second paragraph displaces the first.'),
+ dict(id='m4', t='Find the text in force on the operative date',
+      x='Read the version of the law that was in force that day, not today’s. Check when the code took effect (after publication, not on signing), every later amendment, and any repeal. In this app the provision page shows “How the text read before”, and the statute library lists the laws that amended or repealed each statute, with the sentence that says so.',
+      ask=['When did the law take effect, counting from publication?', 'Was the provision amended between the event and today? By which law, and from when?'],
+      basis=[L('civil', 'article-2', 'Civil Code Art. 2'), L('civil', 'article-7', 'Art. 7')],
+      trap='Quoting the current text of a provision for facts that happened before its last amendment.'),
+ dict(id='m5', t='Apply the transitional rules',
+      x='New laws usually say how far back they reach. Read their transitional and effectivity clauses first. If they are silent, use the defaults: substantive laws look forward; procedural laws govern pending cases; penal laws favourable to the accused reach back; curative laws reach back to fix what was defective. The hard limits are vested rights, the ban on impairing contracts and the ban on ex post facto laws.',
+      ask=['Does the new law have its own transitional or effectivity clause?', 'Is the change substantive, procedural, penal or curative?', 'Would applying it take away a right already vested?'],
+      basis=[L('civil', 'article-2252', 'Civil Code Arts. 2252–2269'), L('family', 'article-256', 'Family Code Art. 256'), L('rpc', 'article-22', 'RPC Art. 22'), L('const1987', 'art-iii-sec-10', 'Const. Art. III, Sec. 10'), L('const1987', 'art-iii-sec-22', 'Art. III, Sec. 22')],
+      trap='Assuming a new law applies to everything still unresolved. Only procedural, curative and favourable penal laws generally do.'),
+ dict(id='m6', t='Rank the sources that apply together',
+      x='At any one moment several norms may reach the facts. The Constitution prevails over statutes; statutes over rules, regulations and ordinances; a Rule of Court cannot add to or take away jurisdiction or substantive rights. Between statutes of equal rank, the special prevails over the general and the later over the earlier, but repeal by implication is disfavoured: harmonize first.',
+      ask=['Is there a special law on this precise subject?', 'Does the later law clearly mean to replace the earlier, or can both stand?', 'Does the regulation stay within the law it implements?'],
+      basis=[L('civil', 'article-7', 'Civil Code Art. 7'), L('const1987', 'art-viii-sec-5', 'Const. Art. VIII, Sec. 5(5)'), L('rpc', 'article-10', 'RPC Art. 10')],
+      trap='Treating an implementing rule as if it could add a requirement the law does not impose.'),
+ dict(id='m7', t='Date the case law too',
+      x='Decisions applying the law form part of the legal system. When the Court changes course, the new reading generally does not reach those who acted in reliance on the old. And a decision construing an old text loses force when the text changes, even if never overruled.',
+      ask=['Which doctrine stood on the operative date?', 'Was the provision the case construed amended afterwards?', 'Is there a later case that changed course (see the doctrine-shift library)?'],
+      basis=[L('civil', 'article-8', 'Civil Code Art. 8')],
+      trap='Citing Heirs of Malabanan’s June 12, 1945 analysis for an application decided after RA 11573 changed Section 14(1).'),
+ dict(id='m8', t='Write the governing-law paragraph',
+      x='Put the choice of law at the start of the discussion, in one paragraph a judge can lift into a decision: the operative event and its date, the law then in force, the transitional rule that keeps it in control or brings the new law in, and why. Everything after it depends on it.',
+      ask=['Could a reader who disagrees see exactly where?'],
+      basis=[],
+      trap='Burying the choice of law in a footnote, or leaving it unstated because it seems obvious.'),
+]
+
+# ---------------------------------------------------------------- the rules, with their reasons
+RULES = [
+ # time
+ dict(id='t1', g='time', t='Laws look forward',
+      rule='A law governs acts and events after it takes effect. It reaches back only when it says so and the Constitution allows it, or when its nature (procedural, curative, favourable penal) carries it back.',
+      why=['Law guides conduct only if it can be known before one acts. A rule made after the fact cannot have guided anyone; applying it punishes people for failing to obey what did not yet exist.',
+           'People and markets plan by the law they can see. Contracts are priced, land is bought and families arrange their affairs on it. Retroactivity unsettles not only the parties but everyone who relied on their position.',
+           'A legislature that can rewrite yesterday can single out its enemies. Prospectivity is a check on power as much as a rule of fairness.'],
+      basis=[L('civil', 'article-4', 'Civil Code Art. 4'), L('const1987', 'art-iii-sec-10', 'Const. Art. III, Sec. 10 (contracts)'), L('const1987', 'art-iii-sec-22', 'Art. III, Sec. 22 (ex post facto)')],
+      cases=[], ex='A 2026 law raising a notarial requirement does not invalidate a 2020 deed valid when signed.'),
+ dict(id='t2', g='time', t='Vested rights are the hard stop',
+      rule='Even a law meant to apply to the past cannot take away a right already vested: one that is fixed, not dependent on a future event, and acquired under the old law. A mere expectation (an heir’s hope while the decedent lives) is not vested; no right can vest in an illegal act.',
+      why=['Retroactivity is tolerated where it only changes how a right is enforced or confirms what parties meant. It is not tolerated where it moves a settled entitlement from one person to another, because that is a taking without process.',
+           'The line is practical: what the holder could already have demanded on the old day, without anything more happening, is vested.'],
+      basis=[L('civil', 'article-2252', 'Civil Code Art. 2252'), L('civil', 'article-2253', 'Art. 2253'), L('civil', 'article-2254', 'Art. 2254'), L('family', 'article-256', 'Family Code Art. 256')],
+      cases=[C('Uson v. Del Rosario', 'G.R. No. L-4963, January 29, 1953', 'The decedent died in 1945. His widow’s rights to his estate vested at death under the old Civil Code; the new Code’s rights for illegitimate children could not reach that estate because they would impair rights of the same origin already vested.'),
+             C('Tayag v. Court of Appeals', 'G.R. No. 95229, June 9, 1992', 'An action for recognition filed under the Civil Code’s rules was not defeated by the Family Code’s stricter rule: the right to sue had vested when the action was brought.'),
+             C('Aruego, Jr. v. Court of Appeals', 'G.R. No. 112193, March 13, 1996', 'Same principle: the Family Code did not impair the right to pursue an action for compulsory recognition filed before it took effect.'),
+             C('Modequillo v. Breva', 'G.R. No. 86355, May 31, 1990', 'The Family Code’s exemption of the family home from execution did not apply to a debt incurred before the Code took effect.')],
+      ex='A child born in 1981 whose father died in 1993 kept the Civil Code period to sue for recognition (Bernabe v. Alejo, G.R. No. 140500, January 21, 2002).'),
+ dict(id='t3', g='time', t='Procedure governs the case as it now stands',
+      rule='Rules of procedure apply to actions pending when they take effect, because no one has a vested right in a mode of procedure. The exception is where applying them would not be feasible or would work injustice. Jurisdiction is different: it is substantive, fixed by the law in force when the action is filed, and once acquired it is not lost by a later change unless the law says so.',
+      why=['Procedure exists to get to the merits efficiently and fairly; there is no reason to keep using a method the system has judged worse.',
+           'Jurisdiction is the power to decide at all. Letting it shift mid-case would let a statute void proceedings already validly begun.'],
+      basis=[L('const1987', 'art-viii-sec-5', 'Const. Art. VIII, Sec. 5(5)'), L('bp129', 'section-19', 'BP 129 Sec. 19'), L('bp129', 'section-33', 'Sec. 33'), X('fresh-period', 'Shift: the fresh period to appeal')],
+      cases=[C('Spouses De los Santos v. Vda. de Mangubat', 'G.R. No. 149508, October 10, 2007', 'The Neypes fresh-period rule, being procedural, applies to cases pending when Neypes was promulgated.'),
+             C('Fil-Estate Properties, Inc. v. Homena-Valencia', 'G.R. No. 173942, June 25, 2008', 'Applied the fresh-period rule even where the old period had lapsed before Neypes, since the case was still pending.')],
+      ex='A motion filed in June 2020 in a case begun in 2018 follows the 2019 amendments to the Rules of Civil Procedure (in force May 1, 2020).'),
+ dict(id='t4', g='time', t='Penal laws: forward against the accused, backward in his favour',
+      rule='No act is punished by a penalty not prescribed before it was done, and no law may make an act criminal, or its penalty heavier, after the fact. But a later law that is lighter applies to the offender, even after final judgment, unless he is a habitual delinquent.',
+      why=['Fair warning: a person can obey the criminal law only if it existed when he acted. The ban on ex post facto laws also protects against vindictive legislation.',
+           'When the legislature itself decides a penalty is excessive, the State has lost its own reason to exact the old one. Keeping a person in prison for longer than the law now deems deserved serves no purpose the law recognizes.',
+           'The habitual-delinquent exception reflects the judgment that repeat offenders have forfeited this grace.'],
+      basis=[L('rpc', 'article-21', 'RPC Art. 21'), L('rpc', 'article-22', 'Art. 22'), L('rpc', 'article-366', 'Art. 366'), L('const1987', 'art-iii-sec-22', 'Const. Art. III, Sec. 22')],
+      cases=[C('In re Kay Villegas Kami, Inc.', 'G.R. No. L-32485, October 22, 1970', 'Restated the kinds of ex post facto laws: those that criminalize past acts, aggravate a crime, increase its penalty, or alter the rules of evidence or procedure to the accused’s disadvantage.'),
+             C('People v. Simon', 'G.R. No. 93028, July 29, 1994', 'The lighter penalties introduced by RA 7659 for small quantities of prohibited drugs were applied retroactively to an accused convicted under the earlier scale.'),
+             C('Hernan v. Sandiganbayan', 'G.R. No. 217874, December 5, 2017', 'A final conviction was reopened to apply the lighter penalty brought by RA 10951, which adjusted the amounts on which RPC penalties depend.')],
+      ex='Estafa of ₱150,000 committed in 2014: the penalty is computed under RA 10951’s amounts if they favour the accused.'),
+ dict(id='t5', g='time', t='Curative and remedial laws reach back',
+      rule='A law that cures a defect in the machinery of an earlier law, or confirms what parties already meant to do, applies to the past and to pending cases, so long as it impairs no vested right.',
+      why=['No one has a vested right to profit from a defect the legislature has since repaired.',
+           'The point of a curative law is to make the earlier system work as intended; confining it to the future would leave the very cases it was written for unremedied.'],
+      basis=[S('ra-11573', 'RA 11573 (2021)'), L('pd1529', 'section-14', 'PD 1529 Sec. 14')],
+      cases=[C('Republic v. Pasig Rizal Co., Inc.', 'G.R. No. 213207, February 15, 2022 (En Banc)', 'RA 11573 is curative and remedial; its new Section 14(1) (twenty years of possession) and Section 7 (proof that the land is alienable) apply to applications for judicial confirmation of title pending when it took effect.'),
+             C('Frivaldo v. Commission on Elections', 'G.R. No. 120295, June 28, 1996', 'Repatriation under PD 725, a remedial law, retroacted to the date the application was filed.', chk=True)],
+      ex='An application filed in 2012 showing possession only since 1975 can still succeed after RA 11573, if the land is shown to be alienable.'),
+ dict(id='t6', g='time', t='A law speaks from publication, not from signing',
+      rule='Laws take effect fifteen days after publication in the Official Gazette or a newspaper of general circulation, unless the law fixes another date. The law may shorten or lengthen the fifteen days; it cannot dispense with publication.',
+      why=['A secret law is no law: people cannot be bound by rules they had no means of knowing.',
+           'Publication also fixes a date everyone can verify, which is what makes the rest of this method possible.'],
+      basis=[L('civil', 'article-2', 'Civil Code Art. 2 (as restated by EO 200)')],
+      cases=[C('Tañada v. Tuvera', 'G.R. No. L-63915, April 24, 1985 and December 29, 1986', 'Publication is indispensable for laws of general application; “unless it is otherwise provided” refers to the fifteen-day period, not to publication itself.'),
+             C('Lara v. Del Rosario', 'G.R. No. L-6339, April 20, 1954', 'The Civil Code took effect on August 30, 1950, one year after the Official Gazette issue containing it was released.')],
+      ex='A law signed January 2 that says “effective immediately” takes effect on the day it is published, not on January 2.'),
+ # space
+ dict(id='s1', g='space', t='Status and capacity follow the person',
+      rule='Laws on family rights and duties, status, condition and legal capacity bind Filipinos even abroad.',
+      why=['A person’s status should not change each time he crosses a border; marriage, filiation and capacity need one stable home.',
+           'The nationality principle ties status to the community that will bear its consequences.'],
+      basis=[L('civil', 'article-15', 'Civil Code Art. 15'), L('family', 'article-26', 'Family Code Art. 26'), X('foreign-divorce', 'Shift: foreign divorce')],
+      cases=[], ex='A Filipino who marries abroad in a form valid there is married here (FC Art. 26, first paragraph), but not if the marriage is one Philippine law bars, such as a bigamous one.'),
+ dict(id='s2', g='space', t='Land follows the land',
+      rule='Real property is governed by the law of the place where it is located. For land in the Philippines that means Philippine law, and the Constitution decides who may own it.',
+      why=['The State controls its territory, keeps the registry and enforces titles; title must be knowable from the local record without consulting foreign law.',
+           'Land ownership is tied to sovereignty and to the national patrimony, which is why the Constitution, not a contract, decides who may hold it.'],
+      basis=[L('civil', 'article-16', 'Civil Code Art. 16, first paragraph'), L('const1987', 'art-xii-sec-7', 'Const. Art. XII, Sec. 7'), L('const1987', 'art-xii-sec-8', 'Sec. 8')],
+      cases=[C('Krivenko v. Register of Deeds of Manila', 'G.R. No. L-630, November 15, 1947', 'Under the 1935 Constitution, “agricultural land” includes residential land, so an alien could not acquire a residential lot.'),
+             C('Muller v. Muller', 'G.R. No. 149615, August 29, 2006', 'A foreign husband who paid for land titled in his Filipina wife’s name cannot recover it or its value; to allow it would let him do indirectly what the Constitution forbids.')],
+      ex='A German buyer’s deed of sale over a house and lot in Makati is void as to the land, whatever German law says.'),
+ dict(id='s3', g='space', t='Succession follows the decedent’s nationality',
+      rule='The order of succession, the amount of each heir’s share and the intrinsic validity of a will are governed by the national law of the decedent, whatever the kind of property and wherever it lies.',
+      why=['An estate is one thing. Splitting it by the location of each asset would give each heir a different law and defeat the decedent’s plan.',
+           'The decedent’s own law is the one he most likely planned under.'],
+      basis=[L('civil', 'article-16', 'Civil Code Art. 16, second paragraph')],
+      cases=[C('Bellis v. Bellis', 'G.R. No. L-23678, June 6, 1967', 'A Texas national’s will was governed by Texas law, which recognizes no forced heirs; his children could not claim legitimes under Philippine law over his properties here.'),
+             C('Aznar v. Garcia', 'G.R. No. L-16749, January 31, 1963', 'California’s conflict rule referred the succession of a Californian domiciled here back to the law of his domicile, so Philippine law (including legitimes) applied: renvoi.')],
+      ex='Land in Quezon City left by a Texan: Article 16’s second paragraph, not the first, decides whether his children have legitimes.'),
+ dict(id='s4', g='space', t='Forms follow the place; public policy has the last word',
+      rule='The forms and solemnities of contracts, wills and public instruments follow the law of the place where they are executed. But prohibitive laws concerning persons, their acts or property, and laws on public order, policy and good customs, are not defeated by foreign laws, judgments or agreements.',
+      why=['It is unreasonable to require parties to follow forms of a country they are not in (locus regit actum).',
+           'Public policy is the safety valve that keeps a foreign rule from producing a result the forum’s legal order cannot accept.'],
+      basis=[L('civil', 'article-17', 'Civil Code Art. 17')],
+      cases=[], ex='A will notarized in Tokyo in Japanese form is valid in form here; whether it may disinherit a Filipino’s children is a different question (Art. 16).'),
+ # rank
+ dict(id='r1', g='rank', t='Constitution, then statute, then regulation and ordinance',
+      rule='A law inconsistent with the Constitution is void. Administrative acts, orders and regulations are valid only if they conform to the law and the Constitution. Ordinances must conform to national law.',
+      why=['Authority flows downward: the people delegate to Congress through the Constitution, and Congress to agencies and local governments through statutes. A delegate cannot exceed the delegation.'],
+      basis=[L('civil', 'article-7', 'Civil Code Art. 7'), L('const1987', 'art-xviii-sec-3', 'Const. Art. XVIII, Sec. 3')],
+      cases=[], ex='An implementing rule that adds a filing deadline the statute does not provide cannot defeat a claim filed within the statute’s period.'),
+ dict(id='r2', g='rank', t='Special over general; later over earlier',
+      rule='Where a special law and a general law collide on the same subject, the special law governs that subject, whatever their dates, unless the later general law clearly means to repeal it. Between laws of the same kind, the later prevails.',
+      why=['A special law shows the legislature focused on the precise situation; a general law shows only a broad policy.',
+           'The later-in-time rule respects the current legislature’s choice, but only when it actually made one.'],
+      basis=[L('rpc', 'article-10', 'RPC Art. 10 (special laws)')],
+      cases=[], ex='The RPC applies to offences under special laws only in a supplementary way, unless the special law adopts RPC terms.'),
+ dict(id='r3', g='rank', t='Repeal by implication is the last resort',
+      rule='Repeals should be express. A later law repeals an earlier one by implication only if the two cannot stand together or the later law clearly covers the whole subject and was meant to replace it. Courts first try to harmonize them.',
+      why=['The legislature is presumed to know the laws in force; if it wanted to repeal one it would have said so.',
+           'Harmonizing keeps both enactments working, which honours both legislative choices.'],
+      basis=[L('civil', 'article-7', 'Civil Code Art. 7')],
+      cases=[C('Mecano v. Commission on Audit', 'G.R. No. 103982, December 11, 1992', 'The 1987 Administrative Code did not impliedly repeal the death-benefit provision of the old Revised Administrative Code: no irreconcilable conflict, and the new Code did not cover the whole subject.')],
+      ex='A generic repealing clause (“all laws inconsistent herewith”) repeals nothing until you show an actual inconsistency.'),
+ dict(id='r4', g='rank', t='Jurisdiction comes from statute, not from the Rules',
+      rule='Jurisdiction over the subject matter is conferred by law and determined by the allegations of the complaint under the law in force at filing. A Rule of Court cannot enlarge or diminish it.',
+      why=['The Supreme Court’s rule-making power stops at substantive rights; jurisdiction is one of them.',
+           'Parties cannot confer jurisdiction by agreement, waiver or the label they put on the case.'],
+      basis=[L('const1987', 'art-viii-sec-5', 'Const. Art. VIII, Sec. 5(5)'), L('bp129', 'section-19', 'BP 129 Sec. 19(2)'), L('bp129', 'section-33', 'Sec. 33(3)')],
+      cases=[C('Spouses Sabitsana v. Muertegui', 'G.R. No. 181359, August 5, 2013', 'Held that an action to quiet title may be brought in the RTC regardless of the assessed value, treating it under Rule 63.'),
+             C('Salvador v. Patricia, Inc.', 'G.R. No. 195834, November 9, 2016', 'Held the contrary: quieting of title is a real action, so the assessed value alleged in the complaint decides which trial court has jurisdiction; a complaint silent on it cannot sustain the RTC’s jurisdiction.')],
+      ex='Two lines of cases on quieting of title. Salvador follows the statute and is the later ruling; plead the assessed value and file in the court it points to.'),
+ # jurisprudence
+ dict(id='j1', g='cases', t='A change of doctrine looks forward',
+      rule='When the Court abandons a doctrine, the new one does not reach acts done in good-faith reliance on the old. Decisions are part of the law, so the doctrine in force when one acted is the law one acted under.',
+      why=['If judicial interpretation is part of the law, changing it retroactively works like an ex post facto law.',
+           'Reliance is the whole point of precedent; punishing reliance would teach people to ignore the Court.'],
+      basis=[L('civil', 'article-8', 'Civil Code Art. 8')],
+      cases=[C('People v. Jabinal', 'G.R. No. L-30061, February 27, 1974', 'An accused appointed secret agent carried a firearm when the Court’s rulings allowed it; a later decision reversing that rule could not be applied to him.'),
+             C('Co v. Court of Appeals', 'G.R. No. 100776, October 28, 1993', 'A check issued as a guarantee in 1983, when an official circular said such checks were not covered by BP 22, could not be prosecuted under the later contrary doctrine.')],
+      ex='Before citing a doctrine for old facts, check the doctrine-shift library for when it changed.'),
+ dict(id='j2', g='cases', t='A case is only as good as the text it read',
+      rule='A decision construing a provision binds as long as that text stands. When the legislature rewrites the provision, decisions on the old text survive only to the extent the new text keeps the old idea.',
+      why=['Courts interpret; they do not legislate. When the text changes, the interpretation of the old text has nothing left to attach to.'],
+      basis=[L('pd1529', 'section-14', 'PD 1529 Sec. 14')],
+      cases=[C('Heirs of Malabanan v. Republic', 'G.R. No. 179987, April 29, 2009; resolution September 3, 2013 (En Banc)', 'Settled, under the old Section 14(1), that possession must be since June 12, 1945 and the land need only be alienable when the application is filed; and that public land becomes patrimonial (open to prescription) only by an express declaration that it is no longer intended for public use or service.'),
+             C('Republic v. Pasig Rizal Co., Inc.', 'G.R. No. 213207, February 15, 2022 (En Banc)', 'Read RA 11573 as replacing the June 12, 1945 cut-off with twenty years of possession and as curative of pending applications; it also revisited what proof places land within the commerce of man.')],
+      ex='Cite Malabanan for the history and for Section 14(2); cite Pasig Rizal and RA 11573 for Section 14(1) today.'),
+]
+
+# ---------------------------------------------------------------- the clocks (law in force on a date)
+def R(f, u, law, x='', lid=None, c=None, i=None, out=False):
+    r = {'f': f, 'u': u, 'law': law}
+    if x: r['x'] = x
+    if lid: r['lid'] = lid
+    if c: r['c'] = c; r['i'] = i
+    if out: r['out'] = True
+    return r
+
+CLOCKS = [
+ dict(id='contract', t='A contract, or property acquired by contract', ev='the day the contract was perfected',
+      rows=[R('', '1950-08-29', 'Spanish Civil Code of 1889', 'Extended to the Philippines in 1889; it governed contracts until the new Code took effect.', out=True),
+            R('1950-08-30', '', 'Civil Code of the Philippines (RA 386)', 'In force from August 30, 1950 (Lara v. Del Rosario).', lid='ra-386', c='civil', i='article-1305')],
+      check=['Contracts with a condition or period made before August 30, 1950 stay under the old law even if the condition was still pending (Art. 2255).',
+             'Old contracts valid under the old law remain operative; but revoking or modifying them after August 30, 1950 follows the new Code (Art. 2256).',
+             'Interest on money obligations: 12% to 6% from July 1, 2013 (see the legal-interest shift).'],
+      basis=[L('civil', 'article-2255', 'Civil Code Art. 2255'), L('civil', 'article-2256', 'Art. 2256'), X('legal-interest', 'Shift: legal interest')]),
+ dict(id='succession', t='An inheritance', ev='the day the decedent died',
+      rows=[R('', '1950-08-29', 'Spanish Civil Code of 1889', 'Art. 2263 keeps estates of persons who died before August 30, 1950 under the old Code and the Rules of Court.', out=True),
+            R('1950-08-30', '1988-08-02', 'Civil Code (RA 386), Book III', 'Natural and spurious children have different shares.', lid='ra-386', c='civil', i='article-2263'),
+            R('1988-08-03', '', 'Civil Code, Book III, with the Family Code’s changes', 'All illegitimate children now share alike: each gets half the legitime of a legitimate child (FC Art. 176).', lid='eo-209-1987', c='family', i='article-176')],
+      check=['Rights to the succession pass at the moment of death (Art. 777); later laws cannot shrink them (Art. 2253; Uson v. Del Rosario).',
+             'If the decedent was a foreigner, his national law decides the order, shares and intrinsic validity of the will (Art. 16, second paragraph).',
+             'Form of a will made abroad: the law of the place, or Philippine law (Arts. 17, 815–817).'],
+      basis=[L('civil', 'article-777', 'Civil Code Art. 777'), L('civil', 'article-2263', 'Art. 2263'), L('civil', 'article-16', 'Art. 16')]),
+ dict(id='marriage', t='Property of spouses', ev='the day of the marriage',
+      rows=[R('', '1950-08-29', 'Spanish Civil Code of 1889: conjugal partnership', 'Absent marriage settlements, the legal conjugal partnership (sociedad de gananciales) applied.', out=True),
+            R('1950-08-30', '1988-08-02', 'Civil Code: conjugal partnership of gains', 'Default regime under Art. 119 (now repealed by the Family Code).', lid='ra-386', c='civil', i='article-119'),
+            R('1988-08-03', '', 'Family Code: absolute community of property', 'Default regime under Art. 75.', lid='eo-209-1987', c='family', i='article-75')],
+      check=['The Family Code’s rules on conjugal partnerships also govern partnerships formed before it, without prejudice to rights already vested (FC Art. 105).',
+             'Whether the marriage is valid at all follows the law at its celebration (FC Art. 26 for marriages abroad).',
+             'Psychological incapacity (Art. 36) reaches marriages celebrated before the Family Code; the action no longer prescribes (Art. 39 as amended by RA 8533).'],
+      basis=[L('family', 'article-105', 'Family Code Art. 105'), L('family', 'article-256', 'Art. 256'), L('family', 'article-39', 'Art. 39')]),
+ dict(id='crime', t='A crime', ev='the day the act was committed',
+      rows=[R('', '1931-12-31', 'Spanish Penal Code (in force here from 1887) and the Acts then in force', 'RPC Art. 366 keeps offences committed before 1932 under the law of their time, subject to Art. 22.', out=True),
+            R('1932-01-01', '', 'Revised Penal Code (Act 3815) and special penal laws', 'RPC Art. 1: in force January 1, 1932.', lid='act-3815', c='rpc', i='article-1')],
+      check=['A later law that favours the accused applies to him, even after final judgment, unless he is a habitual delinquent (Art. 22; Hernan v. Sandiganbayan).',
+             'No ex post facto law (Const. Art. III, Sec. 22).',
+             'Offences under special laws prescribe under Act 3326 unless the special law says otherwise.'],
+      basis=[L('rpc', 'article-22', 'RPC Art. 22'), L('rpc', 'article-366', 'Art. 366'), S('act-3326', 'Act 3326')]),
+ dict(id='landreg', t='Registering land', ev='the day of the registration step',
+      rows=[R('', '1902-11-05', 'Spanish system: the Mortgage Law and the Maura Law of 1894', 'Possessory information and composition titles. Spanish titles stayed usable as evidence until PD 892 (1976).', out=True),
+            R('1902-11-06', '1978-06-10', 'Land Registration Act (Act 496): the Torrens system', 'The Court of Land Registration began work in 1903.', lid='act-496', c='act496', i='section-38'),
+            R('1978-06-11', '', 'Property Registration Decree (PD 1529)', 'Codified the registration laws; Act 496 is now history.', lid='pd-1529', c='pd1529', i='section-14')],
+      check=['PD 892 (February 16, 1976) gave holders of Spanish titles six months to register under Act 496; after that, Spanish titles cannot be used as evidence of ownership in registration proceedings.',
+             'No one acquires registered land by prescription (Act 496 Sec. 46; PD 1529 Sec. 47).',
+             'Unregistered land: deeds are recorded under Act 3344, without prejudice to a third person with a better right.'],
+      basis=[S('pd-892', 'PD 892'), L('pd1529', 'section-47', 'PD 1529 Sec. 47'), L('act496', 'section-46', 'Act 496 Sec. 46'), S('act-3344', 'Act 3344')]),
+ dict(id='imperfect', t='Confirming an imperfect title to public land', ev='the day the application was filed',
+      rows=[R('1903-10-07', '1936-11-30', 'Earlier Public Land Acts: Act 926 (1903), then Act 2874 (1919)', '', lid='act-926'),
+            R('1936-12-01', '1957-06-21', 'Public Land Act (CA 141), Sec. 48(b) as enacted: possession since July 26, 1894', 'As recounted in Heirs of Malabanan; CA 141 took effect December 1, 1936.', lid='ca-141'),
+            R('1957-06-22', '1977-01-24', 'RA 1942: thirty years of possession immediately before filing', '', lid='ra-1942'),
+            R('1977-01-25', '2021-08-31', 'PD 1073: possession since June 12, 1945 or earlier', 'Carried into PD 1529 Sec. 14(1) from 1978. PD 1073 is not in the statute library.', out=True),
+            R('2021-09-01', '', 'RA 11573: twenty years of possession immediately before filing; up to twelve hectares; file at any time', 'Approved July 16, 2021; in force September 1, 2021.', lid='ra-11573', c='pd1529', i='section-14')],
+      check=['RA 11573 applies to applications still pending when it took effect (Republic v. Pasig Rizal Co., 2022).',
+             'The land must be alienable and disposable; RA 11573 Sec. 7 makes a DENR geodetic engineer’s sworn certification on the approved plan sufficient proof.',
+             'Acquiring patrimonial land by prescription (Sec. 14(2)) is a different route with its own rules (Heirs of Malabanan).'],
+      basis=[L('pd1529', 'section-14', 'PD 1529 Sec. 14'), S('ra-11573', 'RA 11573'), S('ca-141', 'CA 141'), L('const1987', 'art-xii-sec-3', 'Const. Art. XII, Sec. 3')]),
+ dict(id='agrarian', t='Tenancy and agrarian reform', ev='the day the tenancy relation or coverage arose',
+      rows=[R('1954-08-30', '1963-08-07', 'Agricultural Tenancy Act (RA 1199): share tenancy and leasehold', '', lid='ra-1199'),
+            R('1963-08-08', '1972-10-20', 'Agricultural Land Reform Code (RA 3844): leasehold replaces share tenancy', '', lid='ra-3844', c='alrc', i='section-166'),
+            R('1972-10-21', '1988-06-14', 'PD 27: tenants of rice and corn lands deemed owners, with RA 3844', '', lid='pd-27'),
+            R('1988-06-15', '2009-06-30', 'Comprehensive Agrarian Reform Law (RA 6657)', 'In force June 15, 1988.', lid='ra-6657', c='carl', i='section-50'),
+            R('2009-07-01', '', 'RA 6657 as amended by RA 9700 (CARPER)', 'Approved August 7, 2009, but by its own effectivity clause in force from July 1, 2009, so that coverage would not lapse when the original program ended on June 30. A law may fix its own start, even an earlier one, so long as it impairs no vested right. It also added Sec. 50-A: courts and prosecutors must refer cases alleged to be agrarian to the DAR.', lid='ra-9700', c='carl', i='section-50-a')],
+      check=['Agrarian disputes belong to the DAR, not the regular courts (RA 6657 Secs. 50 and 50-A).',
+             'RA 11953 (2023) condoned the unpaid amortizations and interest of agrarian reform beneficiaries.'],
+      basis=[L('carl', 'section-50', 'RA 6657 Sec. 50'), L('carl', 'section-50-a', 'Sec. 50-A'), S('ra-11953', 'RA 11953')]),
+ dict(id='labor', t='An employment claim', ev='the day the cause of action accrued (the dismissal, the unpaid wage)',
+      rows=[R('', '1974-10-31', 'Separate labour statutes: Eight-Hour Labor Law (CA 444), Minimum Wage Law (RA 602), Industrial Peace Act (RA 875), Termination Pay Law (RA 1052)', '', lid='ra-875'),
+            R('1974-11-01', '', 'Labor Code (PD 442), as amended', 'Art. 2: in force six months after its promulgation on May 1, 1974.', lid='pd-442', c='labor', i='article-2')],
+      check=['Cite the renumbered articles (DOLE, 2015) with the old number in brackets; courts and older cases use the old numbers.',
+             'Money claims prescribe in three years from accrual (Art. 306 [291]).',
+             'Apprenticeship and learnership moved to RA 12063 (2024); Book Two, Title II, Chapters 1 and 2 are repealed.'],
+      basis=[L('labor', 'article-306', 'Labor Code Art. 306'), L('labor', 'article-2', 'Art. 2')]),
+ dict(id='corp', t='A corporate act or dispute', ev='the day of the act',
+      rows=[R('1906-03-09', '1980-04-30', 'Corporation Law (Act 1459)', '', lid='act-1459'),
+            R('1980-05-01', '2019-02-22', 'Corporation Code (BP 68)', 'BP 68 is not in the statute library.', out=True),
+            R('2019-02-23', '', 'Revised Corporation Code (RA 11232)', 'In force February 23, 2019, on completion of publication.', lid='ra-11232', c='rcc', i='section-11')],
+      check=['Corporations existing when the Revised Code took effect have perpetual existence unless they vote to keep a fixed term (Sec. 11).',
+             'Existing corporations had two years to meet new requirements (Sec. 185).'],
+      basis=[L('rcc', 'section-11', 'RCC Sec. 11'), L('rcc', 'section-185', 'Sec. 185')]),
+ dict(id='civpro', t='A step in a civil case', ev='the day the step is taken',
+      rows=[R('1901-08-07', '1940-06-30', 'Code of Civil Procedure (Act 190)', 'Also held the pre-1950 rules on prescription (Secs. 40–41).', lid='act-190'),
+            R('1940-07-01', '1963-12-31', 'Rules of Court of 1940', '', out=True),
+            R('1964-01-01', '1997-06-30', 'Rules of Court of 1964', '', out=True),
+            R('1997-07-01', '2020-04-30', '1997 Rules of Civil Procedure', '', out=True),
+            R('2020-05-01', '', '1997 Rules as amended in 2019 (A.M. No. 19-10-20-SC)', 'The Rules of Court are not in the study library.', out=True)],
+      check=['Procedural rules govern pending cases unless that would be unjust or not feasible (De los Santos v. Vda. de Mangubat).',
+             'Jurisdiction is fixed by the statute in force when the action is filed (BP 129 as amended; RA 11576 since 2021 for real actions).'],
+      basis=[L('bp129', 'section-19', 'BP 129 Sec. 19'), S('ra-11576', 'RA 11576'), X('fresh-period', 'Shift: fresh period')]),
+ dict(id='const', t='Which Constitution', ev='the day the act or law was done or enacted',
+      rows=[R('1935-11-15', '1973-01-16', '1935 Constitution', '', lid='const-1935'),
+            R('1973-01-17', '1986-03-24', '1973 Constitution', '', lid='const-1973'),
+            R('1986-03-25', '1987-02-01', 'Freedom Constitution (Proclamation No. 3)', '', lid='const-1986'),
+            R('1987-02-02', '', '1987 Constitution', '', lid='const-1987', c='const1987', i='art-xviii-sec-3')],
+      check=['Laws existing when the 1987 Constitution took effect remain operative unless inconsistent with it (Art. XVIII, Sec. 3).',
+             'Who may own land is judged by the Constitution in force when the land was acquired (Krivenko under the 1935 Constitution).'],
+      basis=[L('const1987', 'art-xviii-sec-3', 'Const. Art. XVIII, Sec. 3')]),
+ dict(id='tax', t='A tax', ev='the day of the taxable transaction or the taxable year',
+      rows=[R('1939-06-15', '1977-06-02', 'National Internal Revenue Code of 1939 (CA 466)', '', lid='ca-466'),
+            R('1977-06-03', '1997-12-31', 'National Internal Revenue Code of 1977 (PD 1158)', 'PD 1158 is not in the statute library.', out=True),
+            R('1998-01-01', '', 'Tax Code of 1997 (RA 8424), as amended', 'Major amendments: TRAIN (RA 10963) from January 1, 2018; CREATE (RA 11534) from April 11, 2021, with the corporate rate cut to 25% reaching back to July 1, 2020; the Ease of Paying Taxes Act (RA 11976) from 2024.', lid='ra-8424', c='nirc', i='section-27')],
+      check=['Tax laws apply prospectively unless they say otherwise; CREATE’s lower corporate rate reached back to July 1, 2020 by its own terms.'],
+      basis=[L('nirc', 'section-27', 'NIRC Sec. 27'), S('ra-11534', 'RA 11534 (CREATE)')]),
+ dict(id='interest', t='Interest on a money judgment or loan', ev='the period in which the interest runs',
+      rows=[R('', '2013-06-30', '12% a year for loans or forbearance of money, and on judgments from finality', 'Central Bank Circular No. 416 (1974); Eastern Shipping Lines (1994).', out=True),
+            R('2013-07-01', '', '6% a year', 'BSP Monetary Board Circular No. 799; Nacar v. Gallery Frames (2013).', out=True)],
+      check=['The rate is split by period: 12% up to June 30, 2013 and 6% after, not one rate for the whole claim.'],
+      basis=[X('legal-interest', 'Shift: legal interest'), L('civil', 'article-2209', 'Civil Code Art. 2209')]),
+]
+
+# ---------------------------------------------------------------- land, worked in full
+LAND = dict(
+ intro='Land disputes are where the governing-law question bites hardest, because land outlives the laws that govern it. A lot in Batangas may have been occupied under Spain, sold under the 1889 Code, inherited under the 1950 Code, mortgaged under Act 496 and sued over under PD 1529. Walk through these gates in order; each one can end the case.',
+ gates=[
+  dict(n=1, t='Where is the land, and who is claiming it?',
+       x='Land in the Philippines is governed by Philippine law, full stop. Then ask whether a claimant is a foreigner. The Constitution in force when the land was acquired decides capacity: aliens cannot acquire private land except by hereditary succession. Natural-born Filipinos who lost citizenship may acquire limited areas; those who reacquired citizenship under RA 9225 hold land as citizens.',
+       rules=['Lex situs: Civil Code Art. 16, first paragraph.', 'Aliens: Const. Art. XII, Sec. 7 (except hereditary succession); Krivenko (1947) under the 1935 Constitution.', 'Former natural-born citizens: up to 1,000 sq m urban or 1 hectare rural for a residence (BP 185); up to 5,000 sq m urban or 3 hectares rural for business (RA 7042 Sec. 10 as amended by RA 8179).', 'A foreign spouse cannot recover land or its price paid in the Filipino spouse’s name (Muller v. Muller, 2006).'],
+       basis=[L('civil', 'article-16', 'Civil Code Art. 16'), L('const1987', 'art-xii-sec-7', 'Const. Art. XII, Sec. 7'), L('const1987', 'art-xii-sec-8', 'Sec. 8'), S('bp-185', 'BP 185'), S('ra-8179', 'RA 8179')]),
+  dict(n=2, t='Is it public land or private land?',
+       x='Under the Regalian doctrine all lands of the public domain belong to the State, and land not shown to be private is presumed public. Only agricultural lands may be alienated, and only after the State classifies them as alienable and disposable. The classification is an executive act; courts cannot make it.',
+       rules=['Regalian doctrine: Const. Art. XII, Sec. 2; only agricultural public land is alienable (Sec. 3).', 'Proof of classification: before RA 11573, a CENRO or PENRO certificate plus a certified copy of the original classification approved by the DENR Secretary (Republic v. T.A.N. Properties, G.R. No. 154953, June 26, 2008); since RA 11573 (Sec. 7), a DENR geodetic engineer’s sworn certification on the approved plan suffices.', 'Native title, held since before Spanish conquest, is the exception (Cariño v. Insular Government, 1909; IPRA Sec. 11).', 'Public land is not acquired by prescription against the State (Civil Code Art. 1113).'],
+       basis=[L('const1987', 'art-xii-sec-2', 'Const. Art. XII, Sec. 2'), L('const1987', 'art-xii-sec-3', 'Sec. 3'), L('civil', 'article-1113', 'Civil Code Art. 1113'), L('ra8371', 'section-11', 'IPRA Sec. 11'), S('ra-11573', 'RA 11573 Sec. 7')]),
+  dict(n=3, t='Is it titled under the Torrens system?',
+       x='If titled, the registration law governs and its protections are strong: the decree becomes incontrovertible one year after entry, no one acquires registered land by prescription, and the title cannot be attacked collaterally. If untitled, the Civil Code and the public land laws govern, and deeds are recorded under Act 3344.',
+       rules=['Titled: Act 496 for registrations before June 11, 1978; PD 1529 after (Secs. 32, 47, 48).', 'Untitled: Civil Code on ownership and prescription; Act 3344 for recording deeds, without prejudice to third persons with a better right.', 'Spanish titles: unusable as evidence in registration proceedings after PD 892’s six-month window (1976).'],
+       basis=[L('pd1529', 'section-32', 'PD 1529 Sec. 32'), L('pd1529', 'section-47', 'Sec. 47'), L('pd1529', 'section-48', 'Sec. 48'), L('act496', 'section-46', 'Act 496 Sec. 46'), S('act-3344', 'Act 3344'), S('pd-892', 'PD 892')]),
+  dict(n=4, t='Is it farmland with a tenant, or ancestral land?',
+       x='If agricultural land is tilled by a tenant or farmworker, agrarian laws govern and the dispute may belong to the DAR, not the courts. If the land is within an ancestral domain, IPRA and customary law come in first.',
+       rules=['Agrarian disputes: DAR’s primary and exclusive jurisdiction (RA 6657 Sec. 50); courts and prosecutors must refer to the DAR a case alleged to be agrarian where a party is a farmer, farmworker or tenant (Sec. 50-A, added by RA 9700).', 'Which tenancy law: the one in force when the relation arose (RA 1199, RA 3844, PD 27, RA 6657).', 'Ancestral domains: NCIP jurisdiction after exhausting customary remedies (IPRA Sec. 66). The Court has read this as limited to disputes among members of the same indigenous community; other disputes over ancestral land go to the regular courts (Unduran v. Aberasturi, G.R. No. 181284, October 20, 2015, En Banc; reconsideration denied April 18, 2017).'],
+       basis=[L('carl', 'section-50', 'RA 6657 Sec. 50'), L('carl', 'section-50-a', 'Sec. 50-A'), L('ra8371', 'section-66', 'IPRA Sec. 66'), L('ra8371', 'section-56', 'Sec. 56')]),
+  dict(n=5, t='How was the right acquired, and when?',
+       x='This is where the clock matters. Find the act that created each claimant’s right and the law of its date.',
+       rules=['By contract: the law at perfection (before August 30, 1950, the Spanish Civil Code; Arts. 2255–2256). Double sales: the first to register in good faith, else the first to possess in good faith, else the oldest title (Art. 1544, taken from the old Code’s Art. 1473).', 'By inheritance: the law at the decedent’s death (Art. 2263) and the decedent’s national law (Art. 16).', 'By marriage: the property regime of the marriage date (conjugal partnership before August 3, 1988; absolute community after).', 'By prescription: ordinary ten years with good faith and just title, extraordinary thirty years (Arts. 1134, 1137). Possession begun before August 30, 1950 is governed by the law then in force (Art. 1116): ten years of adverse possession under Act 190 Sec. 41, unless the full Civil Code period runs after 1950.', 'By confirmation of an imperfect title: the possession rule of the filing date (now twenty years under RA 11573, applied to pending cases).'],
+       basis=[L('civil', 'article-1544', 'Civil Code Art. 1544'), L('civil', 'article-1116', 'Art. 1116'), L('civil', 'article-1134', 'Art. 1134'), L('civil', 'article-1137', 'Art. 1137'), S('act-190', 'Act 190 Sec. 41'), L('civil', 'article-2263', 'Art. 2263')]),
+  dict(n=6, t='What is the remedy, and which court?',
+       x='Choose the action by what the client lost, then the court by the statute in force at filing. For real actions the assessed value, alleged in the complaint, decides.',
+       rules=['Forcible entry and unlawful detainer: first-level courts regardless of value, within one year (Rule 70; BP 129 Sec. 33(2)).', 'Accion publiciana and reivindicatoria, reconveyance, annulment of title: by assessed value; since RA 11576 (2021) the RTC takes them only above ₱400,000 (BP 129 Secs. 19(2), 33(3)).', 'Quieting of title: two lines of cases (Sabitsana, 2013, RTC regardless of value; Salvador v. Patricia, 2016, by assessed value). Follow Salvador and plead the value.', 'Reconveyance on an implied trust (Art. 1456) prescribes in ten years from issuance of the title (Art. 1144), but not while the plaintiff is in possession, since the suit is then really one to quiet title.', 'A void contract may be attacked at any time (Art. 1410). Real actions over immovables otherwise prescribe in thirty years (Art. 1141).', 'Reversion of land wrongly titled is the State’s action (CA 141), brought by the Solicitor General.'],
+       basis=[L('bp129', 'section-19', 'BP 129 Sec. 19'), L('bp129', 'section-33', 'Sec. 33'), S('ra-11576', 'RA 11576'), L('civil', 'article-476', 'Civil Code Art. 476'), L('civil', 'article-1456', 'Art. 1456'), L('civil', 'article-1144', 'Art. 1144'), L('civil', 'article-1410', 'Art. 1410'), L('civil', 'article-1141', 'Art. 1141')]),
+  dict(n=7, t='What does the case law say, as of when?',
+       x='Land doctrine has moved. Find the leading case for each issue and check whether the statute it read has changed.',
+       rules=['Republic v. Naguit (G.R. No. 144057, January 17, 2005) held the land need only be alienable when the application is filed; Republic v. Herbieto (G.R. No. 156117, May 26, 2005) said it must have been alienable since June 12, 1945. Heirs of Malabanan (2009) chose Naguit.', 'Heirs of Malabanan (2009, reaffirmed 2013) required an express declaration that public land is no longer intended for public use or service before it becomes patrimonial and open to prescription.', 'RA 11573 (2021) and Republic v. Pasig Rizal Co. (2022) replaced the 1945 cut-off with twenty years and eased proof of classification, for pending applications too.'],
+       basis=[L('pd1529', 'section-14', 'PD 1529 Sec. 14'), S('ra-11573', 'RA 11573')]),
+ ],
+ table=[
+  ['Who may own it?', 'The Constitution in force when acquired', 'Ownership of land is part of the national patrimony; capacity is fixed at acquisition.'],
+  ['Is it alienable?', 'Const. Art. XII, Secs. 2–3 and the executive classification', 'Only the State can release public land into private hands.'],
+  ['Validity of a sale', 'Civil Code at perfection (Spanish Code before Aug 30, 1950)', 'Contracts are judged by the law the parties contracted under (Arts. 2255–2256).'],
+  ['Two buyers', 'Art. 1544; Act 3344 for unregistered land', 'Registration in good faith protects reliance on the public record.'],
+  ['Heirs’ shares', 'Law at death; decedent’s national law', 'Rights vest at death (Art. 777); the estate is one (Art. 16).'],
+  ['Spouses’ shares', 'Property regime at the marriage date', 'Spouses arrange their affairs on the regime they married under.'],
+  ['Prescription', 'Civil Code; pre-1950 possession under Art. 1116 and Act 190', 'Running periods keep the law they began under, unless the new period runs out first.'],
+  ['Imperfect title', 'PD 1529 Sec. 14 as amended by RA 11573, at filing', 'Curative law reaches pending cases (Pasig Rizal).'],
+  ['Tenant in possession', 'RA 6657 (as amended); DAR', 'Agrarian reform is a special regime with its own forum.'],
+  ['Which court', 'BP 129 as amended (RA 11576), at filing', 'Jurisdiction is conferred by law and fixed at filing.'],
+ ],
+)
+
+# ---------------------------------------------------------------- other fields, briefly
+FIELDS = [
+ dict(id='family', t='Family and property of spouses', ev='the marriage date for the regime; the date of the act for everything else',
+      rule='The regime is fixed by the law at the wedding, but the Family Code’s rules on administration and liquidation of conjugal partnerships now govern old partnerships too, so far as no vested right is impaired. Filiation and legitimation follow the Family Code retroactively under Art. 256, subject to rights already vested.',
+      basis=[L('family', 'article-105', 'FC Art. 105'), L('family', 'article-256', 'Art. 256'), L('family', 'article-75', 'Art. 75')], clock='marriage',
+      trap='Assuming a 1985 marriage has absolute community because the Family Code is “the law now”.'),
+ dict(id='succ', t='Succession', ev='the date of death',
+      rule='The law at death governs who inherits and how much; the decedent’s national law governs the order, shares and intrinsic validity of a will; the form of the will follows the place of execution or Philippine law.',
+      basis=[L('civil', 'article-777', 'Civil Code Art. 777'), L('civil', 'article-2263', 'Art. 2263'), L('civil', 'article-16', 'Art. 16')], clock='succession',
+      trap='Giving a spurious child of a man who died in 1949 the share the 1950 Code created.'),
+ dict(id='obl', t='Obligations and contracts', ev='the date of perfection',
+      rule='Validity and effects follow the law at perfection. Interest follows the rate of each period (12% to June 30, 2013; 6% after). Statutes on remedies apply to pending cases.',
+      basis=[L('civil', 'article-2255', 'Civil Code Art. 2255'), L('civil', 'article-2256', 'Art. 2256'), X('legal-interest', 'Shift: legal interest')], clock='contract',
+      trap='Applying one interest rate to a claim that ran across July 1, 2013.'),
+ dict(id='crim', t='Criminal law', ev='the date of commission',
+      rule='The law at commission defines the crime and the maximum penalty; a later law that is more favourable applies anyway unless the offender is a habitual delinquent. Procedure in the trial follows the rules in force at each step.',
+      basis=[L('rpc', 'article-22', 'RPC Art. 22'), L('rpc', 'article-366', 'Art. 366'), L('ra10951', 'section-1', 'RA 10951')], clock='crime',
+      trap='Forgetting that RA 10951 (2017) and RA 11648 (2022) changed penalties and ages for acts committed earlier, in opposite directions: the first applies back, the second does not.'),
+ dict(id='lab', t='Labour', ev='the date the cause of action accrued',
+      rule='Rights and periods follow the law when the claim accrued; cite both the renumbered and the old article. Procedure before the NLRC follows its rules in force at each step.',
+      basis=[L('labor', 'article-306', 'Labor Code Art. 306 [291]')], clock='labor',
+      trap='Citing “Art. 282” for just causes in a 2024 brief without noting it is now Art. 297.'),
+ dict(id='proc', t='Procedure and jurisdiction', ev='the date of the step (procedure); the date of filing (jurisdiction)',
+      rule='Rules of procedure govern pending cases; jurisdiction is fixed by the statute at filing and by the allegations of the complaint.',
+      basis=[L('bp129', 'section-19', 'BP 129 Sec. 19'), L('const1987', 'art-viii-sec-5', 'Const. Art. VIII, Sec. 5(5)')], clock='civpro',
+      trap='Moving a case filed in the RTC in 2019 to the MTC because RA 11576 later raised the threshold.'),
+ dict(id='corp', t='Corporations', ev='the date of the corporate act',
+      rule='Acts before February 23, 2019 are judged under BP 68; after, under the Revised Corporation Code, which also gave existing corporations perpetual existence.',
+      basis=[L('rcc', 'section-11', 'RCC Sec. 11'), L('rcc', 'section-185', 'Sec. 185')], clock='corp',
+      trap='Treating a 1995 corporation’s 50-year term as still running out in 2045.'),
+ dict(id='tax', t='Taxation', ev='the date of the transaction or the taxable year',
+      rule='The tax law in force when the taxable event occurs governs, unless the new law fixes an earlier date of effect, as CREATE did for the corporate rate.',
+      basis=[L('nirc', 'section-27', 'NIRC Sec. 27'), S('ra-11534', 'RA 11534')], clock='tax',
+      trap='Computing 2020 corporate income tax at 30% for the whole year.'),
+]
+
+# ---------------------------------------------------------------- worked problems
+PROBLEMS = [
+ dict(id='p1', t='The 1948 sale and the 1952 sale',
+      facts='In 1948 Andres sold an unregistered lot in Batangas to Berto by a private document; Berto fenced it and has lived there since. In 1952 Andres sold the same lot to Celso by a notarized deed, which Celso recorded under Act 3344. In 1998 Celso sued Berto to recover the lot.',
+      steps=[('Which law governs the 1948 sale?', 'The Spanish Civil Code of 1889: the sale was perfected before August 30, 1950 (Arts. 2253, 2256). Under it, a sale followed by delivery transferred ownership; a private document sufficed between the parties.'),
+             ('Who wins between the two buyers?', 'Berto. When Andres sold again in 1952 he no longer owned the lot. Celso’s recording under Act 3344 cannot help him: recording of unregistered land is without prejudice to a third person with a better right, and Berto, the first buyer in possession, has one. Under either Code’s double-sale rule (Art. 1544 or its source, Art. 1473), recording protects only good faith, and Celso could not be in good faith against a buyer openly living on the land.'),
+             ('Which court, and is the action barred?', 'The court is fixed by the law at filing in 1998: BP 129 as amended by RA 7691 (in force April 1994), which goes by assessed value. And even if Celso had the better title, his suit came 46 years after Berto’s possession as owner turned adverse to him in 1952: real actions over immovables prescribe in thirty years (Art. 1141), and by 1982 Berto would have acquired the lot by extraordinary prescription (Art. 1137).')],
+      lesson='The 1948 deed is judged by 1948 law, the dispute between buyers by the law governing each acquisition, and the court by the law at filing. Three dates, three laws.',
+      basis=[L('civil', 'article-1544', 'Civil Code Art. 1544'), L('civil', 'article-2256', 'Art. 2256'), S('act-3344', 'Act 3344')]),
+ dict(id='p2', t='The grandmother who died in 1949',
+      facts='Lola Ines, a Filipina, died intestate in July 1949 leaving a farm in Pampanga, three legitimate children and a spurious son. In 1960 the spurious son sued for a share, invoking the new Civil Code.',
+      steps=[('Which law governs the estate?', 'The Spanish Civil Code of 1889 and the Rules of Court: she died before August 30, 1950 (Art. 2263).'),
+             ('Does the new Code’s grant of successional rights to spurious children help him?', 'No. Art. 2253 makes new rights effective at once only if they do not impair vested rights of the same origin. The legitimate children’s rights vested at her death in 1949 (Art. 777; under the old Code, Art. 657). This is Uson v. Del Rosario.'),
+             ('Is there anything he can claim?', 'Not as an heir to this estate. Art. 2264 gives children born before the Code the status and rights the Code created, but that cannot reopen an estate transmitted at a death before the Code (Arts. 2253, 2263).')],
+      lesson='Successional rights are frozen at death. A later law can give a new status but not a share in an inheritance already passed.',
+      basis=[L('civil', 'article-2263', 'Civil Code Art. 2263'), L('civil', 'article-2253', 'Art. 2253'), L('civil', 'article-2264', 'Art. 2264')]),
+ dict(id='p3', t='Married in 1975, land bought in 1990, husband dead in 2005',
+      facts='Rosa and Pedro married in 1975 without a marriage settlement. In 1990 Pedro bought a lot in his name with his salary. Pedro died intestate in 2005 leaving Rosa, two legitimate children and an illegitimate daughter.',
+      steps=[('What is the property regime?', 'Conjugal partnership of gains: they married before August 3, 1988 (Civil Code Art. 119). The Family Code’s chapter on conjugal partnerships now governs that partnership too, without prejudice to vested rights (FC Art. 105).'),
+             ('Is the lot conjugal?', 'Yes. It was acquired for value during the marriage with Pedro’s earnings; the law presumes it conjugal, whatever name is on the title.'),
+             ('How is the estate divided?', 'First liquidate the partnership: half of the lot is Rosa’s as her share, not as an inheritance. Pedro’s half is his estate, distributed under the law at his death in 2005: the Civil Code’s rules on succession with the Family Code’s change that each illegitimate child gets half the legitime of a legitimate child (FC Art. 176).')],
+      lesson='Two clocks, two laws: the regime from 1975, the succession from 2005.',
+      basis=[L('family', 'article-105', 'Family Code Art. 105'), L('family', 'article-176', 'Art. 176'), L('civil', 'article-777', 'Civil Code Art. 777')]),
+ dict(id='p4', t='The application filed in 2015',
+      facts='In 2015 a family applied for registration of an untitled lot it had possessed openly since 1980. The land was classified alienable in 1985. The RTC granted; the Republic appealed, arguing no possession since June 12, 1945. The appeal was still pending in 2022.',
+      steps=[('What did the law require when the application was filed?', 'PD 1529 Sec. 14(1) as then worded: possession since June 12, 1945 or earlier. On that text the application fails.'),
+             ('What changed?', 'RA 11573 (in force September 1, 2021) rewrote Sec. 14(1): twenty years of possession immediately before filing. The family had 35.'),
+             ('Does the new text apply to a pending case?', 'Yes. Republic v. Pasig Rizal Co. (2022) held RA 11573 curative and remedial, applicable to applications pending when it took effect. The family must still prove the land alienable, which Sec. 7 of RA 11573 makes easier.')],
+      lesson='A curative statute can change the result of a case already on appeal. Always check what happened to the statute after the facts.',
+      basis=[L('pd1529', 'section-14', 'PD 1529 Sec. 14'), S('ra-11573', 'RA 11573')]),
+ dict(id='p5', t='The theft of 2015 and the law of 2017',
+      facts='In 2015 Lito stole items worth ₱25,000. He was convicted and sentenced under the RPC’s old value brackets; the judgment became final in 2016. In August 2017 RA 10951 raised the value brackets, so the same theft now carries a lighter penalty. Lito is not a habitual delinquent.',
+      steps=[('Which law defined the crime?', 'The RPC as of 2015 (Art. 366’s principle; Art. 21).'),
+             ('Does RA 10951 help him after final judgment?', 'Yes. Art. 22 gives a favourable penal law retroactive effect even after final sentence. The Court has reopened final cases to apply RA 10951’s lighter penalties (Hernan v. Sandiganbayan, 2017).'),
+             ('What if RA 10951 had made the penalty heavier?', 'It could not reach him: that would be an ex post facto law.')],
+      lesson='In criminal law the clock runs one way for the State and both ways for the accused.',
+      basis=[L('rpc', 'article-22', 'RPC Art. 22'), L('ra10951', 'section-1', 'RA 10951'), L('const1987', 'art-iii-sec-22', 'Const. Art. III, Sec. 22')]),
+ dict(id='p6', t='The American husband and the Cebu lot',
+      facts='Mark, an American, married Liza, a Filipina, in 2010. He paid for a lot in Cebu titled in her name. They separated in 2018 and Mark sued for half the lot or reimbursement. Liza died in 2024, intestate.',
+      steps=[('Can Mark claim the lot or its price?', 'No. Land in the Philippines is under Philippine law (Art. 16), and the Constitution bars aliens from acquiring private land except by hereditary succession (Art. XII, Sec. 7). Allowing reimbursement would let him do indirectly what the Constitution forbids (Muller v. Muller, 2006).'),
+             ('Can Mark inherit from Liza?', 'Liza was a Filipina, so Philippine law governs her succession (Art. 16). The constitutional exception for “hereditary succession” covers intestate succession only, not a devise by will, which would let any alien buy land by arranging a legacy (Ramirez v. Vda. de Ramirez, G.R. No. L-27952, February 15, 1982). Since she died intestate, Mark may inherit land as her heir.'),
+             ('What should his lawyer have done in 2010?', 'Structured his contribution lawfully: a lease, ownership of a condominium unit within the foreign-ownership limit, or a loan documented as such.')],
+      lesson='For land, the Constitution sets the boundary before any contract or foreign law is consulted.',
+      basis=[L('const1987', 'art-xii-sec-7', 'Const. Art. XII, Sec. 7'), L('civil', 'article-16', 'Civil Code Art. 16')]),
+]
+
+# ---------------------------------------------------------------- drills (they join the learner's reviews)
+DRILLS = [
+ dict(id='g1', ref='succession', q='Don Felipe died intestate on May 2, 1950, leaving land in Laguna. Which law governs his heirs’ shares?',
+      options=['The Civil Code of the Philippines, because the case is decided now', 'The Spanish Civil Code of 1889, because he died before August 30, 1950', 'The Family Code, because it is retroactive', 'Whichever law gives the heirs more'], a=1,
+      why='Rights to an inheritance are fixed at death (Art. 777). Art. 2263 keeps estates of persons who died before the Civil Code took effect on August 30, 1950 under the old Code.'),
+ dict(id='g2', ref='marriage', q='Ana and Ben married on June 1, 1988 with no marriage settlement. What is their default property regime?',
+      options=['Absolute community, under the Family Code', 'Conjugal partnership of gains, because they married before August 3, 1988', 'Complete separation of property', 'Co-ownership under Art. 147'], a=1,
+      why='The Family Code took effect August 3, 1988. A marriage before that date has the Civil Code’s default, the conjugal partnership of gains; FC Art. 105 then applies the Family Code’s conjugal-partnership rules to it, subject to vested rights.'),
+ dict(id='g3', ref='t2', q='In 1945 Celia began occupying an untitled private lot adversely and as owner, without just title. Under Civil Code Art. 1116, when did she acquire it?',
+      options=['In 1980, thirty years after August 30, 1950', 'In 1955, ten years from 1945, under Act 190 Sec. 41, the law in force when her possession began', 'In 1975, thirty years from 1945', 'Never: prescription does not run against private owners'], a=1,
+      why='Art. 1116 keeps prescription already running on August 30, 1950 under the laws then in force. Act 190 Sec. 41 gave title after ten years of adverse possession, so she acquired in 1955, before the Code’s thirty-year period could have run.'),
+ dict(id='g4', ref='imperfect', q='An application for judicial confirmation filed in 2016 shows possession since 1985. It is pending on appeal in 2022. What governs the required period of possession?',
+      options=['PD 1529 Sec. 14(1) as worded in 2016: since June 12, 1945, so the application fails', 'RA 11573: twenty years before filing, because the Court treats it as curative and applicable to pending applications', 'RA 1942: thirty years', 'Whatever the RTC applied'], a=1,
+      why='Republic v. Pasig Rizal Co. (2022) held RA 11573 curative and remedial, applicable to applications pending when it took effect on September 1, 2021. Thirty-one years of possession meets the twenty-year rule, if the land is proved alienable.'),
+ dict(id='g5', ref='t4', q='Lito’s conviction for theft became final in 2016. RA 10951 (2017) lowered the penalty for the amount he stole. He is not a habitual delinquent. What follows?',
+      options=['Nothing: the judgment is final', 'He may have the lighter penalty applied, because favourable penal laws reach back even after final judgment', 'Only the President can reduce the sentence', 'The lighter penalty applies only to crimes after 2017'], a=1,
+      why='RPC Art. 22 gives favourable penal laws retroactive effect even after final sentence, except for habitual delinquents. The Court has reopened final cases to apply RA 10951 (Hernan v. Sandiganbayan, 2017).'),
+ dict(id='g6', ref='s2', q='An American buys a house and lot in Makati in his own name in 2019. Is the purchase of the land valid?',
+      options=['Yes, if US law allows it', 'Yes, if he is married to a Filipina', 'No: land here is governed by Philippine law, and the Constitution lets aliens acquire private land only by hereditary succession', 'Yes, if the seller agreed'], a=2,
+      why='Art. 16 subjects land to the law of its location, and Const. Art. XII, Sec. 7 bars aliens from acquiring private land save by hereditary succession. A contract cannot override it.'),
+ dict(id='g7', ref='s3', q='A Texas national dies leaving land in Quezon City and a will giving all to a friend, omitting his children. Which law decides whether the children have legitimes?',
+      options=['Philippine law, because the land is here (Art. 16, first paragraph)', 'Texas law, his national law (Art. 16, second paragraph)', 'The law where the will was signed', 'The law the friend chooses'], a=1,
+      why='For succession, Art. 16’s second paragraph displaces the first: the decedent’s national law governs the order, shares and intrinsic validity, whatever the property and wherever it lies (Bellis v. Bellis).'),
+ dict(id='g8', ref='j1', q='In 1983, relying on an official circular that said guarantee checks were outside BP 22, Ramon issued such a check. In 1987 the Court ruled they are covered. Can he be convicted for the 1983 check?',
+      options=['Yes: the Court only declared what the law always meant', 'No: a new doctrine is not applied against one who relied on the earlier official reading', 'Yes, but with a lower penalty', 'Only if he was warned'], a=1,
+      why='Co v. Court of Appeals (1993): the later doctrine operates prospectively and cannot be applied to one who acted in reliance on the earlier reading. Judicial decisions are part of the law (Art. 8).'),
+ dict(id='g9', ref='t3', q='A civil case filed in 2018 is still in trial in June 2020. Which rules govern a motion filed that month?',
+      options=['The 1997 Rules as they read in 2018, since the case began then', 'The 1997 Rules as amended in 2019, in force May 1, 2020, because procedural rules govern pending cases', 'The 1964 Rules', 'Whichever the parties agree on'], a=1,
+      why='No one has a vested right in procedure; amended rules apply to pending cases unless that would be unjust or not feasible (De los Santos v. Vda. de Mangubat).'),
+ dict(id='g10', ref='r4', q='In 2022 Nena files an accion publiciana over land with an assessed value of ₱350,000. Which court has jurisdiction?',
+      options=['The RTC, because ownership is in issue', 'The first-level court, because since RA 11576 the RTC takes real actions only above ₱400,000 assessed value', 'The RTC, because the market value is ₱3 million', 'Either, at her choice'], a=1,
+      why='BP 129 Secs. 19(2) and 33(3), as amended by RA 11576 (2021), make the assessed value alleged in the complaint decisive: ₱400,000 and below goes to the first-level court.'),
+ dict(id='g11', ref='r3', q='The 1987 Administrative Code repealed “all laws inconsistent” with it. Does that by itself repeal a death-benefit provision of the 1917 Revised Administrative Code?',
+      options=['Yes: a general repealing clause repeals all older laws on the subject', 'No: implied repeal needs an irreconcilable conflict or a clear intent to replace the whole subject; here there was neither', 'Yes, because the later law prevails', 'Only if the Ombudsman says so'], a=1,
+      why='Mecano v. Commission on Audit (1992). Repeals by implication are disfavoured; a general clause repeals only what is actually inconsistent.'),
+ dict(id='g12', ref='agrarian', q='A landowner files an ejectment case in the MTC against a farmer who answers that he is the landowner’s tenant. What must the court do?',
+      options=['Decide the ejectment case, since possession is the only issue', 'Refer the case to the DAR to determine whether an agrarian dispute exists', 'Dismiss it outright', 'Transfer it to the RTC'], a=1,
+      why='RA 6657 Sec. 50-A (added by RA 9700) requires a judge or prosecutor to refer to the DAR a case alleged to be agrarian where one party is a farmer, farmworker or tenant; the DAR certifies within fifteen days whether an agrarian dispute exists.'),
+ dict(id='g13', ref='t6', q='A law signed on January 2 says it is “effective immediately”. It is published on January 20. When does it take effect?',
+      options=['January 2, on signing', 'January 20, on publication', 'February 4, fifteen days after publication', 'On the date its rules are issued'], a=1,
+      why='The law may dispense with the fifteen-day period but not with publication (Tañada v. Tuvera). “Effective immediately” means on publication.'),
+ dict(id='g14', ref='t2', q='A judgment for a 1976 debt is executed in 1989 against a house the debtors had lived in since 1969. Is the house exempt as a family home under the Family Code?',
+      options=['Yes: the Family Code applies retroactively', 'No: the Family Code’s exemption does not cover debts incurred before it took effect', 'Yes, if the house is worth less than the limit', 'Only if registered as a family home'], a=1,
+      why='Modequillo v. Breva (1990): the exemption under the Family Code does not reach debts incurred before August 3, 1988; applying it would impair the creditor’s vested right.'),
+ dict(id='g15', ref='corp', q='A corporation incorporated in 1995 with a fifty-year term never amended its articles. What is its term after February 23, 2019?',
+      options=['It still ends in 2045', 'Perpetual, unless the stockholders vote to keep the fixed term', 'It ended in 2019', 'Twenty-five years from 2019'], a=1,
+      why='Revised Corporation Code Sec. 11 gives corporations existing when it took effect perpetual existence unless they elect otherwise.'),
+ dict(id='g16', ref='m2', q='A widow claims a lot bought in 1990 by her husband, whom she married in 1975 and who died in 2005. What is the correct analysis?',
+      options=['Apply the Family Code to everything, since he died after 1988', 'Two questions: her half as conjugal partner (regime of the 1975 marriage) and her share as heir (law at his death in 2005)', 'Apply the Spanish Civil Code', 'Only succession matters, because he died'], a=1,
+      why='Characterize first. The property regime is fixed by the marriage date (conjugal partnership, with the Family Code’s rules applied under Art. 105); the succession by the date of death. Liquidate the partnership before dividing the estate.'),
+]
+
+MEMO = dict(t='The governing-law paragraph',
+  lines=['[Issue]. The right in question arose on [date], when [operative event].',
+         'At that time [law, with its citation and the date it took effect] was in force; [the provision], as then worded, provided that [rule].',
+         '[The later law] does not displace it, because [transitional rule: Art. 2252/2253, Art. 256, Art. 22, the law’s own effectivity clause, or the nature of the law: substantive, procedural, curative] [and applying it would impair a vested right]. — or — [The later law] governs because [it is procedural / curative / favourable to the accused / expressly retroactive] and impairs no vested right.',
+         'Philippine law applies [because the land is here (Art. 16) / the parties are Filipinos (Art. 15) / …].',
+         'The doctrine then in force was [case], which [has / has not] since been modified by [case].',
+         'Under that law, …'])
+
+TRAPS = ['Using today’s text for yesterday’s facts.', 'Counting from the signing of a law instead of its effectivity after publication.', 'Treating a code’s effectivity date as the date of every provision in it, when many were added later.', 'Forgetting the Labor Code’s 2015 renumbering, or the Rules of Court’s.', 'Assuming a general repealing clause repealed a special law.', 'Treating jurisdiction as procedural, so that a later law moves a case already filed.', 'Citing a case decided under a text since amended.', 'Ignoring a foreign element because the property is here.', 'Applying a law that creates new rights to an estate already transmitted.', 'Applying one interest rate across July 1, 2013.']
+
+NOTE = ('Written in our own words for study. Dates and codal anchors were checked against the statutes in the LawCodex corpus '
+        'and, where an instrument is not in it (PD 1073, BP 68, PD 1158, the Rules of Court), against Supreme Court decisions '
+        'and official notices. Case summaries are short; a case marked “read first” is cited for a reported holding you should '
+        'check in the full decision before relying on it. This is a study aid, not legal advice.')
+
+# ---------------------------------------------------------------- validate every link, then write
+def load_codes():
+    have = {}
+    for f in os.listdir(f'{D}/codes'):
+        if f.endswith('.json'):
+            d = json.load(open(f'{D}/codes/{f}'))
+            have[d['id']] = {p['i'] for p in d['provisions']}
+    return have
+HAVE = load_codes()
+IDX = json.loads(gzip.decompress(base64.b64decode(open(f'{D}/statutes/idx.txt').read())))
+LIDS = {r[0] for r in IDX['rows']}
+SHIFTS = {x['id'] for x in json.load(open(f'{D}/shifts.json'))['shifts']}
+bad = []
+def chk(b, where):
+    if b['c'] == 'law':
+        if b['i'] not in LIDS: bad.append((where, b))
+    elif b['c'] == 'shift':
+        if b['i'] not in SHIFTS: bad.append((where, b))
+    elif b['c'] not in HAVE or b['i'] not in HAVE[b['c']]:
+        bad.append((where, b))
+for m in METHOD: [chk(b, m['id']) for b in m['basis']]
+for r in RULES: [chk(b, r['id']) for b in r['basis']]
+for c in CLOCKS:
+    [chk(b, c['id']) for b in c['basis']]
+    for r in c['rows']:
+        if r.get('lid') and r['lid'] not in LIDS: bad.append((c['id'], r['lid']))
+        if r.get('c') and (r['c'] not in HAVE or r['i'] not in HAVE[r['c']]): bad.append((c['id'], r['c'], r['i']))
+    # rows must be in order and not overlap
+    for a, b in zip(c['rows'], c['rows'][1:]):
+        assert a['u'] and b['f'] and a['u'] < b['f'], (c['id'], a, b)
+for g in LAND['gates']: [chk(b, f'gate{g["n"]}') for b in g['basis']]
+for f in FIELDS: [chk(b, f['id']) for b in f['basis']]; assert f['clock'] in {c['id'] for c in CLOCKS}
+for p in PROBLEMS: [chk(b, p['id']) for b in p['basis']]
+REFS = {x['id'] for x in METHOD + RULES + CLOCKS}
+for d in DRILLS:
+    assert d['ref'] in REFS, d['id']
+    assert 0 <= d['a'] < len(d['options']) and len(d['options']) == 4, d['id']
+if bad:
+    for b in bad: print('BAD LINK', b)
+    raise SystemExit(1)
+
+out = dict(intro=INTRO, method=METHOD, rules=RULES, clocks=CLOCKS, land=LAND, fields=FIELDS, problems=PROBLEMS,
+           drills=DRILLS, memo=MEMO, traps=TRAPS, note=NOTE)
+s = json.dumps(out, ensure_ascii=False, separators=(',', ':'))
+open(f'{D}/govern.json', 'w').write(s)
+cat = json.load(open(f'{D}/catalog.json'))
+cat['ghash'] = hashlib.md5(s.encode()).hexdigest()[:10]
+json.dump(cat, open(f'{D}/catalog.json', 'w'), ensure_ascii=False, separators=(',', ':'))
+print('govern: method', len(METHOD), 'rules', len(RULES), 'clocks', len(CLOCKS), 'gates', len(LAND['gates']), 'fields', len(FIELDS),
+      'problems', len(PROBLEMS), 'drills', len(DRILLS), f'{len(s)/1e3:.0f} kB')

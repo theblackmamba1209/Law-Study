@@ -4,7 +4,7 @@ Only typographic normalisation is applied to source text (whitespace, the dash a
 caption, stray spaces before closing quotes). Word-level changes come only from
 errata.json, and every one is recorded on the provision it touches.
 """
-import json, re, os, sys, glob, hashlib, datetime
+import sys, json, re, os, sys, glob, hashlib, datetime
 sys.path.insert(0, os.path.dirname(__file__))
 import parse_md as P
 from catalog_config import CODES, SUBJECTS, MISSING, LC
@@ -13,6 +13,7 @@ OUT = sys.argv[1] if len(sys.argv) > 1 else '/home/claude/site/data'
 os.makedirs(OUT + '/codes', exist_ok=True)
 ERRATA = json.load(open(os.path.join(os.path.dirname(__file__), 'errata.json')))
 WORK = '/home/claude/work'
+TOOLS = os.path.dirname(os.path.abspath(__file__))
 
 EMBED_HEAD = re.compile(r'^(SUBSECTION\s+\d+\.?.*|Subsection\s+\d+\.?.*|SECTION\s+\d+\.?\s*[-—–]?\s*[A-Z][^.]{0,80}|Section\s+\d+\.\s*[-—–]?\s*[A-Z][a-z][^.]{0,80}|Provisions Common to[^.]{0,80}|TRANSITIONAL PROVISIONS|GENERAL PROVISIONS|FINAL PROVISIONS)$')
 CLOSING = re.compile(r'^(Approved|Done|Signed|Enacted|Lapsed into law|DONE)\b.{0,160}$')
@@ -70,7 +71,7 @@ def split_embedded_headings(divisions, provisions):
     return closing
 
 
-INLINE = re.compile(r'(?:(?<=[.;:)\]"”])\s+|^)(?:ARTICLE|Article|ART\.|Art\.|SECTION|Section|SEC\.|Sec\.)\s+(\d{1,4}(?:-[A-Z])?)\.?\s+(?=[A-Z“"(])')
+INLINE = re.compile(r'(?:(?<=[.;:)\]"”])\s+|^)(?:ARTICLE|Article|ART\.|Art\.|SECTION|Section|SEC\.|Sec\.)\s*(\d{1,4}(?:-[A-Z])?)(?:\s?\.\s*|,\s*|\s+)(?=[A-Z“"(])')
 
 
 def split_runons(provisions, log, cid):
@@ -121,9 +122,54 @@ KIND_LABEL = {'article': 'Article', 'section': 'Section', 'rule': 'Rule'}
 SPLITLOG = []
 
 
+SECSTART = re.compile(r'^(?:SECTION|Section|SEC\.|Sec\.)\s*(\d{1,4}(?:-[A-Z])?)[.,]\s*(.*)$')
+
+
+def rescue_sections(provisions, log, cid):
+    """A heading (e.g. 'CHAPTER 1') whose sections the parser missed ('SEC.57. …' with no space) is stored as one
+    provision holding all of them; split it back into its sections."""
+    out = []
+    for p in provisions:
+        if p.get('kind') == 'section' or not any(isinstance(x, str) and SECSTART.match(x.strip()) for x in p.get('paras', [])):
+            out.append(p); continue
+        head, made = [], []
+        for x in p['paras']:
+            m = SECSTART.match(x.strip()) if isinstance(x, str) else None
+            if m:
+                made.append({'kind': 'section', 'n': m.group(1), 'div': p.get('div'), 'paras': [m.group(2)]})
+                log.append({'code': cid, 'n': m.group(1), 'op': 'split', 'applied': True, 'note': 'Section recovered from a heading the source parser had merged it into.'})
+            elif made:
+                made[-1]['paras'].append(x)
+            else:
+                head.append(x)
+        if head:
+            p['paras'] = head; out.append(p)
+        out.extend(made)
+    return out
+
+
+# LawPhil appends implementing rules to some statutes' pages; they are not part of the statute
+CUT_RULES = {'ra10022': r'^Declaration of Policies', 'coop': r'^Title\. These Rules shall be known'}
+RULES_PART = {'pd851': (r'^Payment of 13-month Pay', 'RULES AND REGULATIONS IMPLEMENTING PRESIDENTIAL DECREE NO. 851')}
+
+
 def load_md(src, cid=''):
     meta, title, pre, divisions, provisions = P.parse(resolve(src), 'x')
+    provisions = rescue_sections(provisions, SPLITLOG, cid)
     provisions = split_runons(provisions, SPLITLOG, cid)
+    if cid in CUT_RULES:
+        k = next((i for i, p in enumerate(provisions) if i > 3 and p['paras'] and isinstance(p['paras'][0], str) and re.match(CUT_RULES[cid], p['paras'][0])), None)
+        if k is not None:
+            SPLITLOG.append({'code': cid, 'n': '-', 'op': 'cut', 'applied': True, 'note': f'Dropped {len(provisions) - k} sections of implementing rules that the source page appends after the statute.'})
+            provisions = provisions[:k]
+    if cid in RULES_PART:
+        pat, head = RULES_PART[cid]
+        k = next((i for i, p in enumerate(provisions) if i > 0 and p['paras'] and isinstance(p['paras'][0], str) and re.match(pat, p['paras'][0])), None)
+        if k is not None:
+            divisions.append({'t': head, 'lvl': 0, 'parent': None})
+            for p in provisions[k:]:
+                p['div'] = len(divisions) - 1; p['label'] = f"Rules, Sec. {p['n']}"; p['n'] = 'R' + str(p['n'])
+                p.setdefault('e', []).append({'t': 'Implementing rules issued under the Decree, not part of the Decree itself.', 'b': 'Structure of the source page'})
     closing = split_embedded_headings(divisions, provisions)
     for p in provisions:
         caption_split(p)
@@ -138,8 +184,15 @@ def load_labor():
 
 def load_json_src(name):
     d = json.load(open(WORK + f'/{name}/{name}.json'))
+    provs = d['provisions']
+    if name == 'admin':
+        provs = split_runons(provs, SPLITLOG, 'admincode')
+        for p in provs:
+            if 'cap' not in p:
+                p['cap'] = None
+                caption_split(p)
     return dict(meta=d.get('meta', {}), title=d.get('title'), pre=d.get('pre', []), divisions=d['divisions'],
-                provisions=d['provisions'], closing=d.get('closing', []))
+                provisions=provs, closing=d.get('closing', []))
 
 
 def load_ins10607():
@@ -182,7 +235,7 @@ def load_ins10607():
             divisions[pending_head]['t'] += ' — ' + s
             continue
         pending_head = None
-        m = re.match(r'^(?:SECTION|Section|SEC\.|Sec\.)\s+(\d+(?:-[A-Z])?)\.\s*(.*)$', s)
+        m = re.match(r'^(?:SECTION|Section|SEC\.|Sec\.)\s*(\d+(?:-[A-Z])?)[.,]\s*(.*)$', s)
         if m:
             cur = {'kind': 'section', 'n': m.group(1), 'div': stack[-1] if stack else None, 'paras': [m.group(2)]}
             provisions.append(cur)
@@ -207,10 +260,10 @@ AMENDERS = {
     'rpc': [('ra10951', r'Act No\. 3815|Revised Penal Code|same Act'), ('ra10592', r'Act No\. 3815|Revised Penal Code|same Act'),
             ('ra7659', r'Revised Penal Code|Act No\. 3815|same Code|same Act'), ('ra8353', r'Act No\. 3815|Revised Penal Code'),
             ('ra11648', r'Act No\. 3815|Revised Penal Code|same Act')],
-    'nirc': [('ra10963', r'National Internal Revenue Code|same Code'), ('ra11534', r'National Internal Revenue Code|same Code')],
     'ra8042': [('ra10022', r'Republic Act No\. 8042|same Act')],
     'ra9208': [('ra10364', r'Republic Act No\. 9208|same Act'), ('ra11862', r'Republic Act No\. 9208|same Act')],
     'ra9184': [],
+    'ra7080': [('ra7659', r'Republic Act No\. 7080')],
 }
 AMEND_REF = re.compile(r'(?:Article|Articles|Section|Sections|Sec\.|Secs\.)\s+((?:\d+(?:-[A-Z])?(?:\s*(?:,|and|&)\s*)?)+)')
 QUOTE_START = re.compile(r'^["“]?\s*(?:Art\.|ART\.|Article|ARTICLE|SEC\.|Sec\.|SECTION|Section)\s+(\d+(?:\s*-\s*[A-Z])?)\.?\s*(.*)$')
@@ -354,8 +407,8 @@ def apply_errata(cid, provs, divisions, log):
             log.append({'code': cid, 'n': e['n'], 'op': 'replace', 'applied': ok, 'note': e['note']})
         elif e['op'] == 'insert':
             # insert a provision missing from the source, after provision n=e['after']
-            pos = next((k for k, p in enumerate(provs) if p.get('n') == e['after']), None)
-            ok = pos is not None and not any(p.get('n') == e['n'] for p in provs)
+            pos = next((k for k, p in enumerate(provs) if (p['i'] == e['after_id'] if e.get('after_id') else p.get('n') == e['after'])), None)
+            ok = pos is not None and (bool(e.get('label')) or not any(p.get('n') == e['n'] for p in provs))
             if ok:
                 prev = provs[pos]
                 ok = True
@@ -366,18 +419,136 @@ def apply_errata(cid, provs, divisions, log):
                     if k is None:
                         ok = False
                     else:
-                        moved = prev['p'][k:]
+                        moved = [] if e.get('drop_moved') else prev['p'][k:]
                         prev['p'] = prev['p'][:k]
-                rec = {'i': re.sub(r'[^a-z0-9]+', '-', ('article ' if e.get('kind', 'article') == 'article' else 'section ') + e['n']).strip('-'),
-                       'l': ('Article ' if e.get('kind', 'article') == 'article' else 'Section ') + e['n'], 'n': e['n'], 'd': prev['d'],
+                lab = e.get('label') or (('Article ' if e.get('kind', 'article') == 'article' else 'Section ') + e['n'])
+                rec = {'i': re.sub(r'[^a-z0-9]+', '-', lab.lower()).strip('-'),
+                       'l': lab, 'n': e['n'], 'd': prev['d'],
                        'p': e['paras'] + moved, 'e': [{'t': e['note'], 'b': e.get('basis', '')}]}
+                if e.get('caption'): rec['c'] = e['caption']
+                if e.get('div'):
+                    dk = next((k for k, v in enumerate(divisions) if v['t'] == e['div']), None)
+                    if dk is not None: rec['d'] = dk
                 if ok: provs.insert(pos + 1, rec)
-            log.append({'code': cid, 'n': e['n'], 'op': 'insert', 'applied': ok, 'note': e['note']})
-        elif e['op'] == 'note':
+            log.append({'code': cid, 'n': e.get('label') or e['n'], 'op': 'insert', 'applied': ok, 'note': e['note']})
+        elif e['op'] == 'amend':
+            # the text in force after an amending law that is not itself in the library
+            ok = False
             for p in provs:
-                if p.get('n') == e['n']:
+                if (p['i'] == e['id']) if e.get('id') else (p.get('n') == e['n']):
+                    ov = {'by': e['by'], 'sec': e['sec'], 'p': e['paras'], 'ref': e.get('ref', ''), 'y': e.get('y', ''), 'why': e['note']}
+                    if e.get('cons'):
+                        ov['cons'] = e['cons']
+                    p.setdefault('a', []).append(ov)
                     p.setdefault('e', []).append({'t': e['note'], 'b': e.get('basis', '')})
-            log.append({'code': cid, 'n': e['n'], 'op': 'note', 'applied': True, 'note': e['note']})
+                    ok = True
+            log.append({'code': cid, 'n': e.get('n') or e.get('id'), 'op': 'amend', 'applied': ok, 'note': e['note']})
+        elif e['op'] == 'note':
+            # st: 'repealed' or 'superseded' marks a provision that is no longer the law (shown as a status, not a proofreading note)
+            ok = False
+            for p in provs:
+                if (p['i'] == e['id']) if e.get('id') else (p.get('n') == e['n']):
+                    ok = True
+                    p.setdefault('e', []).append({'t': e['note'], 'b': e.get('basis', ''), **({'k': 'status'} if e.get('st') else {})})
+                    if e.get('st'):
+                        p['st'] = e['st']
+            log.append({'code': cid, 'n': e.get('n') or e.get('id'), 'op': 'note', 'applied': ok, 'note': e['note']})
+
+
+def prune_empty_divs(provs, divs):
+    used = set()
+    for p in provs:
+        k = p.get('d')
+        while k is not None and k not in used:
+            used.add(k); k = divs[k]['parent']
+    keep = [k for k in range(len(divs)) if k in used]
+    newix = {o: n for n, o in enumerate(keep)}
+    nd = []
+    for o in keep:
+        v = dict(divs[o]); v['parent'] = newix.get(v['parent']) if v['parent'] is not None else None; nd.append(v)
+    divs[:] = nd
+    for p in provs:
+        if p.get('d') is not None: p['d'] = newix[p['d']]
+
+
+def nirc_fixups(provs, divs, log):
+    """The NIRC as LawPhil prints it is RA 8424: the Act's own Sections 1-8 around the Code's Sections 1-292.
+    (a) The Act's own sections are labelled as such, so amendments to the Code do not land on them.
+    (b) RA 9243 (2004) deleted Sec. 174 and renumbered Secs. 175-180 as 174-179 (a new Sec. 180 follows from errata).
+    (c) RA 11534 (CREATE, 2021) added a new Title XIII (Secs. 291-311) and re-sectioned the old Titles XIII and XIV:
+        old Sec. 291 is now Sec. 312 and old Sec. 292 is now Sec. 313."""
+    act = {'section-1', 'section-2', 'section-3'} | {f'title-xiv-sec-{k}' for k in range(4, 9)}
+    for p in provs:
+        if p['i'] in act:
+            p['l'] = f"RA 8424, Sec. {p['n']}"; p['d'] = None
+            p.setdefault('e', []).append({'t': 'A section of RA 8424 (the Tax Reform Act of 1997) itself, not of the Code it enacted.', 'b': 'Structure of RA 8424'})
+        elif re.fullmatch(r'title-i-sec-[1-8]', p['i']):
+            p['l'] = f"Section {p['n']}"
+    by = {p['i']: p for p in provs}
+    old174 = by.get('section-174')
+    if old174:
+        old174.update({'i': 'section-174-1997', 'n': None, 'l': 'Former Section 174', 'st': 'repealed'})
+        old174.setdefault('e', []).append({'t': 'Deleted by RA 9243 (2004), Sec. 1. The 1997 text is kept for reference.', 'b': 'RA 9243 (2004), Sec. 1', 'k': 'status'})
+        for o in range(175, 181):
+            p = by.get(f'section-{o}')
+            if not p: continue
+            p.update({'i': f'section-{o - 1}', 'n': str(o - 1), 'l': f'Section {o - 1}'})
+            p.setdefault('e', []).append({'t': f'Section {o} in the 1997 text; renumbered Section {o - 1} by RA 9243 (2004), Sec. {2 if o == 175 else 3 if o == 176 else 4 if o < 180 else 5}.', 'b': 'RA 9243 (2004)'})
+        log.append({'code': 'nirc', 'n': '174-180', 'op': 'renumber', 'applied': True, 'note': 'RA 9243: Sec. 174 deleted; Secs. 175-180 renumbered 174-179'})
+    prune_empty_divs(provs, divs)   # LawPhil's table of contents repeats every Title and Chapter as empty headings
+    t13 = next((k for k, v in enumerate(divs) if v['lvl'] == 0 and v['t'].upper().startswith('TITLE XIII')), None)
+    t14 = next((k for k, v in enumerate(divs) if v['lvl'] == 0 and v['t'].upper().startswith('TITLE XIV')), None)
+    if t13 is not None and t14 is not None and 'TAX INCENTIVES' not in ' '.join(v['t'] for v in divs):
+        divs[t13]['t'] = re.sub(r'^TITLE XIII', 'TITLE XIV', divs[t13]['t'], flags=re.I)
+        divs[t14]['t'] = re.sub(r'^TITLE XIV', 'TITLE XV', divs[t14]['t'], flags=re.I)
+        divs.insert(t13, {'t': 'TITLE XIII — TAX INCENTIVES', 'lvl': 0, 'parent': None})
+        for v in divs:
+            if v.get('parent') is not None and v['parent'] >= t13: v['parent'] += 1
+        for p in provs:
+            if p.get('d') is not None and p['d'] >= t13: p['d'] += 1
+        for o, nw in (('291', '312'), ('292', '313')):
+            p = by.get(f'section-{o}')
+            if p:
+                p.update({'i': f'section-{nw}', 'n': nw, 'l': f'Section {nw}'})
+                p.setdefault('e', []).append({'t': f'Section {o} in the 1997 text; re-sectioned as Section {nw} when RA 11534 (CREATE, 2021), Sec. 16, added the new Title XIII on tax incentives (Secs. 291-311).', 'b': 'RA 11534 (2021), Sec. 16'})
+        log.append({'code': 'nirc', 'n': '291-292', 'op': 'renumber', 'applied': True, 'note': 'CREATE: new Title XIII; old Secs. 291-292 now 312-313'})
+
+
+def const_fixups(provs, divs, log):
+    """Article IX has four parts (A common provisions; B CSC; C COMELEC; D COA) whose sections restart at 1.
+    The source runs them together, leaves each part's heading at the end of the previous section, and drops the
+    article label from Article VI, Secs. 29-32. Labels are fixed here; provision ids are kept so links do not break."""
+    heads = {'A. COMMON PROVISIONS': 'A', 'B. THE CIVIL SERVICE COMMISSION': 'B', 'C. THE COMMISSION ON ELECTIONS': 'C', 'D. THE COMMISSION ON AUDIT': 'D'}
+    ix = next((k for k, p in enumerate(provs) if p['i'] == 'art-ix'), None)
+    if ix is None:
+        return
+    art_div = provs[ix]['d']
+    part = 'A'
+    sub = {}
+
+    def subdiv(letter, title):
+        if letter not in sub:
+            divs.append({'t': title, 'lvl': divs[art_div]['lvl'] + 1, 'parent': art_div})
+            sub[letter] = len(divs) - 1
+        return sub[letter]
+    del provs[ix]
+    subdiv('A', 'A. COMMON PROVISIONS')
+    for p in provs:
+        if not p['i'].startswith('art-ix-sec-'):
+            continue
+        n = p['i'].split('-sec-')[1].split('-')[0]
+        p['l'] = f'Art. IX-{part}, Sec. {n}'
+        p['d'] = sub[part]
+        last = p['p'][-1] if p['p'] and isinstance(p['p'][-1], str) else ''
+        if last.strip() in heads:
+            p['p'] = p['p'][:-1]
+            part = heads[last.strip()]
+            subdiv(part, last.strip())
+    for p in provs:
+        if re.match(r'^section-(29|30|31|32)$', p['i']):
+            p['l'] = 'Art. VI, Sec. ' + p['i'].split('-')[1]
+    log.append({'code': 'const1987', 'n': 'Art. IX', 'op': 'structure', 'applied': True,
+                'note': 'Article IX split into its four parts (IX-A Common Provisions, IX-B Civil Service Commission, IX-C Commission on Elections, IX-D Commission on Audit); part headings that the source left at the end of sections removed from the section text. Art. VI, Secs. 29–32 relabelled.'})
 
 
 _DIC = None
@@ -472,7 +643,17 @@ def main():
             continue
         doc = raw[cid]
         provs = assemble(cid, doc, None)
+        # paragraphs that are only stray footnote debris from a PDF (e.g. "⟨by⟩ ⟨R.A.⟩ ⟨No.⟩⟨11360⟩") carry no words of the law
+        for p_ in provs:
+            keep = [q for q in p_['p'] if not (isinstance(q, str) and re.fullmatch(r'(?:\s*⟨[^⟩]*⟩\s*)+', q) and re.search(r'⟨[^⟩]*[^\d⟩][^⟩]*⟩', q))]
+            if len(keep) != len(p_['p']):
+                report['errata'].append({'code': cid, 'n': p_.get('n'), 'op': 'clean', 'applied': True, 'note': 'Removed a paragraph of stray footnote markers from the PDF (no words of the law).'})
+                p_['p'] = keep
+        if cid == 'nirc':
+            nirc_fixups(provs, doc['divisions'], report['errata'])
         apply_errata(cid, provs, doc['divisions'], report['errata'])
+        if cid == 'const1987':
+            const_fixups(provs, doc['divisions'], report['errata'])
         if cid == 'civil' and os.path.exists(WORK + '/deleon/deleon_index.json'):
             chk = set(json.load(open(WORK + '/deleon/deleon_index.json'))['codal'])
             for p in provs:
@@ -495,6 +676,18 @@ def main():
             label = next(c[3] for c in CODES if c[0] == amender)
             label = re.sub(r'^Republic Act No\. (\d+).*$', r'RA \1', label)
             ov = amendment_overlays(target, raw[amender], pattern, label)
+            # year and title of the amending law, for the provision's evolution timeline
+            ad = raw[amender]
+            yrs = re.findall(r'\b(1[89]\d\d|20\d\d)\b', ' '.join(x for x in (ad.get('closing', []) + ad.get('pre', [])) if isinstance(x, str)))
+            atitle = next(c[2] for c in CODES if c[0] == amender)
+            # the citation in the catalogue ("Republic Act No. 10951 (August 29, 2017)") is the reliable year;
+            # the closing text can mention older laws (RA 11648's text cites RA 8353 of 1997)
+            cy = re.search(r'\b(1[89]\d\d|20\d\d)\b', next(c[3] for c in CODES if c[0] == amender))
+            for items_ in ov.values():
+                for it_ in items_:
+                    if cy: it_['y'] = cy.group(1)
+                    elif yrs: it_['y'] = yrs[0] if ad.get('closing') else yrs[-1]
+                    it_['tt'] = atitle
             for n, items in ov.items():
                 if n not in bynum and re.match(r'^\d+-[A-Z]$', n):
                     # article added by the amending law (e.g. RPC Arts. 266-A to 266-D by RA 8353)
@@ -529,6 +722,51 @@ def main():
                     for it in items:
                         it['ref'] = amender
                         p.setdefault('a', []).append(it)
+    # amendments in the order they were enacted, so the last one shown is the text in force; then any consolidated
+    # text for an amendment that restated only part of a provision ("x x x"), recorded in errata.json
+    for cid, (doc, provs) in assembled.items():
+        for p in provs:
+            if len(p.get('a', [])) > 1:
+                p['a'].sort(key=lambda a: int(a.get('y') or 0))
+        # text fixes for provisions that the amendment step itself inserted (e.g. RPC Arts. 266-A to 266-D)
+        for e in ERRATA.get(cid, []):
+            if e['op'] != 'replace_late':
+                continue
+            ok = False
+            for p in provs:
+                if p.get('n') == e['n']:
+                    for j, para in enumerate(p['p']):
+                        if isinstance(para, str) and e['find'] in para:
+                            p['p'][j] = para.replace(e['find'], e['replace'], 1); ok = True
+                            p.setdefault('e', []).append({'t': e['note'], 'b': e.get('basis', '')})
+                            break
+            report['errata'].append({'code': cid, 'n': e['n'], 'op': 'replace', 'applied': ok, 'note': e['note']})
+        # transcription slips inside the text of an amending law (checked against the signed copy)
+        for e in ERRATA.get(cid, []):
+            if e['op'] != 'fixov':
+                continue
+            ok = False
+            for p in provs:
+                if p.get('n') == e['n']:
+                    for a in p.get('a', []):
+                        if a['by'] == e['by']:
+                            for k, x in enumerate(a['p']):
+                                if isinstance(x, str) and e['from'] in x:
+                                    a['p'][k] = x.replace(e['from'], e['to']); ok = True
+            report['errata'].append({'code': cid, 'n': e['n'], 'op': 'fixov', 'applied': ok,
+                                     'note': f'Transcription slip in the text of {e["by"]}: “{e["from"]}” → “{e["to"]}”. {e.get("basis", "")}'.strip()})
+        for e in ERRATA.get(cid, []):
+            if e['op'] != 'consolidate':
+                continue
+            ok = False
+            for p in provs:
+                if p.get('n') == e['n']:
+                    for a in p.get('a', []):
+                        if a['by'] == e['by']:
+                            a['cons'] = e['paras']; ok = True
+                    if ok:
+                        p.setdefault('e', []).append({'t': e['note'], 'b': e.get('basis', '')})
+            report['errata'].append({'code': cid, 'n': e['n'], 'op': 'consolidate', 'applied': ok, 'note': e['note']})
     for (cid, short, title, cit, subj, src, core, note) in CODES:
         if cid not in assembled:
             continue
@@ -547,7 +785,7 @@ def main():
             'md': ('The LawPhil Project (Arellano Law Foundation), via LawCodex', meta.get('source', '')),
             'labor': ('DOLE, Labor Code of the Philippines, Renumbered (2022 ed.) — your PDF', ''),
             'family': ('Executive Order No. 209 — your PDF (text layer decoded and checked against OCR)', ''),
-            'admin': ('Executive Order No. 292 — your scanned PDF (OCR)', ''),
+            'admin': ('Executive Order No. 292 — your scanned PDF: three OCR readings and the LawPhil text compared word by word; disputed words checked against the scan', ''),
             'ins10607': ('The LawPhil Project, RA 10607 Sec. 1 (consolidated Insurance Code)', meta.get('source', '')),
         }[src.split(':')[0]]
         data = {
@@ -558,12 +796,18 @@ def main():
             'divisions': [{'t': d['t'], 'l': d['lvl'], 'p': d['parent'], **({'f': d['fn']} if d.get('fn') else {})} for d in doc['divisions']],
             'provisions': provs,
         }
+        # provision ids that changed when a heading was corrected: old links and saved progress still find the provision
+        if os.path.exists(TOOLS + '/aliases.json'):
+            al = json.load(open(TOOLS + '/aliases.json')).get(cid)
+            if al:
+                have = {p['i'] for p in provs}
+                data['alias'] = {k: v for k, v in al.items() if v in have and k not in have}
         js = json.dumps(data, ensure_ascii=False, separators=(',', ':'))
         open(f'{OUT}/codes/{cid}.json', 'w').write(js)
         h = hashlib.sha1(js.encode()).hexdigest()[:10]
         words = sum(len(x.split()) for p in provs for x in p['p'] if isinstance(x, str))
         catalog['codes'].append({'id': cid, 'short': short, 'title': title, 'citation': cit, 'subject': subj, 'core': core,
-                                 'note': note, 'count': len(provs), 'words': words, 'hash': h, 'bytes': len(js),
+                                 'note': note, 'count': len(provs), 'live': sum(1 for p in provs if not p.get('st')), 'words': words, 'hash': h, 'bytes': len(js),
                                  'kind': src.split(':')[0]})
         total += len(provs)
     for (t, cit, subj, why) in MISSING:
@@ -582,12 +826,13 @@ def main():
              'flags': {k: len(v) for k, v in report['anomalies'].items() if v},
              'crosscheck': {'civil_vs_deleon': {'articles': 274, 'with_differences': len(xc)}}}
     json.dump(proof, open(f'{OUT}/proofreading.json', 'w'), ensure_ascii=False, separators=(',', ':'))
-    for key, fn in (('shash', 'syllabus_index.json'), ('rhash', 'recent.json'), ('chash', 'curriculum.json'), ('bhash', 'book2.json')):
+    for key, fn in (('shash', 'syllabus_index.json'), ('rhash', 'recent.json'), ('chash', 'curriculum.json'), ('bhash', 'book2.json'), ('xhash', 'shifts.json'), ('ehash', 'enforce.json'), ('ghash', 'govern.json')):
         if os.path.exists(f'{OUT}/{fn}'):
             catalog[key] = hashlib.md5(open(f'{OUT}/{fn}', 'rb').read() + (open(f'{OUT}/syllabus.json', 'rb').read() if key == 'shash' and os.path.exists(f'{OUT}/syllabus.json') else b'')).hexdigest()[:10]
     json.dump(catalog, open(f'{OUT}/catalog.json', 'w'), ensure_ascii=False, separators=(',', ':'))
     json.dump(report, open(f'{WORK}/proofread_report.json', 'w'), ensure_ascii=False, indent=1)
     print('codes', len(catalog['codes']), 'provisions', total)
+    import subprocess; subprocess.run([sys.executable, os.path.join(os.path.dirname(os.path.abspath(__file__)), 'build_scrules.py')], check=True)
     print('errata', sum(1 for e in report['errata'] if e['applied']), '/', len(report['errata']))
 
 

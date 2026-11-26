@@ -462,6 +462,12 @@ def weave(FIELDS):
         'why': 'A judgment is paper until it is paid. Nine stages, from attachment to the ten-year clock.',
         'pic': 'A sheriff’s padlock hanging from the last carved letter.',
         'items': [{'t': 'enforce', 'id': 'playbook'}, {'t': 'enforce', 'id': 'drills'}]})
+    craft['tracks'].insert(at, {'tier': 'core', 'name': 'Which law governs? Finding the law that applies',
+        'why': 'Before arguing what the law says, fix which law speaks: the law of the date, the place and the higher rank.',
+        'pic': 'A calendar page pinned to an old title deed, a compass laid on top.',
+        'items': [{'t': 'govern', 'id': 'method'}, {'t': 'govern', 'id': 'drills'}]})
+    land = next(t for t in byid['civ']['tracks'] if t['name'] == 'Land titles')
+    land['items'].append({'t': 'govern', 'id': 'land'})
     intl = byid['intl']
     intl['tracks'][0]['items'].insert(1, {'t': 'treaties', 'id': 'registry'})
     craft['tracks'][0]['items'].insert(2, {'t': 'history', 'id': 'eras'})
@@ -491,7 +497,7 @@ def weave(FIELDS):
         if not done:
             raise SystemExit(f"shift {s['id']}: no home for {anchor}")
         placed += 1
-    print(f'woven: {placed} changes of course, 1 enforcement track')
+    print(f'woven: {placed} changes of course, 1 enforcement track, the governing-law track')
 
 
 def main():

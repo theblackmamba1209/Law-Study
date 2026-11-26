@@ -917,3 +917,47 @@ body.focus .top,body.focus .bottomnav{display:none}
 .lawtext .text p{margin:0 0 .75em}
 .lawout{margin-top:8px}
 @media (max-width:560px){.tl.eras li{grid-template-columns:4.4rem 1fr}.tl.eras::before{left:5.1rem}.tl.eras li::before{left:calc(5.1rem - 6px)}}
+/* ---------- which law governs? */
+.kind.k-gov{background:var(--ok-soft);color:var(--ok)}
+.tm{border-top:3px solid var(--ok)}
+.tmq{gap:14px;align-items:flex-end}
+.tmq label{display:flex;flex-direction:column;gap:4px;flex:1 1 230px;min-width:0}
+.tmq select,.tmq input{font:inherit;font-size:1rem;padding:9px 10px;border:1px solid var(--line2);border-radius:10px;background:var(--card);color:var(--ink);width:100%;min-height:44px}
+.tmans{display:flex;flex-direction:column;gap:4px;margin:14px 0 6px;border-left-color:var(--ok);background:var(--ok-soft)}
+.tmans b{font:600 1.12rem/1.35 var(--serif);color:var(--ink)}
+.tmans.bad{border-left-color:var(--bad);background:var(--bad-soft)}
+.tl.clock::before{left:6px}
+.tl.clock li::after{display:none}
+.tl.clock li{grid-template-columns:1fr;gap:2px;padding:8px 10px 8px 26px;border-radius:0 10px 10px 0}
+.tl.clock li::before{left:1px;top:13px}
+.tl.clock .ty{text-align:left;padding-top:0;font-size:.8rem}
+.tl.clock li.on{background:var(--ok-soft)}
+.tl.clock li.on::before{border-color:var(--ok);background:var(--ok)}
+.tl.clock li.on .tc{color:var(--ok)}
+.tl.clock .row{margin-top:4px}
+.govm{list-style:none;padding:0;margin:6px 0 16px;display:grid;gap:8px}
+.govm details{border:1px solid var(--line);border-radius:var(--r);background:var(--card);padding:10px 14px}
+.govm details[open]{box-shadow:var(--shadow)}
+.govm summary{display:flex;gap:10px;align-items:center;cursor:pointer;list-style:none;min-height:32px}
+.govm summary::-webkit-details-marker{display:none}
+.govm .gn{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:var(--ok-soft);color:var(--ok);font:700 .9rem/1 var(--sans);flex:0 0 auto}
+.govm p{margin:8px 0;font:1rem/1.6 var(--serif);color:var(--ink2);max-width:var(--measure)}
+.govm ul{margin:4px 0 8px;padding-left:1.1em}
+.govg{margin:16px 0 8px;font:600 .95rem/1.3 var(--sans);color:var(--ink2)}
+.govrule{display:flex;flex-direction:column;gap:6px;text-decoration:none!important;color:inherit;border-top:3px solid var(--gk,var(--ok))}
+.govrule .t{font:600 1.02rem/1.35 var(--serif);color:var(--ink)}
+.g-time{--gk:var(--ok)}.g-space{--gk:var(--blue)}.g-rank{--gk:var(--violet)}.g-cases{--gk:var(--warn)}
+.govland{display:flex;flex-direction:column;gap:6px;text-decoration:none!important;color:inherit;border-left:4px solid var(--ok)}
+.govland .t{font:600 1.1rem/1.35 var(--serif);color:var(--ink)}
+.govf p{margin:6px 0;line-height:1.5}
+.gate p{font:1rem/1.6 var(--serif);color:var(--ink2)}
+.tablewrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.gtab{width:100%;border-collapse:collapse;font-size:.92rem;min-width:560px}
+.gtab th,.gtab td{text-align:left;vertical-align:top;padding:8px 9px;border-bottom:1px solid var(--line)}
+.gtab th{font:600 .8rem/1.3 var(--sans);color:var(--ink3);text-transform:uppercase;letter-spacing:.03em}
+.facts{font:1rem/1.6 var(--serif);margin:10px 0 12px}
+.gsteps{padding-left:1.2em;display:block;margin:10px 0 16px}.gsteps>li{margin-bottom:14px}
+.gsteps .sq{font:600 1rem/1.45 var(--serif)}
+.gsteps .sa{margin:6px 0 0;font:1rem/1.6 var(--serif);color:var(--ink2);border-left:3px solid var(--ok);padding-left:10px}
+.gsteps .btn{margin-top:6px}
+.memo{padding-left:1.2em;font:.95rem/1.55 var(--serif);color:var(--ink2)}.memo li{margin-bottom:6px}

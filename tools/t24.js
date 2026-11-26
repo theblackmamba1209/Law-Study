@@ -120,7 +120,7 @@ const { chromium } = require('/opt/npm-tools/node_modules/playwright');
     r = await ev(() => ({ c: [...document.querySelectorAll('.crumbs a')].map(a => a.getAttribute('href')), n: [...document.querySelectorAll('.pn a')].map(a => a.textContent) }));
     console.log(tag, 'lesson', JSON.stringify(r));
     if (r.c[0] !== '#/map' || r.c[1] !== '#/map/craft') errs.push(tag + ' lesson crumbs');
-    if (!r.n.some(t => /Next in The Lawyer’s Craft: Enforcing a judgment/.test(t))) errs.push(tag + ' lesson next should cross into the enforcement track');
+    if (!r.n.some(t => /Next in The Lawyer’s Craft: Which law governs\?/.test(t))) errs.push(tag + ' lesson next should cross into the governing-law track');
     await pg.close();
   }
   await b.close();
